@@ -1,7 +1,6 @@
 #!/usr/local/bin/python
 
-# http://amada.abuse.ch/blocklist.php
-# Malware Database (AMaDa) :: AMaDa Blocklist
+# Malware Database (AMaDa) :: AMaDa Blocklist Parser
 
 import os
 
