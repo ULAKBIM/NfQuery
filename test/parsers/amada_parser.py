@@ -34,7 +34,7 @@ def createOutput():
     today=date.today().isoformat()
     source="AMaDa"
     port="-"
-    MalOutput=open(outputpath + "MalOutput","w")
+    MalOutput=open(outputpath + "MalOutput.amada","w")
     headline="MalType\t\t\tMalIPaddress\t\t\tPort\t\t\tSource\t\t\tDate\n"
     MalOutput.write(headline)
     for mal_name, mal_ipaddr in blocklist.items():
