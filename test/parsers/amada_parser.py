@@ -10,8 +10,7 @@ import os
 
 nfquery = "/usr/local/nfquery/"
 sourcepath = nfquery + "sources/amada/"
-#outputpath = nfquery + "outputs/amada/"
-outputpath = "./"
+outputpath = nfquery + "outputs/amada/"
 blocklist={}
 
 def sourceFetch():
@@ -27,7 +26,6 @@ def sourceParse():
         mal_ipaddr=i.split(" ")[0]
         mal_name=i.split(" ")[2].split("\n")[0]
         if (mal_name in blocklist.keys()):
-            #blocklist[mal_name] = list(blocklist[mal_name]).append(mal_ipaddr)
             blocklist[mal_name] = blocklist[mal_name] + " " + mal_ipaddr
         else:
             blocklist[mal_name] = mal_ipaddr
