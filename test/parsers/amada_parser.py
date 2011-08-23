@@ -10,7 +10,8 @@ import os
 
 nfquery = "/usr/local/nfquery/"
 sourcepath = nfquery + "sources/amada/"
-outputpath = nfquery + "outputs/amada/"
+#outputpath = nfquery + "outputs/amada/"
+outputpath = "./"
 blocklist={}
 
 def sourceFetch():
@@ -21,7 +22,8 @@ def sourceFetch():
 
 def sourceParse():    
     blfile=open(sourcepath + "blocklist","r")
-    for i in blfile.readlines()[50:]:
+    for i in blfile.readlines()[5:]:
+        print i
         mal_ipaddr=i.split(" ")[0]
         mal_name=i.split(" ")[2].split("\n")[0]
         if (mal_name in blocklist.keys()):
@@ -42,15 +44,25 @@ def createOutput():
             tabs="\t\t\t"
             line=mal_name + tabs + each_ip + tabs + port + tabs + source + tabs + today + "\n"
             MalOutput.write(line)
-    MalOutput.close()        
+    MalOutput.close()
 
 
 
 #sourceFetch()
 sourceParse()
+createOutput()
 #print structshape(blocklist) 
 for key, value in blocklist.items():
     print str(key) + "   " + str(value) + "\n"
 
-createOutput()
+
+
+
+
+
+
+
+
+
+
 
