@@ -15,7 +15,12 @@ Node={}
 cursor.execute(get_node_information)
 rows=cursor.fetchall()
 output=open("outputs/UcBilgileri","w")
-output.write("Uc\t\t\t\t\tNetwork Bilgisi\n")
+
+
+head="%-*s%*s"
+column1_width=40
+column2_width=15
+output.write(head % (column1_width, "Uc", column2_width ,"Network Bilgisi\n"))
 for row in rows:
     Node["id"]=row[0] 
     Node["shortname"]=row[1] 
@@ -42,8 +47,7 @@ for row in rows:
                 block=ip[1].split(".")
                 for i in range(0,network_count):
                     network+=block[0] + "." + block[1] + "." + str(int(block[2])+i) + "." + block[3] + "/24 "
-            
-            output.write(Node["longname"] + "\t\t\t\t\t" + network + "\n")
+            output.write(head % (column1_width, Node["longname"], column2_width, (network + "\n")))
             print Node["longname"] + " " + network + "\n"
 
 
