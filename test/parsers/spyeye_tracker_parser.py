@@ -2,7 +2,6 @@
 
 # abuse.ch SpyEye IP blocklist 
 
-#from structshape import structshape
 from datetime import date
 import os
 
@@ -30,13 +29,16 @@ def createOutput():
     source="SpyEyeTracker"
     port="-"
     MalOutput=open(outputpath + "MalOutput.SpyEyeTracker","w")
-    headline="MalType\t\t\tMalIPaddress\t\t\tPort\t\t\tSource\t\t\tDate\n"
-    MalOutput.write(headline)
+    alignment="%-*s%-*s%-*s%-*s%*s"
+    column1_width=20
+    column2_width=20
+    column3_width=15
+    column4_width=15
+    column5_width=15
+    MalOutput.write(alignment % (column1_width, "MalType", column2_width, "MalIPaddress", column3_width, "Port", column4_width, "Source", column5_width, "Date\n"))
     for mal_name, mal_ipaddr in blocklist.items():
         for each_ip in mal_ipaddr.split(" ")[1:]:
-            tabs="\t\t\t"
-            line=mal_name + tabs + each_ip + tabs + port + tabs + source + tabs + today + "\n"
-            MalOutput.write(line)
+            MalOutput.write( alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today+"\n"))
     MalOutput.close()
 
 
@@ -44,9 +46,6 @@ def createOutput():
 #sourceFetch()
 sourceParse()
 createOutput()
-#print structshape(blocklist) 
-#for key, value in blocklist.items():
-#    print str(key) + "   " + str(value) + "\n"
 
 
 

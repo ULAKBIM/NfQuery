@@ -16,19 +16,22 @@ cursor.execute(get_node_information)
 rows=cursor.fetchall()
 output=open("outputs/UcBilgileri","w")
 
-
-#head="%-*s%*s"
-head="%-*s%-*s%*s"
+head="%-*s%-*s%-*s%-*s%*s"
 column1_width=15
 column2_width=20
-column3_width=15
+column3_width=20
+column4_width=20
+column5_width=20
 
-output.write(head % (column1_width, "ID", column2_width, "Uc", column3_width ,"Network Bilgisi\n"))
+output.write(head % (column1_width, "ID", column2_width, "Uc_kisa", column3_width ,"Network Bilgisi", column4_width, "Uc_uzun", column5_width, "MailAddress\n"))
+
 for row in rows:
     Node["id"]=row[0] 
     Node["shortname"]=row[1] 
     Node["longname"]=row[2] 
-    # get node block ips
+    get_mail_addresses="SELECT eposta FROM anket_sorumlular WHERE id=" + str(Node["id"]);
+    cursor.execute(get_mail_addresses)
+    Node["mailaddr"]=cursor.fetchone()
     get_block_id_info="SELECT block_id FROM Nodes_Blocks WHERE node_id=" + str(Node["id"]);
     cursor.execute(get_block_id_info)
     blockids=cursor.fetchall()
@@ -45,13 +48,12 @@ for row in rows:
             network_count=(ip[4]-ip[3]+1)/256
             if network_count == 256:
                 network=ip[1] + "/16"
-                output.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, (network + "\n")))
+                output.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["longname"]), column5_width, str(Node["mailaddr"])+"\n"))
             else:
                 block=ip[1].split(".")
                 for i in range(0,network_count):
-                    network=block[0] + "." + block[1] + "." + str(int(block[2])+i) + "." + block[3] + "/24 "
-                    output.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, (network + "\n")))
-            print Node["longname"] + " " + network + "\n"
+                    network=block[0] + "." + block[1] + "." + str(int(block[2])+i) + "." + block[3] + "/24"
+                    output.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["longname"]), column5_width, str(Node["mailaddr"])+"\n"))
 
 
 output.close()
