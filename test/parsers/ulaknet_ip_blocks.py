@@ -47,7 +47,6 @@ for row in rows:
         cursor.execute(get_ip_block_info)
         ips=cursor.fetchall()
         for ip in ips:
-            #print ip[1], ip[2], ip[3], ip[4]
             network_count=(ip[4]-ip[3]+1)/256
             if network_count == 256:
                 network=ip[1] + "/16"
@@ -57,8 +56,6 @@ for row in rows:
                 for i in range(0,network_count):
                     network=block[0] + "." + block[1] + "." + str(int(block[2])+i) + "." + block[3] + "/24"
                     output.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
-
-
 output.close()
 cursor.close()
 db.close()
