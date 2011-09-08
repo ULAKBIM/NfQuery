@@ -10,24 +10,41 @@ db = MySQLdb.connect("localhost","nfquery","nf1!","ulaknet")
 cursor = db.cursor()
 
 # get node information
-get_node_information="SELECT id,short_name,long_name FROM Nodes"
+get_node_information="SELECT id,short_name,long_name,router FROM Nodes"
 Node={}
 cursor.execute(get_node_information)
 rows=cursor.fetchall()
-output=open("outputs/UcBilgileri","w")
 
+# output file for each router
+
+# ulakhuawei -> Ankara
+ankara=open("outputs/UcBilgileri.ankara","w")
+## izmirhuawei -> Izmir
+izmir=open("outputs/UcBilgileri.izmir","w")
+## itugsr, ituhuawei -> Istanbul
+istanbul=open("outputs/UcBilgileri.istanbul","w")
+## konya, ulakgsr vs. -> Others
+others=open("outputs/UcBilgileri.others","w")
+
+
+# File print formatting 
 head="%-*s%-*s%-*s%*s"
 column1_width=15
 column2_width=20
 column3_width=25
 column4_width=20
 
-output.write(head % (column1_width, "ID", column2_width, "Uc_kisa", column3_width ,"Network Bilgisi", column4_width, "MailAddress\n"))
+
+# Writing the header of the File
+ankara.write(head % (column1_width, "ID", column2_width, "Uc_kisa", column3_width ,"Network Bilgisi", column4_width, "MailAddress\n"))
+izmir.write(head % (column1_width, "ID", column2_width, "Uc_kisa", column3_width ,"Network Bilgisi", column4_width, "MailAddress\n"))
+istanbul.write(head % (column1_width, "ID", column2_width, "Uc_kisa", column3_width ,"Network Bilgisi", column4_width, "MailAddress\n"))
 
 for row in rows:
     Node["id"]=row[0] 
     Node["shortname"]=row[1] 
     Node["longname"]=row[2] 
+    Node["router"]=row[3] 
     get_mail_addresses="SELECT email FROM Responsibles WHERE id=" + str(Node["id"])
     cursor.execute(get_mail_addresses)
     mailaddr=cursor.fetchone()
@@ -50,13 +67,33 @@ for row in rows:
             network_count=(ip[4]-ip[3]+1)/256
             if network_count == 256:
                 network=ip[1] + "/16"
-                output.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+                if Node["router"]=="ulakhuawei":
+                    ankara.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+                elif Node["router"]=="izmirhuawei":
+                    izmir.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+                elif Node["router"]=="ituhuawei" or Node["router"]=="itugsr":
+                    istanbul.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+                else:
+                    others.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+
             else:
                 block=ip[1].split(".")
                 for i in range(0,network_count):
                     network=block[0] + "." + block[1] + "." + str(int(block[2])+i) + "." + block[3] + "/24"
-                    output.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
-output.close()
+                    if Node["router"]=="ulakhuawei":
+                        ankara.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+                    elif Node["router"]=="izmirhuawei":
+                        izmir.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+                    elif Node["router"]=="ituhuawei" or Node["router"]=="itugsr":
+                        istanbul.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+                    else:
+                        others.write(head % (column1_width, Node["id"], column2_width, Node["shortname"], column3_width, network , column4_width, str(Node["mailaddr"])+"\n"))
+
+
+ankara.close()
+izmir.close()
+istanbul.close()
+others.close()
 cursor.close()
 db.close()
 
