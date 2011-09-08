@@ -1,13 +1,16 @@
-#aMaDa Blocklist
-#DNS-BH Malware Domain Blocklist
-#Malc0de database
-#Malware Domain List
-#MalwareURL
-#ParetoLogic URL Clearing House
-#Zeus/SpyEye Tracker
-#CBL (Composite Blocking List)
-#SpamCop
-#The Spamhaus Project Datafeed
+
+___SourceName______                        _IP_          Domain          Port        ThreatType      
+   
+#aMaDa Blocklist                            X              X               -             X
+#DNS-BH Malware Domain Blocklist            -              -               -             -        // Gives output in BIND file format
+#Malc0de database                           X              -               -             -        // Also gives output in BIND file format
+#Malware Domain List                        X              -               -             -        // Have many lists but there is no update time for the blocklits file!
+#MalwareURL                                 X              X               ?             ?        // Needs registration
+#ParetoLogic URL Clearing House             -              -               -             - 
+#Zeus/SpyEye Tracker                        X              X               -             X        // There is another proactive listing that can be used in future.
+#CBL (Composite Blocking List)              -              -               -             -        // Couldnn't find anything useful
+#SpamCop                                    -              -               -             -        // Gives output for mail servers.
+#The Spamhaus Project Datafeed              -              -               -             -        // Gives output for mail servers and commercial.
 DSHIELD
 Arbor ATLAS
 Shadowserver Foundation
