@@ -19,13 +19,12 @@ ___SourceName______                        _IP_          Domain          Port   
 #SGnet                                      -              -               -             -        // No data and No reports link
 #AusCERT                                    -              -               -             -        // No data and No reports link
 #ISC pDNS                                   -              -               -             -        // No data and No reports link 
-
-NoAH					   -              -                -             -        http://www.fp6-noah.org/
-FIRE					   -              -           	   -             -        http://maliciousnetworks.org Top 20 Malicious Autonomous Systems
-EXPOSURE				   -              -                -             -        http://www.securityexposure.com/
-HoneySpider Network			   -              -                -             -        http://www.honeyspider.net/
-ARAKIS					   -		  -		   X		 -        http://www.arakis.pl/en/tc.html , port, protocol, snort signature
-Google Safe Browsing Alerts		   -              -                -             -        Safe Browsing Alerts for Network Administrators allows 	autonomous system (AS) administrators to register to receive Google Safe Browsing notifications. The goal is to provide network administrators with information of malicious content that is being hosted on their networks.
-Team Cymru - TC Console                    -              -                -             -
-Team Cymru - Flow Sonar                    -              -                -             -
+#NoAH					                    -              -               -             -        http://www.fp6-noah.org/
+#FIRE					                    -              -           	   -             -        http://maliciousnetworks.org Top 20 Malicious Autonomous Systems
+#EXPOSURE				                    -              -               -             -        http://www.securityexposure.com/
+#HoneySpider Network	                    -              -               -             -        http://www.honeyspider.net/
+#ARAKIS					                    -		       -		       X		     -        http://www.arakis.pl/en/tc.html , port, protocol, snort signature
+#Google Safe Browsing Alerts		        -              -               -             -        Safe Browsing Alerts for Network Administrators allows 	autonomous system (AS) administrators to register to receive Google Safe Browsing notifications. The goal is to provide network administrators with information of malicious content that is being hosted on their networks.
+#Team Cymru - TC Console                    -              -               -             -
+#Team Cymru - Flow Sonar                    -              -               -             -
 
