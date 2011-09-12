@@ -12,6 +12,7 @@ class Query():
         port           : Port Information 
         source_name    : Selected security source name for exm : amada.ch or spyeyetracker
         threat_type    : Type of the threat such as Botnet, SPAM, DNS Blocklist etc.
+        threat_desc    : Name of the threat such as FAKE-AV, Spyeye, Zeus, AmadaBlocklist etc.
         creation_time  : Creation time of this query that will be used when checking
                          if there is an update for the created query
 
@@ -28,5 +29,6 @@ class Query():
         self.port = port
         self.source_name = source_name
         self.threat_type = threat_type
+        self.threat_name = threat_name 
         self.creation_time = creation_time
 
