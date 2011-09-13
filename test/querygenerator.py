@@ -37,13 +37,6 @@ def generateQuery(source_name, threat_type, threat_desc, creation_time, ip=None,
     if (port is not None):
         # Insert information into query table
         ################
-        ################
-        ################
-        ################
-        ################
-        ################
-        ################
-        ################
         print 'port'
     else:
         # Insert information into query table

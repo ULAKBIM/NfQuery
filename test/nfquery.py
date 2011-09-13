@@ -2,6 +2,7 @@
 
 from datetime import date
 import os
+from query import connectDB
 
 # define global paths
 nfquery = "/usr/local/nfquery/"

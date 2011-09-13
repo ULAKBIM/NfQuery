@@ -4,6 +4,8 @@
 
 from datetime import date
 import os
+from querygenerator import generateQuery
+
 
 nfquery = "/usr/local/nfquery/"
 sourcepath = nfquery + "sources/amada/"
@@ -43,7 +45,7 @@ def createOutput():
             MalOutput.write( alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today+"\n"))
     MalOutput.close()
 
-
+def 
 
 #sourceFetch()
 sourceParse()
