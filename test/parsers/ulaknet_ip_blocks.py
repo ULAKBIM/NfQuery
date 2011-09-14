@@ -1,30 +1,31 @@
-#!/usr/local/bin/python
+#!/usr/bin/python
 
 import MySQLdb
-import sys
 import re
 
 # Open database connection
-db = MySQLdb.connect("localhost","nfquery","nf1!","ulaknet")
+db = MySQLdb.connect("193.140.83.112","spuf","1022alperen","ulaknet2")
 # prepare a cursor object using cursor() method
 cursor = db.cursor()
 
 # get node information
 get_node_information="SELECT id,short_name,long_name,router FROM Nodes"
+
 Node={}
 cursor.execute(get_node_information)
 rows=cursor.fetchall()
 
+
 # output file for each router
 
 # ulakhuawei -> Ankara
-ankara=open("outputs/UcBilgileri.ankara","w")
+ankara=open("./UcBilgileri.ankara","w")
 ## izmirhuawei -> Izmir
-izmir=open("outputs/UcBilgileri.izmir","w")
+izmir=open("./UcBilgileri.izmir","w")
 ## itugsr, ituhuawei -> Istanbul
-istanbul=open("outputs/UcBilgileri.istanbul","w")
+istanbul=open("./UcBilgileri.istanbul","w")
 ## konya, ulakgsr vs. -> Others
-others=open("outputs/UcBilgileri.others","w")
+others=open("./UcBilgileri.others","w")
 
 
 # File print formatting 
