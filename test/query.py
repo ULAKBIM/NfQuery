@@ -6,7 +6,6 @@ class Query():
         
         1) Define a JSON schema for the query data structure
         
-        queryid        : Index of the query 
         ip             : Aggregated ip list of the selected blocklist source
         domain         : Aggregated domainlist of the selected blocklist source
         port           : Port Information 
@@ -18,17 +17,15 @@ class Query():
 
     '''
 
-    def __init__(self, queryid, source_name, threat_type, creation_time, 
+    def __init__(self, source_name, threat_type, threat_desc, creation_time, 
                  ip=None, domain=None, port=None):
-        self.queryid = queryid
-        if (ip is None) and (domain is None):
-            sys.exit("both ip and domain can not be EMPTY or None at the same time\nyou have to set at least one of them\n")
-        else:
-            self.ip = ip
-            self.domain = domain
+        if (ip is None) and (domain is None)  and ( port is None):
+            sys.exit("both 'ip', 'domain' and 'port' can not be EMPTY or None at the same time\nyou have to set at least one of them\n")
+        self.ip = ip
+        self.domain = domain
         self.port = port
         self.source_name = source_name
         self.threat_type = threat_type
-        self.threat_name = threat_name 
+        self.threat_desc = threat_desc 
         self.creation_time = creation_time
 

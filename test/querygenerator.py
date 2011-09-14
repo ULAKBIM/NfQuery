@@ -9,14 +9,14 @@ import MySQLdb
 def connectDB():
     # Open database connection
     db = MySQLdb.connect("localhost","nfquery","nf1!","ulaknet" )
-    # prepare a cursor object using cursor() method
+    db = connectDB()
     cursor = db.cursor()
-    # execute SQL query using execute() method.
-    cursor.execute("SELECT VERSION()")
     # Fetch a single row using fetchone() method.
-    data = cursor.fetchone()
-    print "Database version : %s " % data
-    db.close()    
+                                                  
+    cursor.close()    
+    db.close()
+    # return db object for using outside 
+    #return db
     
 #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__
 #queryfile = open('outputs/test.jason', mode='w')
@@ -30,17 +30,26 @@ def connectDB():
 #print loaded
 
 
-def generateQuery(source_name, threat_type, threat_desc, creation_time, ip=None, domain=None, port=None):
+def generateQuery(query):
     # it could be only port information
-    if (ip is None) and (domain is None) and (port is None):
+    if (query.ip is None) and (query.domain is None) and (query.port is None):
         sys.exit("both ip,domain and port can not be EMPTY or None at the same time\nyou have to set at least one of them\n")
-    if (port is not None):
-        # Insert information into query table
-        ################
+    if (query.port is not None):
         print 'port'
     else:
-        # Insert information into query table
-        nfquery.connectDB("localhost","nfquery","nf1!","nfquery")
+            
+        
+        
+
+        
+        
+
+
+q = Query("a","b","c","d",ip="192.168.7.6")
+generateQuery(q)
+        
+
+
     
     
     
