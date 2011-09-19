@@ -8,7 +8,7 @@ import sys
 
 # nfquery modules
 from query import Query
-from querygenerator import createIpQuery
+from querygenerator import createQuery
 
 
 nfquery = "/usr/local/nfquery/"
@@ -18,8 +18,7 @@ outputpath = nfquery + "outputs/amada/"
     source_name should be registered to Query Server before using its parser.
 '''
 
-
-output={}
+parsed_info={}
 
 
 def fetchSource(source_link):
@@ -42,20 +41,30 @@ def parseSource(sec_sourcefile):
      109.235.251.49 # Fake-AV                         
      109.235.251.51 # Fake-AV                         
      ------------------------------------------------ 
-     so parser parses the file after the 5th line     
+     so parser parses the file after the 5th line
     '''
 
     today=date.today().isoformat()
-
+   
+    # parse the file line by line an create a dictionary
+    # for passing as threat_name_and_list variable to
+    # createQuery() function.
     for line in source_file.readlines()[5:]:
         ip_address = line.split(" ")[0]
         threat_name = line.split(" ")[2].split("\n")[0]
-        if (threat_name in output.keys()):
-            output[threat_name] = output[threat_name] + " " + ip_address
+        if (threat_name in parsed_info.keys()):
+            parsed_info[threat_name] = parsed_info[threat_name] + " " + ip_address
         else:
-            output[threat_name] = ip_address
-    
-    createQuery("ip", source_name, source_link,  , today)
+            parsed_info[threat_name] = ip_address
+  
+    # Prepare the list of threat types which we have in our source
+
+    # parsed_info
+
+    # We should call the function for each threat_type
+    for t_type in threat_types():
+        createQuery(source_name, source_link, threat_type, 1, parsed_info, today)
+    # query_type = 1 means 'it is a query which provides ip list'
 
 
 #def createOutput(source_name):
