@@ -45,7 +45,7 @@ def createQuery(source_name, source_link, threat_type, query_type, threat_name_a
             source_link          : Download link of the security source
                                    example source_link : "http://amada.abuse.ch/blocklist.php?download=ipblocklist" 
 
-            threat_type          : Type of the given threat name. It must be one of the 
+            threat_type          : Type of the given threat information. It must be one of the 
                                    threat types which are published in nfquery website.
                                    example threat_type : "Malware" 
                                    example threat_type : "Botnet" 

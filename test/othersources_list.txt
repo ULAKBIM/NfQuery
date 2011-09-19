@@ -29,4 +29,7 @@ ___SourceName______                        _IP_          Domain          Port   
 #Team Cymru - Flow Sonar                    -              -               -             -        !!!!!!!!!!
 #
 # CAIDA bisey veriyor mu?
+# http://www.surbl.org/df data feed veriyor
+# http://www.phishtank.com/stats/2006/10/   top ten domain kullanilabilir mi?
+#
 
