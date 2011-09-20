@@ -7,31 +7,21 @@ import os
 import sys 
 
 # nfquery modules
-from query import Query
-from querygenerator import createQuery
-
+from query import query
+from querygenerator import create_query
 
 nfquery = "/usr/local/nfquery/"
 sourcepath = nfquery + "sources/amada/"
 outputpath = nfquery + "outputs/amada/"
-''' 
-    source_name should be registered to Query Server before using its parser.
-'''
 
-parsed_info={}
-
-
-def fetchSource(source_link):
+def fetch_source(source_link):
     os.system("fetch -o " + sourcepath + __file__ + " " + source_link)
 
-
-def parseSource(sec_sourcefile):
-    source_file=open(sec_sourcefile,"r")
-   
+def parse_source(sec_sourcefile):
     '''
      Amada gives information in two columns like that 
      ------------------------------------------------ 
-     amada.output                                     
+     amada.output file
      ------------------------------------------------ 
      AMaDa IP Domain Blocklist                        
      Provided by abuse.ch Malware Database (AMaDa)    
@@ -44,10 +34,13 @@ def parseSource(sec_sourcefile):
      so parser parses the file after the 5th line
     '''
 
+    source_file = open(sec_sourcefile,"r")
+    source_desc = "Amada C&C IP Blocklist"
     today=date.today().isoformat()
+    parsed_info={}
    
-    # parse the file line by line an create a dictionary
-    # for passing as threat_name_and_list variable to
+    # parse the file line by line and create a dictionary
+    # for passing threat_name and output information to
     # createQuery() function.
     for line in source_file.readlines()[5:]:
         ip_address = line.split(" ")[0]
@@ -56,45 +49,47 @@ def parseSource(sec_sourcefile):
             parsed_info[threat_name] = parsed_info[threat_name] + " " + ip_address
         else:
             parsed_info[threat_name] = ip_address
-  
-    # Prepare the list of threat types which we have in our source
 
-    # parsed_info
+    # threat_types = {'Botnet':'', 'Malware':'', 'Spam':'', 'DoS':'', 'Virus':''} but we only 
+    # have botnet so we don;t need  another for loop  
 
-    # We should call the function for each threat_type
-    for t_type in threat_types():
-        createQuery(source_name, source_link, threat_type, 1, parsed_info, today)
-    # query_type = 1 means 'it is a query which provides ip list'
+    # output_type=1 means we give an ip list 
+    for threat_name, ip_address in parsed_info.items():
+        create_query(source_name, source_desc, source_link, "Botnet", threat_name, 1, ip_address, today)
 
 
-#def createOutput(source_name):
-#    today=date.today().isoformat()
-#    source=source_name
-#    port="-"
-#    MalOutput=open(outputpath + "MalOutput.amada","w")
-#    alignment="%-*s%-*s%-*s%-*s%*s"
-#    column1_width=20
-#    column2_width=20
-#    column3_width=15
-#    column4_width=15
-#    column5_width=15
-#    MalOutput.write(alignment % (column1_width, "MalType", column2_width, "MalIPaddress", column3_width, "Port", column4_width, "Source", column5_width, "Date\n"))
-#    for mal_name, mal_ipaddr in blocklist.items():
-#        for each_ip in mal_ipaddr.split(" "):
-#            print alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today) 
-#            MalOutput.write( alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today+"\n"))
-#    MalOutput.close()
 
+    #def createOutput(source_name):
+    #    today=date.today().isoformat()
+    #    source=source_name
+    #    port="-"
+    #    MalOutput=open(outputpath + "MalOutput.amada","w")
+    #    alignment="%-*s%-*s%-*s%-*s%*s"
+    #    column1_width=20
+    #    column2_width=20
+    #    column3_width=15
+    #    column4_width=15
+    #    column5_width=15
+    #    MalOutput.write(alignment % (column1_width, "MalType", column2_width, "MalIPaddress", column3_width, "Port", column4_width, "Source", column5_width, "Date\n"))
+    #    for mal_name, mal_ipaddr in blocklist.items():
+    #        for each_ip in mal_ipaddr.split(" "):
+    #            print alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today) 
+    #            MalOutput.write( alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today+"\n"))
+    #    MalOutput.close()
 
 
 
 
+''' 
+    source_name should be registered to Query Server before using its parser.
+'''
 source_name = "Amada"
 source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
-fetchSource(source_link)
 source_file = sourcepath + "blocklist"
-parseSource(source_file)
-#createOutput()
+
+
+#fetch_source(source_link)
+parse_source(source_file)
 
 
 
