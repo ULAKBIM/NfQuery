@@ -4,7 +4,7 @@ import simplejson
 import MySQLdb
 
 # nfquery imports
-from query import query
+from test.query import query
 
 def connectDB():
     # Open database connection
@@ -38,4 +38,4 @@ def create_query(source_name, source_desc, source_link, threat_type, threat_name
     '''
     myquery = query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time)
     myquery.insert_query() 
-
+    myquery.print_content()

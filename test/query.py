@@ -24,7 +24,7 @@ class query():
                                DNSBlacklist are main example threat types. Other kind of information is default ignored.
                                
  
-        threat_name          : Name of the given threat. It is optional.  Threat name can be the name of any malware,
+        threat_name          : Name of the given threat. It is optional. Threat name can be the name of any malware,
                                botnet or other type of threats indicated in threat_type variable. Example threat names 
                                can be seen below. 
                                example threat_name : "Spyeye"
@@ -60,8 +60,8 @@ class query():
         if (not (4>output_type>0)):
             sys.exit('output_type must be between 1-3, please look at the definition.\n')
         self.source_name = source_name
-        self.source_name = source_desc
-        self.source_name = source_link
+        self.source_desc = source_desc
+        self.source_link = source_link
         self.threat_type = threat_type
         self.threat_name = threat_name
         self.output_type = output_type
@@ -84,17 +84,31 @@ class query():
 
     def insert_ip_query(self):
         '''
-            Insert ip query.
+            Insert ip query to database.
         '''
-        print ' Insert ip query.'
-        pass
+        
 
     def insert_domain_query(self):
-        print ' Insert domain query.'
+        '''
+            Insert domain query to database.
+        '''
         pass
 
     def insert_port_query(self):
-        print ' Insert port query.'
+        '''
+            Insert port query to database.
+        '''
         pass
+
+    def print_content(self):
+        '''
+            Print content of the query attributes.
+        ''' 
+        print self.source_name + self.source_desc + self.source_link + self.threat_type + str(self.threat_name) + str(self.output_type) + self.output + self.creation_time + '\n'
+
+
+
+
+
 
 
