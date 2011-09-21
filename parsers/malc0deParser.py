@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-# Malware Database (malc0de) :: malc0de Balcklist Parser
+# Malware Database (AMaDa) :: AMaDa Blocklist Parser
 
 from datetime import date
 import os
