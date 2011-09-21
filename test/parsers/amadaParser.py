@@ -7,7 +7,7 @@ import os
 import sys 
 
 # nfquery modules
-from test.querygenerator import create_query
+from querygenerator import create_query
 
 nfquery = "/usr/local/nfquery/"
 sourcepath = nfquery + "sources/amada/"

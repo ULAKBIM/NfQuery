@@ -4,7 +4,7 @@ import simplejson
 import MySQLdb
 
 # nfquery imports
-from test.query import query
+from query import query
 
 def connectDB():
     # Open database connection
