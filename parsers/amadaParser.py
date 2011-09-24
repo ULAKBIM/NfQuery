@@ -5,6 +5,7 @@
 from datetime import date
 import os
 import sys 
+sys.path.append("..")
 
 # nfquery modules
 from querygenerator import create_query
