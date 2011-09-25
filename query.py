@@ -10,25 +10,26 @@ from nfquery import db
 # temporary imports
 from pprint import pprint
 
-
-# IP address manipulation functions
-
-def dottedQuadToNum(ip):
-    "convert decimal dotted quad string to long integer"
-    hexn = ''.join(["%02X" % long(i) for i in ip.split('.')])
-    return long(hexn, 16)
-
-def numToDottedQuad(n):
-    "convert long int to dotted quad string"
-    
-    d = 256 * 256 * 256
-    q = []
-    while d > 0:
-        m,n = divmod(n,d)
-        q.append(str(m))
-        d = d/256
-
-    return '.'.join(q)
+# ------------------------------------------------------------ ##
+# IP address manipulation functions                             #
+                                                                #
+def dottedQuadToNum(ip):                                        #
+    "convert decimal dotted quad string to long integer"        #
+    hexn = ''.join(["%02X" % long(i) for i in ip.split('.')])   #
+    return long(hexn, 16)                                       #
+                                                                #
+def numToDottedQuad(n):                                         #
+    "convert long int to dotted quad string"                    #
+                                                                #
+    d = 256 * 256 * 256                                         #
+    q = []                                                      #
+    while d > 0:                                                #
+        m,n = divmod(n,d)                                       #
+        q.append(str(m))                                        #
+        d = d/256                                               #
+                                                                #
+    return '.'.join(q)                                          #
+# ------------------------------------------------------------ ##
 
 
 class query():
@@ -191,7 +192,7 @@ class query():
         print query_id[0]
         for ip in self.output.split(' '):
             "convert decimal dotted quad string to long integer"
-            # Check if we already have this ip
+            # Calculate the decimal type of ip and check if we already have it
             ip_int = dottedQuadToNum(ip)
             try:
                 cursor.execute( """ select ip_id from ip where ip_int=%ld""" % (ip_int) )

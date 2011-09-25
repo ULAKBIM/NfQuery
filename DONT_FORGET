@@ -1,0 +1,9 @@
+
+    * The source table should have NRENs and Honeypots in a way and they 
+    should provide at least threat_Type for their outputs
+
+    * "The registration of the new source process" should be defined.
+
+    * Should think about the database handling from code; We can use PySQLPool
+    but it could be confusing.
+    
