@@ -78,8 +78,6 @@ def parse_source(sec_sourcefile):
     #    MalOutput.close()
 
 
-
-
 ''' 
     source_name should be registered to Query Server before using its parser.
 '''
