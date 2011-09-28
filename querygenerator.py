@@ -27,11 +27,6 @@ def create_query(source_name, source_desc, source_link, threat_type, threat_name
       Get query information from parser and pass to the Query Generator.
     '''
     ####################### TEMPORARY CODE FOR TESTING #######################
-    database = db("localhost","nfquery","nf1!","ulaknet")
-    dbcursor = database.connect_db()
-    #dbcursor.execute("show variables like '%VERSION%';")
-    #print dbcursor.fetchall()
-    database.close_db()
     ####################### TEMPORARY CODE FOR TESTING #######################
     myquery = query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time)
     myquery.insert_query()
