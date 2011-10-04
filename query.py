@@ -100,7 +100,9 @@ class query():
         self.creation_time = creation_time
 
 
-
+    ## ------------------------------------------------------------ ##
+    ##                      INSERT FUNCTIONS                        ##
+    ## ------------------------------------------------------------ ##
     def insert_query(self):
         '''
             Insert query information to database.
@@ -236,6 +238,13 @@ class query():
             Insert port query to database.
         '''
         pass
+
+    ## ------------------------------------------------------------ ##
+    ##                      INSERT FUNCTIONS                        ##
+    ## ------------------------------------------------------------ ##
+    def get_query(self):
+
+
 
     def print_content(self):
         '''

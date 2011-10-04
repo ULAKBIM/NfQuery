@@ -6,4 +6,68 @@
 
     * Should think about the database handling from code; We can use PySQLPool
     but it could be confusing.
-    
+
+    * Example Commenting and Coding Style for Python Code
+        ---------------------------------------------------------------------------    
+        import socket
+        import select
+        import sys
+        import os
+        try:
+        import threading
+        except ImportError:
+        import dummy_threading as threading
+        
+        __all__ = ["TCPServer","UDPServer","ForkingUDPServer","ForkingTCPServer",
+                   "ThreadingUDPServer","ThreadingTCPServer","BaseRequestHandler",
+                   "StreamRequestHandler","DatagramRequestHandler",
+                   "ThreadingMixIn", "ForkingMixIn"]
+        if hasattr(socket, "AF_UNIX"):
+            __all__.extend(["UnixStreamServer","UnixDatagramServer",
+                            "ThreadingUnixStreamServer",
+                            "ThreadingUnixDatagramServer"])
+        
+        class BaseServer:
+        
+            """Base class for server classes.
+            
+            Methods for the caller:
+            
+            - __init__(server_address, RequestHandlerClass)
+            - serve_forever(poll_interval=0.5)
+            - shutdown()
+            - handle_request() # if you do not use serve_forever()
+            - fileno() -> int # for select()
+            
+            Methods that may be overridden:
+            
+            - server_bind()
+            - server_activate()
+            - get_request() -> request, client_address
+            - handle_timeout()
+            - verify_request(request, client_address)
+            - server_close()
+            - process_request(request, client_address)
+            - shutdown_request(request)
+            - close_request(request)
+            - handle_error()
+            
+            Methods for derived classes:
+            
+            - finish_request(request, client_address)
+            
+            Class variables that may be overridden by derived classes or
+            instances:
+            
+            - timeout
+            - address_family
+            - socket_type
+            - allow_reuse_address
+            
+            Instance variables:
+            
+            - RequestHandlerClass
+            - socket
+            
+            """ 
+        ---------------------------------------------------------------------------
