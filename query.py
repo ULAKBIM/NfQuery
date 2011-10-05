@@ -10,6 +10,10 @@ from nfquery import db
 # temporary imports
 from pprint import pprint
 
+
+__all__ = ['query']
+
+
 # ------------------------------------------------------------ ##
 # IP address manipulation functions                             #
                                                                 #
@@ -178,7 +182,7 @@ class query():
         else:
             self.insert_port_query(cursor, query_id)
 
-        close_database_cursor()
+        end_database_cursor()
      
     def insert_ip_query(self,cursor,query_id):
         '''
@@ -240,10 +244,30 @@ class query():
         pass
 
     ## ------------------------------------------------------------ ##
-    ##                      INSERT FUNCTIONS                        ##
+    ##                      GET FUNCTIONS                           ##
     ## ------------------------------------------------------------ ##
-    def get_query(self):
+    def get_query_information(self):
+        '''
+            gets e query information
+        '''
+        
+        cursor = get_database_cursor()
 
+        # Begin with try to catch database exceptions.
+        try:
+            # Check if we have this source or not.
+            statement = """select * from source where source_name=%s""" % (self.source_name) 
+            cursor.execute(statement)
+            source_id = cursor.fetchone()
+            if source_id is None:
+                sys.exit("Wrong source name is given! Please check if you give one of the source names published in the NfQuery Web Site" )
+            
+            # Check if we have this threat type or not.
+            statement = """select threat_id from threat where threat_type=%s""" % (self.threat_type)
+            cursor.execute( )
+            threat_id = cursor.fetchone()
+        except Exception:
+            print 'exception happened'
 
 
     def print_content(self):
