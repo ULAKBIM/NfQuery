@@ -7,92 +7,38 @@ import SocketServer
 import argparse
 import MySQLdb
 
+# nfquery imports
+from db import db
+from querygenerator import *
+
+# List of stuff accessible to importers of this module.
 
 # global paths
 nfquery = "/usr/local/nfquery/"
 sourcepath = nfquery + "sources/amada/"
 outputpath = nfquery + "outputs/amada/"
 
+#q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__
+#queryfile = open('outputs/test.jason', mode='w')
+#queryfile.writelines(simplejson.dumps(q, indent=4)+"\n")
+#queryfile.write(simplejson.dumps(q, indent=4))
+#queryfile.write(simplejson.dumps(q, indent=4))
+#queryfile.close()
+#
+#anotherfile=open('test.jason', mode='r')
 
-class db:
+#loaded = simplejson.load(anotherfile)
+#print loaded
+
+
+class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
     '''
-        db class deals with the db operations. It gets the database configuration parameters
-        and initiates database connection instance. The attributes and functions described 
-        below.
+        The RequestHandler class for our server.
 
-         ----------------
-        | Attributes     |
-         ----------------
-
-        db_host : 
-
-        db_name :
-
-        db_user :    
-
-        db_password : 
-
-         ----------------
-        | Functions      |
-         ----------------
-        
-        connect_db : 
-
-        get_connection_instance:
-
+        It is instantiated once per connection to the server, and must
+        override the handle() method to implement communication to the
+        client.
     '''
-    def __init__(self, db_host, db_user, db_password, db_name):
-        self.db_host = db_host
-        self.db_name = db_name
-        self.db_user = db_user
-        # We should do something for storing the password, It should be encrypted or hashed?
-        self.db_password = db_password
-
-    def connect_db(self):
-        '''
-           Returns a mysql connection cursor object.
-        '''
-        try:
-           self.connection = MySQLdb.connect(self.db_host, self.db_user, self.db_password, self.db_name)
-           self.cursor = self.connection.cursor()
-        except MySQLdb.Error, e:
-           #print "Error %d: %s" % (e.args[0], e.args[1])
-           sys.exit ("Error %d: %s" % (e.args[0], e.args[1]))
-        return self.cursor
-
-    def close_db(self):
-        '''
-           Commit changes to database and close the connection.
-        '''
-        self.connection.commit()
-        self.cursor.close()
-        self.connection.close()
-
-
-    #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__
-    #queryfile = open('outputs/test.jason', mode='w')
-    #queryfile.writelines(simplejson.dumps(q, indent=4)+"\n")
-    #queryfile.write(simplejson.dumps(q, indent=4))
-    #queryfile.write(simplejson.dumps(q, indent=4))
-    #queryfile.close()
-    #
-    #anotherfile=open('test.jason', mode='r')
-    
-    #loaded = simplejson.load(anotherfile)
-    #print loaded
-
-
-
-
-class MyTCPHandler(SocketServer.BaseRequestHandler):
-    """
-    The RequestHandler class for our server.
-
-    It is instantiated once per connection to the server, and must
-    override the handle() method to implement communication to the
-    client.
-    """
-
     def handle(self):
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
@@ -101,11 +47,17 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         # just send back the same data, but upper-cased
         self.request.send(self.data.upper())
 
+class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    daemon_threads=True
+    allow_reuse_address=True
+    def __init__(self, server_address, RequestHandlerClass):
+        SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
+
 
 if __name__ == "__main__":
     # Parse Command Line Arguments
     parser = argparse.ArgumentParser(description="Process arguments")
-    parser.add_argument('conf_file', metavar="--conf", type=str, nargs='?', help='nfquery configuration file'  )
+    parser.add_argument('conf_file', metavar="--conf", type=str, nargs='?', help='nfquery configuration file')
     args = parser.parse_args()
 
     # Parse Configuration File
@@ -113,21 +65,28 @@ if __name__ == "__main__":
     # We pass nfquery.conf file to Config object to parse general configuration 
     # parameters of NfQuery
     nffile=Config(args.conf_file)
-    database = db(nffile.DB_HOST, nffile.DB_USER, nffile.DB_PASSWORD, nffile.DB_NAME)
-    dbcursor = database.connect_db()
-    #dbcursor.execute("show variables like '%VERSION%';")
-    #print dbcursor.fetchall()
-    database.close_db()
-    
+    try:
+        database = db(nffile.DB_HOST, nffile.DB_USER, nffile.DB_PASSWORD, nffile.DB_NAME)
+        cursor1 = database.get_database_cursor()
+        cursor2 = database.get_database_cursor()
+    except MySQLdb.Error, e:
+        #print "Error %d: %s" % (e.args[0], e.args[1])
+        sys.exit ("Error %d: %s" % (e.args[0], e.args[1]))
 
-#    HOST, PORT = "localhost", 7777
-#
-#    # Create the server, binding to localhost on port 9999
-#    server = SocketServer.TCPServer((HOST, PORT), MyTCPHandler)
-#
-#    # Activate the server; this will keep running until you
-#    # interrupt the program with Ctrl-C
-#    server.serve_forever()
+    subscription_list = generateSourceSubscriptionPackets(1, cursor1, cursor2)
+    for i in subscription_list:
+        print i.__dict__
+    
+    database.end_database_cursor()
+
+    #HOST, PORT = "localhost", 7777
+
+    ## Create the server, binding to localhost on port 9999
+    #server = SocketServer.ThreadingTCPServer((HOST, PORT), ThreadingTCPRequestHandler)
+ 
+    ## Activate the server; this will keep running until you
+    ## interrupt the program with Ctrl-C
+    #server.serve_forever()
 
 
 
