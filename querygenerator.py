@@ -40,7 +40,7 @@ def generateSourceSubscriptionPackets(source_id, cursor1, cursor2):
         cursor.execute("""select source_name from source where source_id=%d""" % (source_id) )
         source_information = cursor.fetchone()
         if not source_information:
-            sys.exit("There is no source registered in the database with this name." ) 
+            sys.exit("There is no source registered in the database with this name.") 
         source_name = source_information
         # Check if we have any query for this source
         cursor.execute("""select query_id from query where source_id=%d""" % (source_id) )
@@ -58,12 +58,13 @@ def generateSourceSubscriptionPackets(source_id, cursor1, cursor2):
                 query_id_list = othercursor.fetchall()
                 if query_id_list:
                     subscription_list = []
+                    subscription_list.append(subscription(source_name, query_id_list, '2011'))
+                    ##### we can gather subscription information now. #####   
                     for (query_id,) in query_id_list:
                         othercursor.execute(""" select ip.ip from query,query_ip,ip where query.query_id=%s and query.query_id=query_ip.query_id and query_ip.ip_id=ip.ip_id""", (query_id))
                         ip_list = othercursor.fetchall()
                         # subscription_desc, subs
                         # Generate the subscription object
-                        subscription_list.append(subscription(source_name, query_id_list, '2011'))
     except Exception, e:
         print 'NOT!'
         import sys
@@ -72,7 +73,6 @@ def generateSourceSubscriptionPackets(source_id, cursor1, cursor2):
     
     return subscription_list        
 
-    
 
 def generateThreatSubscription(source_id, threat_id):
     pass
