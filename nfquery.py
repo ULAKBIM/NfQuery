@@ -79,14 +79,14 @@ if __name__ == "__main__":
     
     database.end_database_cursor()
 
-    #HOST, PORT = "localhost", 7777
+    HOST, PORT = "localhost", 7777
 
     ## Create the server, binding to localhost on port 9999
-    #server = SocketServer.ThreadingTCPServer((HOST, PORT), ThreadingTCPRequestHandler)
+    server = SocketServer.ThreadingTCPServer((HOST, PORT), ThreadingTCPRequestHandler)
  
     ## Activate the server; this will keep running until you
     ## interrupt the program with Ctrl-C
-    #server.serve_forever()
+    server.serve_forever()
 
 
 
