@@ -33,38 +33,43 @@ def create_query(source_name, source_desc, source_link, threat_type, threat_name
     myquery.print_content()
 
 def generateSourceSubscriptionPackets(source_id, cursor1, cursor2):
+    '''
+        # Check if such source exist
+        # Check if we have any query for this source
+        # Generate a list for adding query classes into it.
+        # Fetch all information related with this source and generate query packet.
+        # Fetch query information
+    '''
     try:
         cursor = cursor1
         othercursor  = cursor2
-        # Check if such source exist
-        cursor.execute("""select source_name from source where source_id=%d""" % (source_id) )
+        statement = """select source_name from source where source_id=%d""" % (source_id)
+        cursor.execute(statement)
         source_information = cursor.fetchone()
         if not source_information:
             sys.exit("There is no source registered in the database with this name.") 
         source_name = source_information
-        # Check if we have any query for this source
-        cursor.execute("""select query_id from query where source_id=%d""" % (source_id) )
+        statement = """select query_id from query where source_id=%d""" % (source_id)
+        cursor.execute( )
         query_id = cursor.fetchall()
         if query_id is None:
             sys.exit("We don't have any query for this source.") 
         else:
-            # Generate a list for adding query classes into it.
             query_list = []
-            # Fetch all information related with this source and generate query packet.
             for qid in query_id:
-                # Fetch query information
-                statement = ("""SELECT subscription_query.query_id FROM subscription,subscription_query WHERE subscription.subscription_desc='%s' AND subscription.subscription_id=subscription_query.subscription_id""" % (source_name))
+                statement = (                                                                                                                                                                                                    """SELECT subscription_query.query_id FROM subscription,subscription_query                                                                                                                             WHERE subscription.subscription_desc='%s'                                                                                                                                                           AND subscription.subscription_id=subscription_query.subscription_id                                                                                                                              """                                                                                                                                                                                                 % (source_name)                                                                                                                                                                                    )
                 othercursor.execute(statement)
                 query_id_list = othercursor.fetchall()
                 if query_id_list:
                     subscription_list = []
                     subscription_list.append(subscription(source_name, query_id_list, '2011'))
-                    ##### we can gather subscription information now. #####   
-                    for (query_id,) in query_id_list:
-                        othercursor.execute(""" select ip.ip from query,query_ip,ip where query.query_id=%s and query.query_id=query_ip.query_id and query_ip.ip_id=ip.ip_id""", (query_id))
-                        ip_list = othercursor.fetchall()
-                        # subscription_desc, subs
-                        # Generate the subscription object
+                    ###### gather subscription information #####   
+                    #for (query_id,) in query_id_list:
+                    #    othercursor.execute(""" select ip.ip from query,query_ip,ip where query.query_id=%s and query.query_id=query_ip.query_id and query_ip.ip_id=ip.ip_id""", (query_id))
+                    #    ip_list = othercursor.fetchall()
+                    #    # subscription_desc, subs
+                    #    # Generate the subscription object
+                    ############################################
     except Exception, e:
         print 'NOT!'
         import sys
