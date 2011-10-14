@@ -1,7 +1,5 @@
 #!/usr/local/bin/python
 
-from db import db as database 
-#from query import query
 
 #----------------------------------------------------------# 
 # Create subscription packets for each subscription        #   
@@ -15,7 +13,6 @@ from db import db as database
 #                                                          #   
 #----------------------------------------------------------#  
 
-
 class subscription():
     def __init__(self, subscription_name, subscription_query_list, subscription_update_time):
         self.subscription_name = subscription_name
@@ -27,5 +24,4 @@ class subscription():
     
     def generateJSONPacketsFromSubscription():
         pass
-
 
