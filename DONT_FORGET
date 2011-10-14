@@ -4,7 +4,7 @@
 
     * "The registration of the new source process" should be defined.
 
-    * Should think about the database handling from code; We can use PySQLPool
+    * Should think about the database handling from code; We can use PySQLPool or SQLAlchemy
     but it could be confusing.
 
     * Example Commenting and Coding Style for Python Code

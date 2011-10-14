@@ -134,7 +134,7 @@ class query():
             
         '''
         
-        cursor = get_database_cursor()
+        cursor = 
 
         # Begin with try to catch database exceptions.
         try:
