@@ -40,7 +40,6 @@ class nfquery(multiprocessing.Process):
 
 
 
-
 # ------------------------------------------------------------------------------------- #
                         ####################### 
                         #       NETWORKING    #
@@ -108,7 +107,6 @@ if __name__ == "__main__":
     #subscription_list = generateSourceSubscriptionPackets(1, cursor1, cursor2)
     #for i in subscription_list:
     #    print i.__dict__
-
 
 
     # Server Start
