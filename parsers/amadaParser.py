@@ -78,16 +78,14 @@ def parse_source(sec_sourcefile):
     #    MalOutput.close()
 
 
-''' 
-    source_name should be registered to Query Server before using its parser.
-'''
-source_name = "Amada"
-source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
-source_file = sourcepath + "blocklist"
-
-
-#fetch_source(source_link)
-parse_source(source_file)
-
-
-
+if __name__ == "__main__":
+    ''' 
+        source_name should be registered to Query Server before using its parser.
+    '''
+    source_name = "Amada"
+    source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
+    source_file = sourcepath + "blocklist"
+    
+    #fetch_source(source_link)
+    parse_source(source_file)
+    
