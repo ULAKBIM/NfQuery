@@ -17,17 +17,8 @@ from querygenerator import *
 
 # List of stuff accessible to importers of this module.
 
-#q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__
-#queryfile = open('outputs/test.jason', mode='w')
-#queryfile.writelines(simplejson.dumps(q, indent=4)+"\n")
-#queryfile.write(simplejson.dumps(q, indent=4))
-#queryfile.write(simplejson.dumps(q, indent=4))
-#queryfile.close()
-#
-#anotherfile=open('test.jason', mode='r')
 
-#loaded = simplejson.load(anotherfile)
-#print loaded
+
 
 
 # ------------------------------------------------------------------------------------- #
@@ -73,7 +64,7 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
                         ####################### 
 
 if __name__ == "__main__":
-    multiprocessing.log_to_stderr(logging.DEBUG)
+    #multiprocessing.log_to_stderr(logging.DEBUG)
     # Parse Command Line Arguments
     parser = argparse.ArgumentParser(description="Process arguments")
     parser.add_argument('conf_file', metavar="--conf", type=str, nargs='?', help='nfquery configuration file')
@@ -87,18 +78,17 @@ if __name__ == "__main__":
     outputpath = nffile.PATH + "/outputs/amada/"
 
     # Database Connection Start
-    try:
-        database = db(nffile.DB_HOST, nffile.DB_USER, nffile.DB_PASSWORD, nffile.DB_NAME)
-        connection = database.get_connection()
-        cursor = connection.cursor()
-    except MySQLdb.Error, e:
-        sys.exit ("Error %d: %s" % (e.args[0], e.args[1]))
+    database = db(nffile.DB_HOST, nffile.DB_USER, nffile.DB_PASSWORD, nffile.DB_NAME)
+    connection = database.get_database_connection()
+    cursor = connection.cursor()
+    cursor.close()
+    database.give_database_connection()
 
     # Multiprocessing 
-    modules = ["querymanager", "querygenerator", "queryrepository", "scheduler"]
+    #modules = ["querymanager", "querygenerator", "queryrepository", "scheduler"]
 
     #q_manager = QueryManager()
-    q_generator = QueryGenerator(cursor, nffile.Parsers)
+    q_generator = QueryGenerator(nffile.Parsers)
         
     #q_manager.start()
     q_generator.start()
@@ -107,7 +97,6 @@ if __name__ == "__main__":
     #subscription_list = generateSourceSubscriptionPackets(1, cursor1, cursor2)
     #for i in subscription_list:
     #    print i.__dict__
-
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((nffile.HOST, nffile.PORT), ThreadingTCPRequestHandler)
@@ -119,5 +108,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print 'keyboard Interrupt'
         # Database Connection End
-        database.end_connection()
+        database.close_database_connection()
 

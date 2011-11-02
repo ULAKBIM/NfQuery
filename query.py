@@ -5,7 +5,7 @@ import socket, struct
 import MySQLdb
 
 # nfquery import
-from nfquery import db
+from db import *
 
 # temporary imports
 from pprint import pprint
@@ -134,7 +134,7 @@ class query():
             
         '''
         
-        cursor = 
+        cursor = db.get_database_connection()
 
         # Begin with try to catch database exceptions.
         try:

@@ -1,7 +1,6 @@
 #!/usr/local/bin/python
 
 import simplejson 
-import MySQLdb
 import logging
 import multiprocessing
 import sys
@@ -9,6 +8,7 @@ import sys
 # nfquery imports
 from query import query
 from subscription import subscription
+from db import db
 
     # --------------------------- JSON TEST -----------------------------------#
     #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__ #
@@ -33,35 +33,38 @@ class QueryGenerator(multiprocessing.Process):
     #    self.subscription_name = subscription_name
     #    self.subscription_query_list = subscription_query_list
     #    self.subscription_update_time = subscription_update_time
-    
-    def __init__(self, cursor, parsers):
+   
+    # buna bi cozum bulmak lazim boyle lok diye tanimlamayalim, global degiskenlerin oldugu bir listemiz olsun
+    # ya da dictionary, ordan cagiralim
+    parser_path = '/home/serdar/nfquery/parsers'
+
+    def __init__(self, parsers):
         multiprocessing.Process.__init__(self)
-        self.cursor = cursor
         self.parsers = parsers
 
     def run(self):
         print 'In %s' % self.name
         self.executeParsers()
-        self.generateSubscriptionPackets()
+        #self.generateSubscriptionPackets()
         # Routines
         # prepare subscriptions according to existing categories.
-        pass
+        #pass
 
     def executeParsers(self):
         if not self.parsers:
             sys.exit('No parser is found, please check your nfquery.conf file!')
         else:
             parser_list = self.parsers.split(',')
-        if(checkParsers(parser_list)):
+        if(self.checkParsers(parser_list)):
             print 'Parsers are OK, Lets start executing each parser.'
+            #import parsers/*
         else:
             sys.exit('You do something wrong with the parser names.')
             
-
-
-
     def checkParsers(self, parser_list):
         # fetch registered parser names from the database and check them with existing parser file names.
+        connection = db.get_database_connection()
+        cursor = connection.cursor()
         statement = 'select parser_desc from parser'
         cursor.execute(statement)
         registered_parsers = cursor.fetchall()
@@ -74,7 +77,7 @@ class QueryGenerator(multiprocessing.Process):
         # Check for each parser, if it is registered.
         for parser in parser_list:
             if parser in parsers:
-                print 'Parser Exists, OK!'
+                print 'Parser  "%s" Exists, OK!' % parser
             else:
                 return 0
                 #sys.exit('Parser doesn\'t exist, NOT!')
