@@ -94,9 +94,9 @@ class db:
             db.__dbinstance = db.__db(db_host, db_user, db_password, db_name)
             # Store instance reference as the only member in the handle
             self.__dict__['_Singleton__instance'] = db.__dbinstance
-            print 'Creating Database Instance\n'
+            print 'Creating Database Instance'
         else:
-            print 'Using Existing Database Instance\n'
+            print 'Using Existing Database Instance'
 
     @staticmethod
     def get_database_connection():
