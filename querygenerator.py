@@ -41,14 +41,17 @@ class QueryGenerator(multiprocessing.Process):
     def __init__(self, parsers):
         multiprocessing.Process.__init__(self)
         self.parsers = parsers
+        connection = db.get_database_connection()
+        self.cursor = connection.cursor()
 
     def run(self):
-        print 'In %s' % self.name
-        self.executeParsers()
-        #self.generateSubscriptionPackets()
+        self.checkParsers(self.parsers.split(','))
+        #self.executeParsers()
+        self.generateSubscriptionPackets()
         # Routines
         # prepare subscriptions according to existing categories.
         #pass
+
 
     def executeParsers(self):
         if not self.parsers:
@@ -57,17 +60,23 @@ class QueryGenerator(multiprocessing.Process):
             parser_list = self.parsers.split(',')
         if(self.checkParsers(parser_list)):
             print 'Parsers are OK, Lets start executing each parser.'
-            #import parsers/*
+            from parsers.amadaParser import fetch_source, parse_source
+            #source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
+            fetch_source('http://amada.abuse.ch/blocklist.php?download=ipblocklist')
+            #source_file = nfquery + sourcepath + "blocklist"
+            source_file = "/usr/local/nfquery/" + "sources/amada/" + "blocklist"
+            parse_source(source_file)
+            #print locals()
         else:
             sys.exit('You do something wrong with the parser names.')
-            
+
+
     def checkParsers(self, parser_list):
+        logging.info('In %s' % self.name)
         # fetch registered parser names from the database and check them with existing parser file names.
-        connection = db.get_database_connection()
-        cursor = connection.cursor()
         statement = 'select parser_desc from parser'
-        cursor.execute(statement)
-        registered_parsers = cursor.fetchall()
+        self.cursor.execute(statement)
+        registered_parsers = self.cursor.fetchall()
         parsers = ()
         
         # Convert 'tuple of tuples' to 'a single tuple'
@@ -77,23 +86,22 @@ class QueryGenerator(multiprocessing.Process):
         # Check for each parser, if it is registered.
         for parser in parser_list:
             if parser in parsers:
-                print 'Parser  "%s" Exists, OK!' % parser
+                logging.info('Parser  "%s" Exists, OK!' % parser)
             else:
                 return 0
                 #sys.exit('Parser doesn\'t exist, NOT!')
-        return 1        
+        return 1
 
 
     def generateSubscriptionPackets(self):
         '''
            Starts the parsers, generates queries and passes to query manager for releasing.
         '''
-        print 'aaaa'
-        self.generateSourceSubscriptionPackets(1, self.cursor)
         print 'Generating source subscriptions'
-        pass
-    
-    def generateSourceSubscriptionPackets(self, source_id, cursor1):
+        self.generateSourceSubscriptionPackets(1)
+   
+
+    def generateSourceSubscriptionPackets(self, source_id):
         '''
             # Check if such source exist
             # Check if we have any query for this source
@@ -101,32 +109,31 @@ class QueryGenerator(multiprocessing.Process):
             # Fetch all information related with this source and generate query packet.
             # Fetch query information
         '''
-        cursor = cursor1
         try:
             statement = """select source_name from source where source_id=%d""" % (source_id)
-            cursor.execute(statement)
-            source_information = cursor.fetchone()
+            self.cursor.execute(statement)
+            source_information = self.cursor.fetchone()
             if not source_information:
                 sys.exit("There is no source registered in the database with this name.") 
             source_name = source_information
             statement = """select query_id from query where source_id=%d""" % (source_id)
-            cursor.execute(statement)
-            query_id = cursor.fetchall()
+            self.cursor.execute(statement)
+            query_id = self.cursor.fetchall()
             if query_id is None:
-                sys.exit("We don't have any query for this source.") 
+                sys.exit("We don't have any query for this source.")
             else:
                 query_list = []
                 for qid in query_id:
                     statement = (                                                                                                                                                                                                    """SELECT subscription_query.query_id FROM subscription,subscription_query                                                                                                                             WHERE subscription.subscription_desc='%s'                                                                                                                                                           AND subscription.subscription_id=subscription_query.subscription_id                                                                                                                              """                                                                                                                                                                                                 % (source_name)                                                                                                                                                                                    )
-                    cursor.execute(statement)
-                    query_id_list = cursor.fetchall()
+                    self.cursor.execute(statement)
+                    query_id_list = self.cursor.fetchall()
                     if query_id_list:
                         subscription_list = []
                         subscription_list.append(subscription(source_name, query_id_list, '2011'))
                         ###### gather subscription information #####   
                         #for (query_id,) in query_id_list:
-                        #    cursor.execute(""" select ip.ip from query,query_ip,ip where query.query_id=%s and query.query_id=query_ip.query_id and query_ip.ip_id=ip.ip_id""", (query_id))
-                        #    ip_list = cursor.fetchall()
+                        #    self.cursor.execute(""" select ip.ip from query,query_ip,ip where query.query_id=%s and query.query_id=query_ip.query_id and query_ip.ip_id=ip.ip_id""", (query_id))
+                        #    ip_list = self.cursor.fetchall()
                         #    # subscription_desc, subs
                         #    # Generate the subscription object
                         ############################################
@@ -141,7 +148,8 @@ class QueryGenerator(multiprocessing.Process):
     
     def generateThreatSubscription(source_id, threat_id):
         pass
-    
+   
+
     def generateJSONPacketsFromSubscription():
         pass
 
@@ -153,4 +161,4 @@ def create_query(source_name, source_desc, source_link, threat_type, threat_name
     '''
     myquery = query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time)
     myquery.insert_query()
-    myquery.print_content()
+    #myquery.print_content()

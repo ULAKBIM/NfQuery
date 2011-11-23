@@ -16,6 +16,7 @@ __all__ = ['query']
 
 # ------------------------------------------------------------ ##
 # IP address manipulation functions                             #
+# It should be in another file                                  #
                                                                 #
 def dottedQuadToNum(ip):                                        #
     "convert decimal dotted quad string to long integer"        #
@@ -134,26 +135,27 @@ class query():
             
         '''
         
-        cursor = db.get_database_connection()
+        connection = db.get_database_connection()
+        cursor = connection.cursor()
 
         # Begin with try to catch database exceptions.
         try:
             # Check if we have this source or not.
-            statement = """select source_id from source where source_name=%s""" % (self.source_name) 
+            statement = """select source_id from source where source_name='%s'""" % (self.source_name)
             cursor.execute(statement)
             source_id = cursor.fetchone()
             if source_id is None:
                 sys.exit("Wrong source name is given! Please check if you give one of the source names published in the NfQuery Web Site" )
             
             # Check if we have this threat type or not.
-            statement = """select threat_id from threat where threat_type=%s""" % (self.threat_type)
-            cursor.execute( )
+            statement = """select threat_id from threat where threat_type='%s'""" % (self.threat_type)
+            cursor.execute(statement)
             threat_id = cursor.fetchone()
             if threat_id is None:
                 sys.exit( "Wrong threat type is given! Please check if you give one of the threat types published in the NfQuery Web Site" )
             # Check if we have the given threat name for this threat type.
             elif self.threat_name is not None:
-                statement = """select threat_id from threat where threat_name=%s and threat_type=%s""" % (self.threat_name, self.threat_type)
+                statement = """select threat_id from threat where threat_name='%s' and threat_type='%s'""" % (self.threat_name, self.threat_type)
                 cursor.execute(statement) 
                 threat_id = cursor.fetchone()
                 if threat_id is None:
@@ -182,7 +184,9 @@ class query():
         else:
             self.insert_port_query(cursor, query_id)
 
-        end_database_cursor()
+        
+        cursor.close()
+        db.give_database_connection()
      
     def insert_ip_query(self,cursor,query_id):
         '''
@@ -208,7 +212,6 @@ class query():
                 # Create query-ip relation
                 statement = """ insert into query_ip (query_id, ip_id) values(%ld,%ld)""" % (query_id[0], ip_id[0]) 
                 cursor.execute(statement)
-                print 'query is inserted successfully!\n'
 
             except MySQLdb.OperationalError, e:
                 connection.rollback()
@@ -274,11 +277,6 @@ class query():
         '''
             Print content of the query attributes.
         ''' 
-        print self.source_name + self.source_desc + self.source_link + self.threat_type + str(self.threat_name) + str(self.output_type) + self.output + self.creation_time + '\n'
-
-
-
-
-
+        print self.source_name + '\n' + self.source_desc + '\n' + self.source_link + '\n' + self.threat_type + '\n' + str(self.threat_name) + '\n' + str(self.output_type) + '\n' + self.output + '\n' + self.creation_time + '\n' 
 
 

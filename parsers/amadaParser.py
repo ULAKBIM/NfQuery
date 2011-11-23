@@ -10,12 +10,20 @@ sys.path.append("..")
 # nfquery modules
 from querygenerator import create_query
 
+# importable functions 
+__all__ = ['fetch_source', 'parse_source']
+
+# global required variables, they should be changed and edited again!!
 nfquery = "/usr/local/nfquery/"
 sourcepath = nfquery + "sources/amada/"
 outputpath = nfquery + "outputs/amada/"
+source_name = "Amada"
+source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
+source_file = sourcepath + "amada_blacklist"
+
 
 def fetch_source(source_link):
-    os.system("fetch -o " + sourcepath + __file__ + " " + source_link)
+    os.system("fetch -o " + sourcepath + 'amada_blacklist' + " " + source_link)
 
 def parse_source(sec_sourcefile):
     '''
@@ -78,14 +86,25 @@ def parse_source(sec_sourcefile):
     #    MalOutput.close()
 
 
-if __name__ == "__main__":
+def main():
     ''' 
         source_name should be registered to Query Server before using its parser.
     '''
-    source_name = "Amada"
-    source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
-    source_file = sourcepath + "blocklist"
     
     #fetch_source(source_link)
     parse_source(source_file)
+
+
+
+if __name__ == "__main__":
+    print 'calling main'
+    main()    
+    
+    
+    
+    
+    
+    
+    
+    
     

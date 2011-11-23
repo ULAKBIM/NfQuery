@@ -65,6 +65,14 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
 if __name__ == "__main__":
     #multiprocessing.log_to_stderr(logging.DEBUG)
+
+    logging.basicConfig()
+    nfquerylog = logging.getLogger('nfquery')
+    #nfquerylog.setLevel(logging.DEBUG) # set verbosity to show all messages of severity >= DEBUG
+    nfquerylog.setLevel(logging.INFO)
+    nfquerylog.info('Starting NfQuery...')
+    nfquerylog.debug('Parsing command line arguments')
+
     # Parse Command Line Arguments
     parser = argparse.ArgumentParser(description="Process arguments")
     parser.add_argument('conf_file', metavar="--conf", type=str, nargs='?', help='nfquery configuration file')
@@ -91,6 +99,8 @@ if __name__ == "__main__":
     q_generator = QueryGenerator(nffile.Parsers)
         
     #q_manager.start()
+
+    # This will launch the q_generator process and execute the parsers
     q_generator.start()
     
     # Subscription Generation
@@ -104,6 +114,7 @@ if __name__ == "__main__":
     # Activate the server; 
     # This will keep running until interrupting the server with the keyboard Ctrl-C
     try:
+        nfquerylog.info('listening for plugin connections...')
         server.serve_forever()
     except KeyboardInterrupt:
         print 'keyboard Interrupt'
