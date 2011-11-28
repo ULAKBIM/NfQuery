@@ -4,11 +4,15 @@ import simplejson
 import logging
 import multiprocessing
 import sys
+# useful but necessary?
+import pprint
+
 
 # nfquery imports
 from query import query
 from subscription import subscription
 from db import db
+
 
     # --------------------------- JSON TEST -----------------------------------#
     #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__ #
@@ -105,7 +109,7 @@ class QueryGenerator(multiprocessing.Process):
         for (source_id,) in registered_sources:
             self.generateSourceSubscriptionPackets(source_id)
         self.generateThreatNameSubscriptions()
-        self.generateThreatTypeSubscriptions()
+        self.generateSourceThreatTypeSubscriptions()
    
 
     def generateSourceSubscriptionPackets(self, source_id):
@@ -202,30 +206,43 @@ class QueryGenerator(multiprocessing.Process):
             return 0
 
 
-    def generateSourceThreatTypeSubscription(source_id=None, threat_id=None):
-        print 'generateSourceThreatTypeSubscriptionPackets'
+    def generateSourceThreatTypeSubscriptions(self, source_id=None, threat_id=None):
+        print '\n\ngenerateSourceThreatTypeSubscriptionPackets'
         try:
             statement = """SELECT threat_type FROM threat GROUP BY threat_type"""
             self.cursor.execute(statement)
-            for threat_type in self.cursor.fetchall():
-                print threat_type
+            threat_type_list = self.cursor.fetchall()
+            statement = """SELECT source_id FROM source"""
+            self.cursor.execute(statement)
+            source_id_list = self.cursor.fetchall()
+            show = pprint.PrettyPrinter(indent=0)
+            for threat_type in threat_type_list:
+                print """For threat type = %s""" % threat_type
                 statement = """ SELECT threat_id FROM threat where threat_type='%s'""" % threat_type
                 self.cursor.execute(statement)
+                thread_id_list = self.cursor.fetchall()
                 subscription_list = []
                 query_id_list = []
-                for threat_id in self.cursor.fetchall():
-                    statement = """SELECT query_id FROM query WHERE threat_id=%s""" % threat_id
-                    self.cursor.execute(statement)
-                    query_id_list.append(self.cursor.fetchall())
-                if not query_id_list:
-                    self.qglogger.info("No query is available for %d subscription." % (threat_id) )
-                else:
-                    subscription_list.append(subscription(threat_id, query_id_list, '2011'))
-                    for i in subscription_list:
-                        print "threat type subscription packets for %s --> %s" % (threat_id, i.__dict__)
+                for source_id in source_id_list:
+                    #print type(source_id)
+                    # This looks for each threat_id which belongs to that threat_type   
+                    for threat_id in thread_id_list:
+                        #print type(threat_id)
+                        statement = """SELECT query_id FROM query WHERE threat_id=%d AND source_id=%d""" % (threat_id[0], source_id[0])
+                        #print statement
+                        self.cursor.execute(statement)
+                        result = self.cursor.fetchall()
+                        if result:
+                            query_id_list.append(result)
+                    if not query_id_list:
+                        self.qglogger.info("No query is available for %d subscription." % (threat_type))
+                    else:
+                        subscription_list.append(subscription(str(source_id) + " " + str(threat_type), query_id_list, '2011'))
+                    for s in subscription_list:
+                        print "threat type subscription packets --------------->  %s" % (show.pprint(vars(s)))
         except Exception, e:
             sys.exit ("Error %s" % (e.args[0]))
-            return 0 
+            return 0
 
 
 
