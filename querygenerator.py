@@ -77,7 +77,7 @@ class QueryGenerator(multiprocessing.Process):
 
     def checkParsers(self, parser_list):
         self.qglogger.info('In %s' % self.name)
-        # fetch registered parser names FROM the database and check them with existing parser file names.
+        # fetch registered parser names from the database and check them with existing parser file names.
         statement = 'SELECT parser_desc FROM parser'
         self.cursor.execute(statement)
         registered_parsers = self.cursor.fetchall()
@@ -110,6 +110,7 @@ class QueryGenerator(multiprocessing.Process):
             self.generateSourceSubscriptionPackets(source_id)
         self.generateThreatNameSubscriptions()
         self.generateSourceThreatTypeSubscriptions()
+        self.generateSourceThreatNameSubscriptions()
    
 
     def generateSourceSubscriptionPackets(self, source_id):
@@ -178,7 +179,6 @@ class QueryGenerator(multiprocessing.Process):
             return 0
 
 
-
     def generateThreatTypeSubscriptions(self, threat_type=None):
         self.qglogger.info('In %s' % self.name)
         print 'generateThreatTypeSubscriptionPackets'
@@ -187,7 +187,7 @@ class QueryGenerator(multiprocessing.Process):
             self.cursor.execute(statement)
             for threat_type in self.cursor.fetchall():
                 print threat_type
-                statement = """ SELECT threat_id FROM threat where threat_type='%s'""" % threat_type
+                statement = """ SELECT threat_id FROM threat WHERE threat_type='%s'""" % threat_type
                 self.cursor.execute(statement)
                 subscription_list = []
                 query_id_list = []
@@ -215,35 +215,64 @@ class QueryGenerator(multiprocessing.Process):
             statement = """SELECT source_id FROM source"""
             self.cursor.execute(statement)
             source_id_list = self.cursor.fetchall()
-            show = pprint.PrettyPrinter(indent=0)
             for threat_type in threat_type_list:
-                print """For threat type = %s""" % threat_type
-                statement = """ SELECT threat_id FROM threat where threat_type='%s'""" % threat_type
+                self.qglogger.debug("Executing For threat type = %s""" % threat_type)
+                statement = """ SELECT threat_id FROM threat WHERE threat_type='%s'""" % threat_type
                 self.cursor.execute(statement)
                 thread_id_list = self.cursor.fetchall()
                 subscription_list = []
                 query_id_list = []
                 for source_id in source_id_list:
-                    #print type(source_id)
+                    self.qglogger.debug("Executing For source_id = %d""" % source_id)
                     # This looks for each threat_id which belongs to that threat_type   
                     for threat_id in thread_id_list:
-                        #print type(threat_id)
                         statement = """SELECT query_id FROM query WHERE threat_id=%d AND source_id=%d""" % (threat_id[0], source_id[0])
-                        #print statement
                         self.cursor.execute(statement)
                         result = self.cursor.fetchall()
                         if result:
                             query_id_list.append(result)
                     if not query_id_list:
-                        self.qglogger.info("No query is available for %d subscription." % (threat_type))
+                        self.qglogger.debug("No query is available for %s subscription." % (threat_type))
                     else:
-                        subscription_list.append(subscription(str(source_id) + " " + str(threat_type), query_id_list, '2011'))
-                    for s in subscription_list:
-                        print "threat type subscription packets --------------->  %s" % (show.pprint(vars(s)))
+                        subscription_list.append(subscription(str(source_id) + "," + str(threat_type), query_id_list, '2011'))
+                    query_id_list = []        
+                for s in subscription_list:
+                    self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
         except Exception, e:
             sys.exit ("Error %s" % (e.args[0]))
             return 0
 
+    def generateSourceThreatNameSubscriptions(self, source_id=None, threat_id=None):
+        print '\n\ngenerateSourceThreatNameSubscriptionPackets'
+        try:
+            statement = """SELECT threat_id FROM threat WHERE threat_name IS NOT NULL group by threat_name"""
+            self.cursor.execute(statement)
+            threat_id_list = self.cursor.fetchall()
+            statement = """SELECT source_id FROM source"""
+            self.cursor.execute(statement)
+            source_id_list = self.cursor.fetchall()
+            query_id_list = []
+            subscription_list = []
+            for source_id in source_id_list:
+                self.qglogger.debug("Executing For source_id = %d""" % source_id)
+                # This looks for each threat_id which belongs to that threat_type   
+                for threat_id in threat_id_list:
+                    statement = """SELECT query_id FROM query WHERE threat_id=%d AND source_id=%d""" % (threat_id[0], source_id[0])
+                    self.cursor.execute(statement)
+                    result = self.cursor.fetchall()
+                    if result:
+                        query_id_list.append(result)
+                if not query_id_list:
+                    self.qglogger.debug("No query is available for %s subscription." % (threat_id))
+                else:
+                    subscription_list.append(subscription(str(source_id) + "," + str(threat_id), query_id_list, '2011'))
+                query_id_list = []        
+            for s in subscription_list:
+                self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
+                print "threat type subscription packets --------------->  %s" % (s.__dict__)
+        except Exception, e:
+            sys.exit ("Error %s" % (e.args[0]))
+            return 0 
 
 
     def generateJSONPacketsFromSubscription():
