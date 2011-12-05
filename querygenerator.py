@@ -45,11 +45,11 @@ class QueryGenerator(multiprocessing.Process):
     def __init__(self, parsers):
         multiprocessing.Process.__init__(self)
         self.parsers = parsers
-        connection = db.get_database_connection()
-        self.cursor = connection.cursor()
         logging.basicConfig(level=logging.INFO)
         self.qglogger = logging.getLogger('QueryGenerator')
         self.qglogger.setLevel(logging.INFO)
+        connection = db.get_database_connection()
+        self.cursor = connection.cursor()
 
     def run(self):
         self.checkParsers(self.parsers.split(','))
@@ -64,6 +64,7 @@ class QueryGenerator(multiprocessing.Process):
             parser_list = self.parsers.split(',')
         if(self.checkParsers(parser_list)):
             print 'Parsers are OK, Lets start executing each parser.'
+            # HERE SHOULD BE AUTOMATIC NOT WITH THAT HARDCODING!!!!
             from parsers.amadaParser import fetch_source, parse_source
             #source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
             fetch_source('http://amada.abuse.ch/blocklist.php?download=ipblocklist')

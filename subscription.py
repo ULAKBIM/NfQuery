@@ -1,23 +1,18 @@
 #!/usr/local/bin/python
 
 
-#----------------------------------------------------------# 
-# Create subscription packets for each subscription        #   
-# type.                                                    #   
-#                                                          #   
-# subscription_type=1 -> Source                            #   
-# subscription_type=2 -> Source,Threat_Type                #   
-# subscription_type=3 -> Source,Threat_Type,Threat_Name    #   
-# subscription_type=4 -> Threat_Type                       #   
-# subscription_type=5 -> Threat_Name                       #   
-#                                                          #   
-#----------------------------------------------------------#  
+from db import db
+
+
 
 class subscription():
     def __init__(self, subscription_name, subscription_query_list, subscription_update_time):
         self.subscription_name = subscription_name
         self.subscription_query_list = subscription_query_list
         self.subscription_update_time = subscription_update_time
+        connection = db.get_database_connection()
+        self.cursor = connection.cursor()
+
 
     def createSubscriptionTypes(self):
         '''
@@ -38,39 +33,65 @@ class subscription():
             period for the new subscription types to be added to the subscription table. 
         '''
 
-        # insert subscription types that have queries
-
         # 1) source name
-        # select source_name from source where source_id IN(select source_id from query group by source_id) group by source_name;
+        # SELECT source_name from source where source_id IN(SELECT source_id from query group by source_id) group by source_name;
+
+        subscription_type=1
+        statement = '''SELECT source_name FROM source WHERE source_id IN(SELECT source_id from query group by source_id) GROUP BY source_name'''
+        self.cursor.execute(statement)
+        source_name_list = self.cursor.fetchall()
+        for subscription_desc in source_name_list:
+            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type,subscription_desc)
+            cursor.execute(statement)
+
 
         # 2) source name + threat_type
-        # select source_name from source where source_id IN(select source_id from query group by source_id);
-        # select source_id from query group by source_id;
+        # SELECT source_id from query group by source_id;
         # fetchall
         # for i in fetchall
-        #    select threat_type from threat where threat_id IN(select threat_id from query where source_id=i group by threat_id);
+        #    SELECT threat_type from threat where threat_id IN(SELECT threat_id from query where source_id=i group by threat_id);
         #    fetchall
         #    for j in fetchall
         #       source_name,threat_type
 
+        subscription_type=2
+        statement = '''SELECT source_id FROM query GROUP BY source_id'''
+        self.cursor.execute(statement)
+        source_id_list = self.cursor.fetchall()
+        for source_id in source_id_list:
+            statement = '''SELECT threat_type FROM threat WHERE threat_id IN(SELECT threat_id FROM query WHERE source_id=%d GROUP BY threat_id''' % (source_id)
+            self.cursor.execute(statement)
+            threat_type_list = self.cursor.fetchall()
+            for threat_type in threat_type_list:
+                statement = '''SELECT source_name FROM source where source_id=%d''' % (source_id)
+                self.cursor.execute(statement)
+                subscription_desc = str(self.cursor.fetchone()) + "," + str(threat_type)
+                statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type,subscription_desc)
+                cursor.execute(statement)
+
         # 3) source_name + threat_type + threat_name
         # 
-        # select source_name from source where source_id IN(select source_id from query group by source_id);
+        # SELECT source_name from source where source_id IN(SELECT source_id from query group by source_id);
         # fetchall
         # for i in fetchall
-        #    select threat_type from threat where threat_id IN(select threat_id from query where source_id=i group by threat_id) group by threat_type;
+        #    SELECT threat_type from threat where threat_id IN(SELECT threat_id from query where source_id=i group by threat_id) group by threat_type;
         #    fetchall
         #    for j in fetchall
-        #       select threat_name from threat where threat_type=j
+        #       SELECT threat_name from threat where threat_type=j
         #       source_name,threat_type,threat_name
         
         # 4) threat type
-        # select threat_type from threat where threat_id IN(select threat_id from query group by threat_id) group by threat_type;
+        # SELECT threat_type from threat where threat_id IN(SELECT threat_id from query group by threat_id) group by threat_type;
 
         # 5) threat name 
-        # select threat_name from threat where threat_id IN(select threat_id from query group by threat_id) and threat_name is not null  group by threat_name ;
+        # SELECT threat_name from threat where threat_id IN(SELECT threat_id from query group by threat_id) and threat_name is not null  group by threat_name ;
 
 
     def generateJSONPacketsFromSubscription(self):
         pass
+
+
+
+
+
 
