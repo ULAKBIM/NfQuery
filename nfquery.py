@@ -14,6 +14,7 @@ import logging
 # nfquery imports
 from db import *
 from querygenerator import *
+from subscription import *
 
 # List of stuff accessible to importers of this module.
 
@@ -104,9 +105,11 @@ if __name__ == "__main__":
     q_generator.start()
     
     # Subscription Generation
-    #subscription_list = generateSourceSubscriptionPackets(1, cursor1, cursor2)
-    #for i in subscription_list:
-    #    print i.__dict__
+    # to test subscription constructor overloading 
+    # subscription1 = subscription.getInstance('name','qlist',2011)
+
+    subscription1 = subscription()
+    subscription1.createSubscriptionTypes()
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((nffile.HOST, nffile.PORT), ThreadingTCPRequestHandler)

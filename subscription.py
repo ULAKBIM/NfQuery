@@ -4,15 +4,20 @@
 from db import db
 
 
-
 class subscription():
-    def __init__(self, subscription_name, subscription_query_list, subscription_update_time):
-        self.subscription_name = subscription_name
-        self.subscription_query_list = subscription_query_list
-        self.subscription_update_time = subscription_update_time
+    
+    def __init__(self):
+        print 'Constructing subscription\n'
         connection = db.get_database_connection()
         self.cursor = connection.cursor()
 
+    @classmethod
+    def getInstance(self, subscription_name, subscription_query_list, subscription_update_time):
+        print 'Creating subscription instance\n'
+        self.subscription_name = subscription_name
+        self.subscription_query_list = subscription_query_list
+        self.subscription_update_time = subscription_update_time
+        return self
 
     def createSubscriptionTypes(self):
         '''
@@ -34,15 +39,16 @@ class subscription():
         '''
 
         # 1) source name
-        # SELECT source_name from source where source_id IN(SELECT source_id from query group by source_id) group by source_name;
+        # SELECT source_name from source group by source_name;
 
         subscription_type=1
-        statement = '''SELECT source_name FROM source WHERE source_id IN(SELECT source_id from query group by source_id) GROUP BY source_name'''
+        statement = '''SELECT source_name FROM source GROUP BY source_name'''
         self.cursor.execute(statement)
         source_name_list = self.cursor.fetchall()
         for subscription_desc in source_name_list:
-            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type,subscription_desc)
-            cursor.execute(statement)
+            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type, subscription_desc)
+            #cursor.execute(statement)
+            print statement
 
 
         # 2) source name + threat_type
@@ -55,11 +61,11 @@ class subscription():
         #       source_name,threat_type
 
         subscription_type=2
-        statement = '''SELECT source_id FROM query GROUP BY source_id'''
+        statement = '''SELECT source_id FROM source GROUP BY source_id'''
         self.cursor.execute(statement)
         source_id_list = self.cursor.fetchall()
         for source_id in source_id_list:
-            statement = '''SELECT threat_type FROM threat WHERE threat_id IN(SELECT threat_id FROM query WHERE source_id=%d GROUP BY threat_id''' % (source_id)
+            statement = '''SELECT threat_type FROM threat WHERE threat_id IN(SELECT threat_id FROM query WHERE source_id=%d) GROUP BY threat_id''' % (source_id)
             self.cursor.execute(statement)
             threat_type_list = self.cursor.fetchall()
             for threat_type in threat_type_list:
@@ -67,11 +73,11 @@ class subscription():
                 self.cursor.execute(statement)
                 subscription_desc = str(self.cursor.fetchone()) + "," + str(threat_type)
                 statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type,subscription_desc)
-                cursor.execute(statement)
+                #cursor.execute(statement)
+                print statement
 
         # 3) source_name + threat_type + threat_name
         # 
-        # SELECT source_name from source where source_id IN(SELECT source_id from query group by source_id);
         # fetchall
         # for i in fetchall
         #    SELECT threat_type from threat where threat_id IN(SELECT threat_id from query where source_id=i group by threat_id) group by threat_type;
@@ -79,6 +85,14 @@ class subscription():
         #    for j in fetchall
         #       SELECT threat_name from threat where threat_type=j
         #       source_name,threat_type,threat_name
+
+
+        subscription_type=3
+        for source_name in source_name_list:
+
+
+             
+
         
         # 4) threat type
         # SELECT threat_type from threat where threat_id IN(SELECT threat_id from query group by threat_id) group by threat_type;
