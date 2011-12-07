@@ -65,7 +65,7 @@ class subscription():
         self.cursor.execute(statement)
         source_id_list = self.cursor.fetchall()
         for source_id in source_id_list:
-            statement = '''SELECT threat_type FROM threat WHERE threat_id IN(SELECT threat_id FROM query WHERE source_id=%d) GROUP BY threat_id''' % (source_id)
+            statement = '''SELECT threat_type FROM threat'''
             self.cursor.execute(statement)
             threat_type_list = self.cursor.fetchall()
             for threat_type in threat_type_list:
@@ -87,8 +87,8 @@ class subscription():
         #       source_name,threat_type,threat_name
 
 
-        subscription_type=3
-        for source_name in source_name_list:
+        #subscription_type=3
+        #for source_name in source_name_list:
 
 
              

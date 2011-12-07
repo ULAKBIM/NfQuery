@@ -286,5 +286,5 @@ def create_query(source_name, source_desc, source_link, threat_type, threat_name
       Get query information FROM parser and pass to the Query Generator.
     '''
     myquery = query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time)
-    myquery.insert_query()
+    #myquery.insert_query()
     #myquery.print_content()

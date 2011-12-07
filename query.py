@@ -3,12 +3,10 @@
 import sys
 import socket, struct
 import MySQLdb
+import hashlib
 
 # nfquery import
 from db import *
-
-# temporary imports
-from pprint import pprint
 
 
 __all__ = ['query']
@@ -103,6 +101,10 @@ class query():
         self.output_type = output_type
         self.output = output
         self.creation_time = creation_time
+        # get the hash of output_list to insert into query table
+        m = hashlib.md5()
+        m.update(self.output)
+        self.hash_value = m.hexdigest()
 
 
     ## ------------------------------------------------------------ ##
@@ -138,6 +140,9 @@ class query():
         connection = db.get_database_connection()
         cursor = connection.cursor()
 
+        # BU KISMI YENI SOURCE_THREAT_RELATION TABLOSUNA GORE TEKRAR YAZALIM,
+        # HASH_VALUE ' YA GORE QUERY YI UPDATE EDIP ETMEYECEGIMIZE KARAR VERELIM.
+
         # Begin with try to catch database exceptions.
         try:
             # Check if we have this source or not.
@@ -166,9 +171,10 @@ class query():
             else: 
                 cursor.execute("select threat_id from threat where threat_type='" + self.threat_type + "' and threat_name IS NULL")
                 threat_id = (cursor.lastrowid,)
-            
+           
+
             # Query Creation 
-            statement = """ insert into query (source_id, threat_id, creation_time, query_type) values( %ld, %ld, %s, %d) """ % (source_id[0], threat_id[0], self.creation_time, self.output_type)
+            statement = """ insert into query (source_id, threat_id, creation_time, query_type, hash_value) values( %ld, %ld, %s, %d, %s) """ % (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
             cursor.execute(statement) 
             query_id=(cursor.lastrowid,)
 
