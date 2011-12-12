@@ -57,7 +57,7 @@ class subscription():
         for subscription_desc in source_name_list:
             statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type, subscription_desc)
             #cursor.execute(statement)
-            print statement
+            print '\033[1;38m' + statement + '\033[1;m'
 
         self.logger.info('"source" subscription types generated\n')
 
@@ -84,7 +84,7 @@ class subscription():
                 subscription_desc = str(self.cursor.fetchone()) + "," + str(threat_type)
                 statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type,subscription_desc)
                 #cursor.execute(statement)
-                print statement
+                print '\033[1;42m' + statement + '\033[1;m'
 
         self.logger.info('"source + threat_type" subscription types generated\n')
         
@@ -98,26 +98,47 @@ class subscription():
         #       SELECT threat_name from threat where threat_type=j
         #       source_name,threat_type,threat_name
 
-        subscription_type=2
+        subscription_type=3
+        for source_id in source_id_list:
+            statement = '''SELECT threat_id FROM source_threat_relation WHERE source_id=%d AND threat_id IN(SELECT threat_id FROM threat WHERE threat_name IS NOT NULL)''' % (source_id)
+            self.cursor.execute(statement)
+            threat_id_list = self.cursor.fetchall()
+            for threat_id in threat_id_list:
+                statement = ''' SELECT threat_type, threat_name FROM threat WHERE threat_id=%d''' % (threat_id)
+                self.cursor.execute(statement)
+                threat_type, threat_name = self.cursor.fetchone()
+                subscription_desc = str(source_id) + ',' + str(threat_type) + ',' + str(threat_name)
+                statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type, subscription_desc)
+                print statement
 
-        
-        
-        
-        self.logger.info('"source + threat_type + threat_name" subscription types generated')
+        self.logger.info('\033[1;33m"source + threat_type + threat_name" subscription types generated\033[1;m\n')
 
-        #subscription_type=3
-        #for source_name in source_name_list:
-
-
-             
-
-        
         # 4) threat type
         # SELECT threat_type from threat where threat_id IN(SELECT threat_id from query group by threat_id) group by threat_type;
+        subscription_type=4
+        statement = '''SELECT threat_type FROM threat GROUP BY threat_type'''
+        self.cursor.execute(statement)
+        threat_type_list = self.cursor.fetchall()
+        for threat_type in threat_type_list:
+            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type,threat_type[0])
+            print statement
+            #self.cursor.execute(statement)
+            
+        self.logger.info('\033[1;33m"threat_type" subscription types generated\033[1;m\n')
 
         # 5) threat name 
         # SELECT threat_name from threat where threat_id IN(SELECT threat_id from query group by threat_id) and threat_name is not null  group by threat_name ;
 
+        subscription_type=5
+        statement = '''SELECT threat_name FROM threat WHERE threat_name IS NOT NULL'''
+        self.cursor.execute(statement)
+        threat_name_list = self.cursor.fetchall() 
+        for threat_name in threat_name_list:
+            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type,threat_name[0])
+            print statement
+            #self.cursor.execute(statement)
+
+        self.logger.info('\033[1;33m"threat_name" subscription types generated\033[1;m\n')
 
     def generateJSONPacketsFromSubscription(self):
         pass

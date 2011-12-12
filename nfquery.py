@@ -69,6 +69,8 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 if __name__ == "__main__":
     #multiprocessing.log_to_stderr(logging.DEBUG)
 
+
+    # LOGGING ' e bir coloring mekanizmasi lazim!!!!!!!
     logging.basicConfig(level=logging.DEBUG)
     nfquerylog = logging.getLogger('nfquery')
     nfquerylog.addHandler(ColorizingStreamHandler())

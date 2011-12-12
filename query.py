@@ -70,7 +70,7 @@ class query():
                                    2 : Domain List
                                    3 : Port List
 
-        output               : The list of the output_type information. If you set output_type as 1 you must provide
+        output               : The list of the output_type information. If you SET output_type as 1 you must provide
                                an IP List and so on for other options.
                                Examples of output can be seen below.
     
@@ -89,7 +89,7 @@ class query():
     
     def __init__(self, source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time):
         '''
-            Assign initial values of the query.
+            Assign initial VALUES of the query.
         '''
         if (not (4>output_type>0)):
             sys.exit('output_type must be between 1-3, please look at the definition.\n')
@@ -168,7 +168,7 @@ class query():
                 threat_id = cursor.fetchone()
                 if threat_id is None:
                     # Add new threat name for this threat type.
-                    cursor.execute("INSERT INTO threat (threat_type,threat_name) values('" + self.threat_type + "','" + self.threat_name + "')")
+                    cursor.execute("INSERT INTO threat (threat_type,threat_name) VALUES('" + self.threat_type + "','" + self.threat_name + "')")
                     threat_id = (cursor.lastrowid,)
                     new_query_flag=1
             # Threat name is not given, get the threat type id.
@@ -176,7 +176,7 @@ class query():
                 cursor.execute("SELECT threat_id FROM threat WHERE threat_type='" + self.threat_type + "' AND threat_name IS NULL")
                 threat_id = (cursor.lastrowid,)
          
-            # if new_query_flag is set insert the new query.
+            # if new_query_flag is SET insert the new query.
             # this means we didn't insert such a query with this threat_id before.
             if new_query_flag:
                 # source_threat relation check
@@ -188,7 +188,7 @@ class query():
                     statement = """INSERT INTO source_threat_relation (source_id, threat_id) VALUES( %d, %d)""" % (source_id[0], threat_id[0])
                     cursor.execute(statement)
                     print 'New source_threat relation inserted\n'
-                statement = """ INSERT INTO query (source_id, threat_id, creation_time, query_type, hash_value) values( %d, %d, '%s', %d, '%s') """ %  (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
+                statement = """ INSERT INTO query (source_id, threat_id, creation_time, query_type, hash_value) VALUES( %d, %d, '%s', %d, '%s') """ %  (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
                 cursor.execute(statement)
                 query_id=(cursor.lastrowid,)
                 print 'New query inserted'
@@ -209,19 +209,19 @@ class query():
                     hash_value = cursor.fetchone()
                     print 'hash_value=%s, self.hash = %s' % (hash_value, self.hash_value)
                     if hash_value[0] == self.hash_value:
-                        print 'Query is not updated\n'
+                        print 'Query is not UPDATEd\n'
                     else:
                         statement = """
-                                        update query set hash_value='%s' WHERE query_id=%d
+                                        UPDATE query SET hash_value='%s' WHERE query_id=%d
                                     """ % (self.hash_value, query_id[0])
                         print statement
                         cursor.execute(statement)
-                        print 'Query is updated\n'
+                        print 'Query is UPDATEd\n'
                         print 'Updated query id is %d' % query_id 
                         self.insert_query_ip(cursor, query_id)
                 else:       
                     # insert the query 
-                    statement = """ INSERT INTO query (source_id, threat_id, creation_time, query_type, hash_value) values( %d, %d, '%s', %d, '%s')  """ % (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
+                    statement = """ INSERT INTO query (source_id, threat_id, creation_time, query_type, hash_value) VALUES( %d, %d, '%s', %d, '%s')  """ % (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
                     cursor.execute(statement)
                     query_id=(cursor.lastrowid,)
                     print 'New query inserted'
@@ -260,11 +260,11 @@ class query():
                 ip_id = cursor.fetchone()
                 # Insert new ip.
                 if ip_id is None:
-                    statement = """ INSERT INTO ip (ip, ip_int) values('%s',%ld)""" % (ip, ip_int)
+                    statement = """ INSERT INTO ip (ip, ip_int) VALUES('%s',%ld)""" % (ip, ip_int)
                     cursor.execute(statement)
                     ip_id=(cursor.lastrowid,)
                 # Create query-ip relation
-                statement = """ INSERT INTO query_ip (query_id, ip_id) values(%ld,%ld)""" % (query_id[0], ip_id[0]) 
+                statement = """ INSERT INTO query_ip (query_id, ip_id) VALUES(%ld,%ld)""" % (query_id[0], ip_id[0]) 
                 cursor.execute(statement)
                 print statement
             except MySQLdb.OperationalError, e:
@@ -277,8 +277,7 @@ class query():
         '''
             Insert domain query to database.
         '''
-
-        cursor.execute("INSERT INTO query values('" + source_id + "','" + threat_id + "','" + creation_time + "','" + self.output_type + "')" )
+        cursor.execute("INSERT INTO query VALUES('" + source_id + "','" + threat_id + "','" + creation_time + "','" + self.output_type + "')" )
         query_id=cursor.fetchone()
 
         for domain in output.split(' '):
@@ -287,11 +286,11 @@ class query():
             if domain_id is None:
                 pass
                 # So insert this new domain
-            #    INSERT INTO domain values(domain)
+            #    INSERT INTO domain VALUES(domain)
             #    domain_id=cursor.fetchone()
             #
             #
-            #INSERT INTO query_ip values(query_id, ip_id)
+            #INSERT INTO query_ip VALUES(query_id, ip_id)
 
 
     def insert_query_port(self,cursor):
