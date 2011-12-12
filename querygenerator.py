@@ -4,14 +4,13 @@ import simplejson
 import logging
 import multiprocessing
 import sys
-# useful but necessary?
-import pprint
 
 
 # nfquery imports
 from query import query
 from subscription import subscription
 from db import db
+from ansistrm import ColorizingStreamHandler
 
 
     # --------------------------- JSON TEST -----------------------------------#
@@ -48,36 +47,36 @@ class QueryGenerator(multiprocessing.Process):
         logging.basicConfig(level=logging.INFO)
         self.qglogger = logging.getLogger('QueryGenerator')
         self.qglogger.setLevel(logging.INFO)
+        self.qglogger.addHandler(ColorizingStreamHandler())
         connection = db.get_database_connection()
         self.cursor = connection.cursor()
 
     def run(self):
         self.checkParsers(self.parsers.split(','))
-        #self.executeParsers()
+        self.executeParsers()
         self.generateSubscriptionPackets()
+        self.subscription = subscription()
+        self.subscription.createSubscriptionTypes()
 
 
     def executeParsers(self):
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         if not self.parsers:
             sys.exit('No parser is found, please check your nfquery.conf file!')
         else:
-            parser_list = self.parsers.split(',')
-        if(self.checkParsers(parser_list)):
-            print 'Parsers are OK, Lets start executing each parser.'
             # HERE SHOULD BE AUTOMATIC NOT WITH THAT HARDCODING!!!!
             from parsers.amadaParser import fetch_source, parse_source
-            #source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
-            fetch_source('http://amada.abuse.ch/blocklist.php?download=ipblocklist')
-            #source_file = nfquery + sourcepath + "blocklist"
+            # source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
+            # fetch_source('http://amada.abuse.ch/blocklist.php?download=ipblocklist')
+            # source_file = nfquery + sourcepath + "blocklist"
             source_file = "/usr/local/nfquery/" + "sources/amada/" + "blocklist"
             parse_source(source_file)
+            from parsers.malcodeParser import 
             #print locals()
-        else:
-            sys.exit('You do something wrong with the parser names.')
 
 
     def checkParsers(self, parser_list):
-        self.qglogger.info('In %s' % self.name)
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         # fetch registered parser names from the database and check them with existing parser file names.
         statement = 'SELECT parser_desc FROM parser'
         self.cursor.execute(statement)
@@ -99,16 +98,17 @@ class QueryGenerator(multiprocessing.Process):
 
 
     def generateSubscriptionPackets(self):
-        self.qglogger.info('In %s' % self.name)
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         '''
            Starts the parsers, generates queries and passes to query manager for releasing.
         '''
         statement = 'SELECT source_id FROM source'
         self.cursor.execute(statement)
         registered_sources = self.cursor.fetchall()
-        print 'Generating Subscriptions...'
+        self.qglogger.info('Generating Subscriptions...')
         for (source_id,) in registered_sources:
             self.generateSourceSubscriptionPackets(source_id)
+        self.generateThreatTypeSubscriptions()
         self.generateThreatNameSubscriptions()
         self.generateSourceThreatTypeSubscriptions()
         self.generateSourceThreatNameSubscriptions()
@@ -116,10 +116,11 @@ class QueryGenerator(multiprocessing.Process):
 
     def generateSourceSubscriptionPackets(self, source_id):
         try:
-            self.qglogger.info('In %s' % self.name)
+            self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
             statement = """SELECT source_name FROM source WHERE source_id=%d""" % (source_id)
             self.cursor.execute(statement)
             source_name = self.cursor.fetchone()
+            subscription_list = []
             if not source_name:
                 sys.exit("There is no source registered in the database with this name.") 
             statement = """SELECT query_id FROM query WHERE source_id=%d""" % (source_id)
@@ -139,8 +140,7 @@ class QueryGenerator(multiprocessing.Process):
                     self.cursor.execute(statement)
                     query_id_list = self.cursor.fetchall()
                     if query_id_list:
-                        subscription_list = []
-                        subscription_list.append(subscription(source_name, query_id_list, '2011'))
+                        subscription_list.append(subscription.getInstance(source_name, query_id_list, '2011'))
                         ###### gather subscription information #####   
                         #for (query_id,) in query_id_list:
                         #    self.cursor.execute(""" SELECT ip.ip FROM query,query_ip,ip WHERE query.query_id=%s and query.query_id=query_ip.query_id and query_ip.ip_id=ip.ip_id""", (query_id))
@@ -158,21 +158,19 @@ class QueryGenerator(multiprocessing.Process):
 
 
     def generateThreatNameSubscriptions(self, threat_id=None):
-        self.qglogger.info('In %s' % self.name)
-        print 'generateThreatNameSubscriptionPackets'
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         try:
             statement = """SELECT threat_id FROM threat WHERE threat_name<>'NULL' GROUP BY threat_name"""
             self.cursor.execute(statement)
             subscription_list = []
             for threat_id in self.cursor.fetchall():
-                print threat_id
                 statement = """SELECT query_id FROM query WHERE threat_id=%s""" % threat_id
                 self.cursor.execute(statement)
                 query_id_list = self.cursor.fetchall()
                 if not query_id_list:
                     self.qglogger.info("No query is available for %d subscription." % (threat_id) )
                 else:
-                    subscription_list.append(subscription(threat_id, query_id_list, '2011'))
+                    subscription_list.append(subscription.getInstance(threat_id, query_id_list, '2011'))
             for i in subscription_list:
                 print "threat name subscription packets for %s --> %s" % (threat_id, i.__dict__)
         except Exception, e:
@@ -181,8 +179,7 @@ class QueryGenerator(multiprocessing.Process):
 
 
     def generateThreatTypeSubscriptions(self, threat_type=None):
-        self.qglogger.info('In %s' % self.name)
-        print 'generateThreatTypeSubscriptionPackets'
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         try:
             statement = """SELECT threat_type FROM threat GROUP BY threat_type"""
             self.cursor.execute(statement)
@@ -199,7 +196,7 @@ class QueryGenerator(multiprocessing.Process):
                 if not query_id_list:
                     self.qglogger.info("No query is available for %d subscription." % (threat_id) )
                 else:
-                    subscription_list.append(subscription(threat_id, query_id_list, '2011'))
+                    subscription_list.append(subscription.getInstance(threat_id, query_id_list, '2011'))
                     for i in subscription_list:
                         print "threat type subscription packets for %s --> %s" % (threat_id, i.__dict__)
         except Exception, e:
@@ -208,7 +205,7 @@ class QueryGenerator(multiprocessing.Process):
 
 
     def generateSourceThreatTypeSubscriptions(self, source_id=None, threat_id=None):
-        print '\n\ngenerateSourceThreatTypeSubscriptionPackets'
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         try:
             statement = """SELECT threat_type FROM threat GROUP BY threat_type"""
             self.cursor.execute(statement)
@@ -235,7 +232,7 @@ class QueryGenerator(multiprocessing.Process):
                     if not query_id_list:
                         self.qglogger.debug("No query is available for %s subscription." % (threat_type))
                     else:
-                        subscription_list.append(subscription(str(source_id) + "," + str(threat_type), query_id_list, '2011'))
+                        subscription_list.append(subscription.getInstance(str(source_id) + "," + str(threat_type), query_id_list, '2011'))
                     query_id_list = []        
                 for s in subscription_list:
                     self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
@@ -244,7 +241,7 @@ class QueryGenerator(multiprocessing.Process):
             return 0
 
     def generateSourceThreatNameSubscriptions(self, source_id=None, threat_id=None):
-        print '\n\ngenerateSourceThreatNameSubscriptionPackets'
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         try:
             statement = """SELECT threat_id FROM threat WHERE threat_name IS NOT NULL group by threat_name"""
             self.cursor.execute(statement)
@@ -266,7 +263,7 @@ class QueryGenerator(multiprocessing.Process):
                 if not query_id_list:
                     self.qglogger.debug("No query is available for %s subscription." % (threat_id))
                 else:
-                    subscription_list.append(subscription(str(source_id) + "," + str(threat_id), query_id_list, '2011'))
+                    subscription_list.append(subscription.getInstance(str(source_id) + "," + str(threat_id), query_id_list, '2011'))
                 query_id_list = []        
             for s in subscription_list:
                 self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
@@ -280,11 +277,16 @@ class QueryGenerator(multiprocessing.Process):
         pass
 
 
-#--------------------- Additional -------------------------#
 def create_query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time):
     '''
       Get query information FROM parser and pass to the Query Generator.
     '''
     myquery = query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time)
-    #myquery.insert_query()
+    myquery.insert_query()
     #myquery.print_content()
+
+
+
+
+
+
