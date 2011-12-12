@@ -49,7 +49,6 @@ class subscription():
         '''
 
         # 1) source name
-        # SELECT source_name from source group by source_name;
         subscription_type=1
         statement = '''SELECT source_name FROM source GROUP BY source_name'''
         self.cursor.execute(statement)
@@ -62,14 +61,6 @@ class subscription():
         self.logger.info('"source" subscription types generated\n')
 
         # 2) source name + threat_type
-        # SELECT source_id from query group by source_id;
-        # fetchall
-        # for i in fetchall
-        #    SELECT threat_type from threat where threat_id IN(SELECT threat_id from query where source_id=i group by threat_id);
-        #    fetchall
-        #    for j in fetchall
-        #       source_name,threat_type
-
         subscription_type=2
         statement = '''SELECT source_id FROM source GROUP BY source_id'''
         self.cursor.execute(statement)
@@ -89,15 +80,6 @@ class subscription():
         self.logger.info('"source + threat_type" subscription types generated\n')
         
         # 3) source_name + threat_type + threat_name
-        # 
-        # fetchall
-        # for i in fetchall
-        #    SELECT threat_type from threat where threat_id IN(SELECT threat_id from query where source_id=i group by threat_id) group by threat_type;
-        #    fetchall
-        #    for j in fetchall
-        #       SELECT threat_name from threat where threat_type=j
-        #       source_name,threat_type,threat_name
-
         subscription_type=3
         for source_id in source_id_list:
             statement = '''SELECT threat_id FROM source_threat_relation WHERE source_id=%d AND threat_id IN(SELECT threat_id FROM threat WHERE threat_name IS NOT NULL)''' % (source_id)
@@ -114,7 +96,6 @@ class subscription():
         self.logger.info('\033[1;33m"source + threat_type + threat_name" subscription types generated\033[1;m\n')
 
         # 4) threat type
-        # SELECT threat_type from threat where threat_id IN(SELECT threat_id from query group by threat_id) group by threat_type;
         subscription_type=4
         statement = '''SELECT threat_type FROM threat GROUP BY threat_type'''
         self.cursor.execute(statement)
@@ -127,8 +108,6 @@ class subscription():
         self.logger.info('\033[1;33m"threat_type" subscription types generated\033[1;m\n')
 
         # 5) threat name 
-        # SELECT threat_name from threat where threat_id IN(SELECT threat_id from query group by threat_id) and threat_name is not null  group by threat_name ;
-
         subscription_type=5
         statement = '''SELECT threat_name FROM threat WHERE threat_name IS NOT NULL'''
         self.cursor.execute(statement)
