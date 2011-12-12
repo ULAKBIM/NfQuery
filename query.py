@@ -37,7 +37,7 @@ def numToDottedQuad(n):                                         #
 
 class query():
     '''
-        Query class for storing etracted information from sources.
+        Query class for storing etracted information FROM sources.
         
         source_name          : Name of the security source
                                example source_name : "Amada"
@@ -101,7 +101,7 @@ class query():
         self.output_type = output_type
         self.output = output
         self.creation_time = creation_time
-        # get the hash of output_list to insert into query table
+        # get the hash of output_list to INSERT INTO query table
         m = hashlib.md5()
         m.update(self.output)
         self.hash_value = m.hexdigest()
@@ -110,20 +110,24 @@ class query():
     ## ------------------------------------------------------------ ##
     ##                      INSERT FUNCTIONS                        ##
     ## ------------------------------------------------------------ ##
+
+    # 1) code maintain edilmesi lazim
+    # 2) print statementlarin logging e donusturulmesi lazim.
+
     def insert_query(self):
         '''
             Insert query information to database.
 
             = Source Check =
             
-            Source related information should be registered to Query Server in the configuration file or from the web interface. 
+            Source related information should be registered to Query Server in the configuration file or FROM the web interface. 
             We will check if it exists in the source table before inserting the parsed information. not surce_name but source_id 
             could be given as a parameter to create_query function, then we can check source_id below. 
-            That means source id, name, description and link should be configurable from the web interface.
+            That means source id, name, description and link should be configurable FROM the web interface.
             
             = Threat Check =
             
-            Check threat type and threat name to insert into database tables. By default, a threat type is recorded without a threat name.
+            Check threat type and threat name to INSERT INTO database tables. By default, a threat type is recorded without a threat name.
             Then for new threat names for this threat type, it is inserted with another id.
 
             = Insert Query =
@@ -133,8 +137,6 @@ class query():
             = Output Check =
 
             Check output type and call the appropriate function.
-
-            
         '''
         
         connection = db.get_database_connection()
@@ -144,109 +146,155 @@ class query():
         # HASH_VALUE ' YA GORE QUERY YI UPDATE EDIP ETMEYECEGIMIZE KARAR VERELIM.
 
         # Begin with try to catch database exceptions.
+        new_query_flag=0
         try:
             # Check if we have this source or not.
-            statement = """select source_id from source where source_name='%s'""" % (self.source_name)
+            statement = """SELECT source_id FROM source WHERE source_name='%s'""" % (self.source_name)
             cursor.execute(statement)
             source_id = cursor.fetchone()
             if source_id is None:
                 sys.exit("Wrong source name is given! Please check if you give one of the source names published in the NfQuery Web Site" )
             
             # Check if we have this threat type or not.
-            statement = """select threat_id from threat where threat_type='%s'""" % (self.threat_type)
+            statement = """SELECT threat_id FROM threat WHERE threat_type='%s'""" % (self.threat_type)
             cursor.execute(statement)
             threat_id = cursor.fetchone()
             if threat_id is None:
                 sys.exit( "Wrong threat type is given! Please check if you give one of the threat types published in the NfQuery Web Site" )
             # Check if we have the given threat name for this threat type.
             elif self.threat_name is not None:
-                statement = """select threat_id from threat where threat_name='%s' and threat_type='%s'""" % (self.threat_name, self.threat_type)
+                statement = """SELECT threat_id FROM threat WHERE threat_name='%s' AND threat_type='%s'""" % (self.threat_name, self.threat_type)
                 cursor.execute(statement) 
                 threat_id = cursor.fetchone()
                 if threat_id is None:
                     # Add new threat name for this threat type.
-                    cursor.execute("insert into threat (threat_type,threat_name) values('" + self.threat_type + "','" + self.threat_name + "')")
+                    cursor.execute("INSERT INTO threat (threat_type,threat_name) values('" + self.threat_type + "','" + self.threat_name + "')")
                     threat_id = (cursor.lastrowid,)
+                    new_query_flag=1
             # Threat name is not given, get the threat type id.
             else: 
-                cursor.execute("select threat_id from threat where threat_type='" + self.threat_type + "' and threat_name IS NULL")
+                cursor.execute("SELECT threat_id FROM threat WHERE threat_type='" + self.threat_type + "' AND threat_name IS NULL")
                 threat_id = (cursor.lastrowid,)
-           
+         
+            # if new_query_flag is set insert the new query.
+            # this means we didn't insert such a query with this threat_id before.
+            if new_query_flag:
+                # source_threat relation check
+                statement = """SELECT st_id FROM source_threat_relation WHERE source_id=%d AND threat_id=%d""" % (source_id[0], threat_id[0])
+                cursor.execute(statement)
+                st_id=cursor.fetchone()
+                if not st_id:
+                    # Query Creation 
+                    statement = """INSERT INTO source_threat_relation (source_id, threat_id) VALUES( %d, %d)""" % (source_id[0], threat_id[0])
+                    cursor.execute(statement)
+                    print 'New source_threat relation inserted\n'
+                statement = """ INSERT INTO query (source_id, threat_id, creation_time, query_type, hash_value) values( %d, %d, '%s', %d, '%s') """ %  (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
+                cursor.execute(statement)
+                query_id=(cursor.lastrowid,)
+                print 'New query inserted'
+                print 'New query id is %d' % query_id 
+                self.insert_query_ip(cursor, query_id)
+            else:
+                # If this is not a new query, it could be inserted and deleted in the past or it could exist now in the query table, 
+                # so we should check the table for query.
+                statement = """
+                                SELECT query_id FROM query WHERE source_id=%d AND threat_id=%d
+                            """ % (source_id[0], threat_id[0])
+                cursor.execute(statement)
+                query_id = cursor.fetchone()
+                if query_id:
+                    print 'Query exists'
+                    statement = """SELECT hash_value FROM query WHERE query_id=%d""" % (query_id)
+                    cursor.execute(statement)
+                    hash_value = cursor.fetchone()
+                    print 'hash_value=%s, self.hash = %s' % (hash_value, self.hash_value)
+                    if hash_value[0] == self.hash_value:
+                        print 'Query is not updated\n'
+                    else:
+                        statement = """
+                                        update query set hash_value='%s' WHERE query_id=%d
+                                    """ % (self.hash_value, query_id[0])
+                        print statement
+                        cursor.execute(statement)
+                        print 'Query is updated\n'
+                        print 'Updated query id is %d' % query_id 
+                        self.insert_query_ip(cursor, query_id)
+                else:       
+                    # insert the query 
+                    statement = """ INSERT INTO query (source_id, threat_id, creation_time, query_type, hash_value) values( %d, %d, '%s', %d, '%s')  """ % (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
+                    cursor.execute(statement)
+                    query_id=(cursor.lastrowid,)
+                    print 'New query inserted'
+                    print 'New query id is %d' % query_id
+                    self.insert_query_ip(cursor, query_id)
 
-            # Query Creation 
-            statement = """ insert into query (source_id, threat_id, creation_time, query_type, hash_value) values( %ld, %ld, %s, %d, %s) """ % (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
-            cursor.execute(statement) 
-            query_id=(cursor.lastrowid,)
-
+            cursor.close()
+            db.give_database_connection()
         except MySQLdb.OperationalError, e:
             connection.rollback()
             sys.exit("Error %d: %s" % (e.args[0],e.args[1]))
         
+        # THIS PART WILL EXIST IF AN OUTPUT TYPE WILL BE OR NOT?
         # Check output type and call the appropriate function.
-        if self.output_type is 1:
-            self.insert_ip_query(cursor, query_id)
-        elif self.output_type is 2:
-            self.insert_domain_query(cursor, query_id)
-        else:
-            self.insert_port_query(cursor, query_id)
-
+        #if self.output_type is 1:
+        #    self.insert_query_ip(cursor, query_id)
+        #elif self.output_type is 2:
+        #    self.insert_query_domain(cursor, query_id)
+        #else:
+        #    self.insert_query_port(cursor, query_id)
         
-        cursor.close()
-        db.give_database_connection()
-     
-    def insert_ip_query(self,cursor,query_id):
+        
+        
+    def insert_query_ip(self, cursor, query_id):
         '''
             Insert ip query to database.
-
             It uses dottedQuadToNum function to convert decimal dotted quad string to long integer.
         '''
         for ip in self.output.split(' '):
-            
             # Calculate the decimal type of ip and check if we already have it
             ip_int = dottedQuadToNum(ip)
-
             try:
                 # Check if we already have this ip.
-                statement="""select ip_id from ip where ip_int=%ld""" % (ip_int)
+                statement="""SELECT ip_id FROM ip WHERE ip_int=%ld""" % (ip_int)
                 cursor.execute(statement)
                 ip_id = cursor.fetchone()
                 # Insert new ip.
                 if ip_id is None:
-                    statement = """ insert into ip (ip, ip_int) values(%s,%ld)""" % (ip, ip_int)
+                    statement = """ INSERT INTO ip (ip, ip_int) values('%s',%ld)""" % (ip, ip_int)
                     cursor.execute(statement)
                     ip_id=(cursor.lastrowid,)
                 # Create query-ip relation
-                statement = """ insert into query_ip (query_id, ip_id) values(%ld,%ld)""" % (query_id[0], ip_id[0]) 
+                statement = """ INSERT INTO query_ip (query_id, ip_id) values(%ld,%ld)""" % (query_id[0], ip_id[0]) 
                 cursor.execute(statement)
-
+                print statement
             except MySQLdb.OperationalError, e:
                 connection.rollback()
                 sys.exit("Error %d: %s" % (e.args[0],e.args[1])) 
          
  
 
-    def insert_domain_query(self,cursor):
+    def insert_query_domain(self,cursor):
         '''
             Insert domain query to database.
         '''
 
-        cursor.execute("insert into query values('" + source_id + "','" + threat_id + "','" + creation_time + "','" + self.output_type + "')" )
+        cursor.execute("INSERT INTO query values('" + source_id + "','" + threat_id + "','" + creation_time + "','" + self.output_type + "')" )
         query_id=cursor.fetchone()
 
         for domain in output.split(' '):
             # Check if we already have this ip
-            cursor.execute("select domain_id from domain where domain='" + domain + "'")
+            cursor.execute("SELECT domain_id FROM domain WHERE domain='" + domain + "'")
             if domain_id is None:
                 pass
                 # So insert this new domain
-            #    insert into domain values(domain)
+            #    INSERT INTO domain values(domain)
             #    domain_id=cursor.fetchone()
             #
             #
-            #insert into query_ip values(query_id, ip_id)
+            #INSERT INTO query_ip values(query_id, ip_id)
 
 
-    def insert_port_query(self,cursor):
+    def insert_query_port(self,cursor):
         '''
             Insert port query to database.
         '''
@@ -265,14 +313,14 @@ class query():
         # Begin with try to catch database exceptions.
         try:
             # Check if we have this source or not.
-            statement = """select * from source where source_name=%s""" % (self.source_name) 
+            statement = """SELECT * FROM source WHERE source_name=%s""" % (self.source_name) 
             cursor.execute(statement)
             source_id = cursor.fetchone()
             if source_id is None:
                 sys.exit("Wrong source name is given! Please check if you give one of the source names published in the NfQuery Web Site" )
             
             # Check if we have this threat type or not.
-            statement = """select threat_id from threat where threat_type=%s""" % (self.threat_type)
+            statement = """SELECT threat_id FROM threat WHERE threat_type=%s""" % (self.threat_type)
             cursor.execute( )
             threat_id = cursor.fetchone()
         except Exception:

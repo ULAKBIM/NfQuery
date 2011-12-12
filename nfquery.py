@@ -15,6 +15,8 @@ import logging
 from db import *
 from querygenerator import *
 from subscription import *
+from ansistrm import ColorizingStreamHandler
+
 
 # List of stuff accessible to importers of this module.
 
@@ -67,11 +69,10 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 if __name__ == "__main__":
     #multiprocessing.log_to_stderr(logging.DEBUG)
 
-    logging.basicConfig()
+    logging.basicConfig(level=logging.DEBUG)
     nfquerylog = logging.getLogger('nfquery')
-    #nfquerylog.setLevel(logging.DEBUG) # set verbosity to show all messages of severity >= DEBUG
-    nfquerylog.setLevel(logging.INFO)
-    nfquerylog.info('Starting NfQuery...')
+    nfquerylog.addHandler(ColorizingStreamHandler())
+    nfquerylog.debug('Starting NfQuery...')
     nfquerylog.debug('Parsing command line arguments')
 
     # Parse Command Line Arguments
@@ -108,8 +109,8 @@ if __name__ == "__main__":
     # to test subscription constructor overloading 
     # subscription1 = subscription.getInstance('name','qlist',2011)
 
-    subscription1 = subscription()
-    subscription1.createSubscriptionTypes()
+    #subscription1 = subscription()
+    #subscription1.createSubscriptionTypes()
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((nffile.HOST, nffile.PORT), ThreadingTCPRequestHandler)
