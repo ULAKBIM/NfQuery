@@ -71,7 +71,6 @@ class QueryGenerator(multiprocessing.Process):
             # source_file = nfquery + sourcepath + "blocklist"
             source_file = "/usr/local/nfquery/" + "sources/amada/" + "blocklist"
             parse_source(source_file)
-            from parsers.malcodeParser import 
             #print locals()
 
 
