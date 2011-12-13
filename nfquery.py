@@ -83,7 +83,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Parse Configuration File
+
     nffile=Config(args.conf_file)
+
+    for section_name in parser.sections():
+        print 'Section:', section_name
+        print '  Options:', parser.options(section_name)
+        for name, value in parser.items(section_name):
+            print '  %s = %s' % (name, value)
 
     # Define Global Paths
     sourcepath = nffile.PATH + "/sources/amada/"
