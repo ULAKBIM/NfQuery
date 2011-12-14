@@ -1,0 +1,34 @@
+# This is the configuration file of nfquery. 
+# You can set your global options here. 
+
+
+# NfQuery Options
+[GENERAL]
+path:"/usr/local/nfquery"
+parsers_path:${path}"/parsers"
+parsers_output_path:${parsers_path}"/outputs"
+host:"localhost"
+port:7777
+ipv6:"enable"
+
+# database options
+[DATABASE]
+db_host:"localhost" 
+db_name:"nfquery"
+db_user:"nfquery"
+db_password:"nf1!"
+
+## parser options
+[PARSER1]
+# Parser 1 / Amada Blacklist
+parser_name:"amadaParser.py"
+parser_sourcelink:"http://amada.abuse.ch/blocklist.php?download:ipblocklist"
+parser_script:${parsers_path}"amada/amadaparser.py"
+parser_output:${parsers_output_path}"amada/amadaOutput.txt"
+
+# Parser 2 / Malc0de Blacklist
+[PARSER2]
+parser_name:"malcodeParser.py"
+parser_sourcelink:"http://malc0de.com/bl/IP_Blacklist.txt"
+parser_script:${parsers_path}"/malcodeParser.py"
+parser_output:${parsers_output_path}"/malcodeOutput.txt"

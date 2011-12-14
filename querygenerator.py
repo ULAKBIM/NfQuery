@@ -10,7 +10,7 @@ import sys
 from query import query
 from subscription import subscription
 from db import db
-from ansistrm import ColorizingStreamHandler
+#from ansistrm import ColorizingStreamHandler
 
 
     # --------------------------- JSON TEST -----------------------------------#
@@ -37,34 +37,32 @@ class QueryGenerator(multiprocessing.Process):
     #    self.subscription_query_list = subscription_query_list
     #    self.subscription_update_time = subscription_update_time
    
-    # buna bi cozum bulmak lazim boyle lok diye tanimlamayalim, global degiskenlerin oldugu bir listemiz olsun
-    # ya da dictionary, ordan cagiralim
-    parser_path = '/home/serdar/nfquery/parsers'
+    # BUNA BI COZUM BULMAK LAZIM BOYLE LOK DIYE TANIMLAMAYALIM, GLOBAL DEGISKENLERIN OLDUGU BIR LISTEMIZ OLSUN
+    # YA DA DICTIONARY, ORDAN CAGIRALIM
 
-    def __init__(self, parsers):
+    def __init__(self, parser_list):
         multiprocessing.Process.__init__(self)
-        self.parsers = parsers
+        self.parser_list = dict(parser_list)
         logging.basicConfig(level=logging.INFO)
         self.qglogger = logging.getLogger('QueryGenerator')
         self.qglogger.setLevel(logging.INFO)
-        self.qglogger.addHandler(ColorizingStreamHandler())
+        #self.qglogger.addHandler(ColorizingStreamHandler())
         connection = db.get_database_connection()
         self.cursor = connection.cursor()
 
     def run(self):
-        self.checkParsers(self.parsers.split(','))
+        self.checkParsers()
         self.executeParsers()
-        self.generateSubscriptionPackets()
-        self.subscription = subscription()
-        self.subscription.createSubscriptionTypes()
+        #self.generateSubscriptionPackets()
+        #self.subscription = subscription()
+        #self.subscription.createSubscriptionTypes()
 
 
     def executeParsers(self):
         self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
-        if not self.parsers:
+        if not self.parser_list:
             sys.exit('No parser is found, please check your nfquery.conf file!')
         else:
-            # HERE SHOULD BE AUTOMATIC NOT WITH THAT HARDCODING!!!!
             from parsers.amadaParser import fetch_source, parse_source
             # source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
             # fetch_source('http://amada.abuse.ch/blocklist.php?download=ipblocklist')
@@ -74,25 +72,27 @@ class QueryGenerator(multiprocessing.Process):
             #print locals()
 
 
-    def checkParsers(self, parser_list):
+    def checkParsers(self):
         self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         # fetch registered parser names from the database and check them with existing parser file names.
         statement = 'SELECT parser_desc FROM parser'
         self.cursor.execute(statement)
         registered_parsers = self.cursor.fetchall()
-        parsers = ()
-        
         # Convert 'tuple of tuples' to 'a single tuple'
+        parsers = ()
         for (p,) in registered_parsers:
             parsers = parsers + (p,)
+       
+        #print self.parser_list
         
         # Check for each parser, if it is registered.
-        for parser in parser_list:
-            if parser in parsers:
-                self.qglogger.info('Parser  "%s" Exists, OK!' % parser)
+        for parser in self.parser_list.iteritems():
+            if parser.parser_name in parsers:
+                self.qglogger.info('Parser  "%s" Exists, OK!' % self.parser.parser_name)
             else:
                 return 0
                 #sys.exit('Parser doesn\'t exist, NOT!')
+        sys.exit()
         return 1
 
 

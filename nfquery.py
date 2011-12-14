@@ -2,7 +2,9 @@
 
 from datetime import date
 from config import Config
-
+import ConfigParser
+# it is changed as configparser, supdate the python and change it as
+# import configparser
 import multiprocessing
 import os
 import SocketServer
@@ -15,14 +17,7 @@ import logging
 from db import *
 from querygenerator import *
 from subscription import *
-from ansistrm import ColorizingStreamHandler
-
-
-# List of stuff accessible to importers of this module.
-
-
-
-
+#from ansistrm import ColorizingStreamHandler
 
 # ------------------------------------------------------------------------------------- #
                         ####################### 
@@ -31,7 +26,6 @@ from ansistrm import ColorizingStreamHandler
 class nfquery(multiprocessing.Process):
     def run():
         pass
-
 
 
 # ------------------------------------------------------------------------------------- #
@@ -69,45 +63,69 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 if __name__ == "__main__":
     #multiprocessing.log_to_stderr(logging.DEBUG)
 
-
     # LOGGING ' e bir coloring mekanizmasi lazim!!!!!!!
     logging.basicConfig(level=logging.DEBUG)
     nfquerylog = logging.getLogger('nfquery')
-    nfquerylog.addHandler(ColorizingStreamHandler())
+    #nfquerylog.addHandler(ColorizingStreamHandler())
     nfquerylog.debug('Starting NfQuery...')
     nfquerylog.debug('Parsing command line arguments')
 
     # Parse Command Line Arguments
     parser = argparse.ArgumentParser(description="Process arguments")
-    parser.add_argument('conf_file', metavar="--conf", type=str, nargs='?', help='nfquery configuration file')
+    parser.add_argument('config_file', metavar="--conf", type=str, nargs='?', help='nfquery configuration file')
     args = parser.parse_args()
 
+    config_file = Config(args.config_file)
+
     # Parse Configuration File
+    # CONFIGPARSER # parser = ConfigParser.ConfigParser()
+    # CONFIGPARSER # parser.read(args.config_file)
 
-    nffile=Config(args.conf_file)
+    # CONFIGPARSER # sections = ['GENERAL', 'DATABASE']
+    # CONFIGPARSER # generaloptions = ['path','parsers_path','parsers_output_path','host', 'port', 'ipv6']
 
-    for section_name in parser.sections():
-        print 'Section:', section_name
-        print '  Options:', parser.options(section_name)
-        for name, value in parser.items(section_name):
-            print '  %s = %s' % (name, value)
+    # CONFIGPARSER # # Parsing default options
+    # CONFIGPARSER # for section in sections:
+    # CONFIGPARSER #     if parser.has_section(section): 
+    # CONFIGPARSER #         nfquerylog.debug('Parsing Section:%s' % section)
+    # CONFIGPARSER #         nfquerylog.debug('Options:')
+    # CONFIGPARSER #         for name, value in parser.items(section):
+    # CONFIGPARSER #             nfquerylog.debug('\t%s = %s' % (name, value))
+    # CONFIGPARSER #     else:
+    # CONFIGPARSER #         nfquerylog.debug('Section `%s` does not exists' % section )
+    # CONFIGPARSER #         nfquerylog.debug('Please add it and edit the nfquery.conf file as indicated in the documentation')
+    # CONFIGPARSER #         sys.exit()
 
-    # Define Global Paths
-    sourcepath = nffile.PATH + "/sources/amada/"
-    outputpath = nffile.PATH + "/outputs/amada/"
+    # CONFIGPARSER # # Parsing parser options 
+    # CONFIGPARSER # section_prefix = 'PARSER'
+    # CONFIGPARSER # index=1
+    # CONFIGPARSER # section = section_prefix + str(index)
+    # CONFIGPARSER # while parser.has_section(section):
+    # CONFIGPARSER #     nfquerylog.debug('Parsing Section:%s' % section)
+    # CONFIGPARSER #     nfquerylog.debug('Options:')
+    # CONFIGPARSER #     keys = ['parser_name', 'parser_sourcelink', 'parser_script', 'parser_output']
+    # CONFIGPARSER #     for option in keys:
+    # CONFIGPARSER #         if parser.has_option(section, option):
+    # CONFIGPARSER #             nfquerylog.debug('%s = %s' % (option, parser.get(section, option)))
+    # CONFIGPARSER #         else:
+    # CONFIGPARSER #             nfquerylog.debug('`%s`:`%s` option does not exists' % (section, option))
+    # CONFIGPARSER #             nfquerylog.debug('Please add the option and edit the nfquery.conf file as indicated in the documentation')
+    # CONFIGPARSER #             sys.exit()
+    # CONFIGPARSER #     index+=1
+    # CONFIGPARSER #     section = section_prefix + str(index)
+
 
     # Database Connection Start
-    database = db(nffile.DB_HOST, nffile.DB_USER, nffile.DB_PASSWORD, nffile.DB_NAME)
+    database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
-    cursor = connection.cursor()
-    cursor.close()
-    database.give_database_connection()
 
     # Multiprocessing 
     #modules = ["querymanager", "querygenerator", "queryrepository", "scheduler"]
 
     #q_manager = QueryManager()
-    q_generator = QueryGenerator(nffile.Parsers)
+    #print config_file.parsers
+
+    q_generator = QueryGenerator(config_file.parsers)
         
     #q_manager.start()
 
@@ -122,7 +140,7 @@ if __name__ == "__main__":
     #subscription1.createSubscriptionTypes()
 
     # Server Start
-    server = SocketServer.ThreadingTCPServer((nffile.HOST, nffile.PORT), ThreadingTCPRequestHandler)
+    server = SocketServer.ThreadingTCPServer((config_file.nfquery.host, config_file.nfquery.port), ThreadingTCPRequestHandler)
  
     # Activate the server; 
     # This will keep running until interrupting the server with the keyboard Ctrl-C
