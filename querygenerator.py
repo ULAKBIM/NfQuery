@@ -53,9 +53,9 @@ class QueryGenerator(multiprocessing.Process):
     def run(self):
         self.checkParsers()
         self.executeParsers()
+        self.subscription = subscription()
+        self.subscription.createSubscriptionTypes()
         #self.generateSubscriptionPackets()
-        #self.subscription = subscription()
-        #self.subscription.createSubscriptionTypes()
 
 
     def executeParsers(self):
@@ -147,7 +147,7 @@ class QueryGenerator(multiprocessing.Process):
                     print "source subscription packets for %s --> %s" % (source_name, i.__dict__)
                 return subscription_list   
         except Exception, e:
-            sys.exit ("Error %s" % (e.args[0]))
+            sys.exit ("Error %s" % repr(e))
             return 0
 
 
@@ -169,7 +169,7 @@ class QueryGenerator(multiprocessing.Process):
             for i in subscription_list:
                 print "threat name subscription packets for %s --> %s" % (threat_id, i.__dict__)
         except Exception, e:
-            sys.exit ("Error %s" % (e.args[0]))
+            sys.exit ("Error %s" % repr(e))
             return 0
 
 
@@ -195,7 +195,7 @@ class QueryGenerator(multiprocessing.Process):
                     for i in subscription_list:
                         print "threat type subscription packets for %s --> %s" % (threat_id, i.__dict__)
         except Exception, e:
-            sys.exit ("Error %s" % (e.args[0]))
+            sys.exit ("Error %s" % repr(e))
             return 0
 
 
@@ -232,7 +232,7 @@ class QueryGenerator(multiprocessing.Process):
                 for s in subscription_list:
                     self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
         except Exception, e:
-            sys.exit ("Error %s" % (e.args[0]))
+            sys.exit ("Error %s" % repr(e))
             return 0
 
     def generateSourceThreatNameSubscriptions(self, source_id=None, threat_id=None):
@@ -264,7 +264,7 @@ class QueryGenerator(multiprocessing.Process):
                 self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
                 print "threat type subscription packets --------------->  %s" % (s.__dict__)
         except Exception, e:
-            sys.exit ("Error %s" % (e.args[0]))
+            sys.exit ("Error %s" % repr(e))
             return 0 
 
 
