@@ -209,14 +209,14 @@ class query():
                     hash_value = cursor.fetchone()
                     print 'hash_value=%s, self.hash = %s' % (hash_value, self.hash_value)
                     if hash_value[0] == self.hash_value:
-                        print 'Query is not UPDATEd\n'
+                        print 'Query is not updated'
                     else:
                         statement = """
                                         UPDATE query SET hash_value='%s' WHERE query_id=%d
                                     """ % (self.hash_value, query_id[0])
                         print statement
                         cursor.execute(statement)
-                        print 'Query is UPDATEd\n'
+                        print 'Query is updated'
                         print 'Updated query id is %d' % query_id 
                         self.insert_query_ip(cursor, query_id)
                 else:       

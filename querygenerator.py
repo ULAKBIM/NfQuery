@@ -42,7 +42,7 @@ class QueryGenerator(multiprocessing.Process):
 
     def __init__(self, parser_list):
         multiprocessing.Process.__init__(self)
-        self.parser_list = dict(parser_list)
+        self.parser_list = parser_list
         logging.basicConfig(level=logging.INFO)
         self.qglogger = logging.getLogger('QueryGenerator')
         self.qglogger.setLevel(logging.INFO)
@@ -83,16 +83,12 @@ class QueryGenerator(multiprocessing.Process):
         for (p,) in registered_parsers:
             parsers = parsers + (p,)
        
-        #print self.parser_list
-        
         # Check for each parser, if it is registered.
-        for parser in self.parser_list.iteritems():
-            if parser.parser_name in parsers:
-                self.qglogger.info('Parser  "%s" Exists, OK!' % self.parser.parser_name)
+        for i in range(len(self.parser_list)):
+            if self.parser_list[i].parser_name in parsers:
+                self.qglogger.info('Parser  "%s" Exists, OK!' % self.parser_list[i].parser_name)
             else:
-                return 0
-                #sys.exit('Parser doesn\'t exist, NOT!')
-        sys.exit()
+                sys.exit('Parser doesn\'t exist, NOT!')
         return 1
 
 
