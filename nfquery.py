@@ -2,9 +2,6 @@
 
 from datetime import date
 from config import Config
-import ConfigParser
-# it is changed as configparser, supdate the python and change it as
-# import configparser
 import multiprocessing
 import os
 import SocketServer
@@ -76,44 +73,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config_file = Config(args.config_file)
-
-    # Parse Configuration File
-    # CONFIGPARSER # parser = ConfigParser.ConfigParser()
-    # CONFIGPARSER # parser.read(args.config_file)
-
-    # CONFIGPARSER # sections = ['GENERAL', 'DATABASE']
-    # CONFIGPARSER # generaloptions = ['path','parsers_path','parsers_output_path','host', 'port', 'ipv6']
-
-    # CONFIGPARSER # # Parsing default options
-    # CONFIGPARSER # for section in sections:
-    # CONFIGPARSER #     if parser.has_section(section): 
-    # CONFIGPARSER #         nfquerylog.debug('Parsing Section:%s' % section)
-    # CONFIGPARSER #         nfquerylog.debug('Options:')
-    # CONFIGPARSER #         for name, value in parser.items(section):
-    # CONFIGPARSER #             nfquerylog.debug('\t%s = %s' % (name, value))
-    # CONFIGPARSER #     else:
-    # CONFIGPARSER #         nfquerylog.debug('Section `%s` does not exists' % section )
-    # CONFIGPARSER #         nfquerylog.debug('Please add it and edit the nfquery.conf file as indicated in the documentation')
-    # CONFIGPARSER #         sys.exit()
-
-    # CONFIGPARSER # # Parsing parser options 
-    # CONFIGPARSER # section_prefix = 'PARSER'
-    # CONFIGPARSER # index=1
-    # CONFIGPARSER # section = section_prefix + str(index)
-    # CONFIGPARSER # while parser.has_section(section):
-    # CONFIGPARSER #     nfquerylog.debug('Parsing Section:%s' % section)
-    # CONFIGPARSER #     nfquerylog.debug('Options:')
-    # CONFIGPARSER #     keys = ['parser_name', 'parser_sourcelink', 'parser_script', 'parser_output']
-    # CONFIGPARSER #     for option in keys:
-    # CONFIGPARSER #         if parser.has_option(section, option):
-    # CONFIGPARSER #             nfquerylog.debug('%s = %s' % (option, parser.get(section, option)))
-    # CONFIGPARSER #         else:
-    # CONFIGPARSER #             nfquerylog.debug('`%s`:`%s` option does not exists' % (section, option))
-    # CONFIGPARSER #             nfquerylog.debug('Please add the option and edit the nfquery.conf file as indicated in the documentation')
-    # CONFIGPARSER #             sys.exit()
-    # CONFIGPARSER #     index+=1
-    # CONFIGPARSER #     section = section_prefix + str(index)
-
 
     # Database Connection Start
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
