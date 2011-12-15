@@ -54,9 +54,16 @@ class subscription():
         self.cursor.execute(statement)
         source_name_list = self.cursor.fetchall()
         for subscription_desc in source_name_list:
-            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type, subscription_desc)
-            #cursor.execute(statement)
-            print '\033[1;38m' + statement + '\033[1;m'
+            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES(%d,'%s')''' % (subscription_type, subscription_desc[0])
+            print statement
+            try:
+                self.cursor.execute(statement)
+                print '\033[1;38m ' + statement + ' \033[1;m'
+            except Exception, e:
+                sys.exit ("Error %s" % (repr(e)))
+                return 0
+ 
+            
 
         self.logger.info('"source" subscription types generated\n')
 
