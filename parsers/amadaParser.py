@@ -5,27 +5,19 @@
 from datetime import date
 import os
 import sys 
-sys.path.append("..")
 
 # nfquery modules
 from querygenerator import create_query
 
+sys.path.append('..')
+
 # importable functions 
 __all__ = ['fetch_source', 'parse_source']
 
-# global required variables, they should be changed and edited again!!
-nfquery = "/usr/local/nfquery/"
-sourcepath = nfquery + "sources/amada/"
-outputpath = nfquery + "outputs/amada/"
-source_name = "Amada"
-source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
-source_file = sourcepath + "amada_blacklist"
+def fetch_source(source_link, source_file):
+    os.system("fetch -o " + source_file + " " + source_link)
 
-
-def fetch_source(source_link):
-    os.system("fetch -o " + sourcepath + 'amada_blacklist' + " " + source_link)
-
-def parse_source(sec_sourcefile):
+def parse_source(source_file):
     '''
      Amada gives information in two columns like that 
      ------------------------------------------------ 
@@ -42,7 +34,7 @@ def parse_source(sec_sourcefile):
      so parser parses the file after the 5th line
     '''
 
-    source_file = open(sec_sourcefile,"r")
+    sourcefile = open(source_file,"r")
     source_desc = "Amada C&C IP Blocklist"
     today=date.today().isoformat()
     parsed_info={}
@@ -50,7 +42,7 @@ def parse_source(sec_sourcefile):
     # parse the file line by line and create a dictionary
     # for passing threat_name and output information to
     # createQuery() function.
-    for line in source_file.readlines()[5:]:
+    for line in sourcefile.readlines()[5:]:
         ip_address = line.split(" ")[0]
         threat_name = line.split(" ")[2].split("\n")[0]
         if (threat_name in parsed_info.keys()):
@@ -92,7 +84,7 @@ def main():
     '''
     
     #fetch_source(source_link)
-    parse_source(source_file)
+    parse_source(sourceFile)
 
 
 

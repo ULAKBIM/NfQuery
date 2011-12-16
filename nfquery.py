@@ -17,19 +17,16 @@ from subscription import *
 #from ansistrm import ColorizingStreamHandler
 
 # ------------------------------------------------------------------------------------- #
-                        ####################### 
-                        #       NFQUERY       #
-                        ####################### 
 class nfquery(multiprocessing.Process):
     def run():
         pass
 
+class nfquery_globals:
+    #path = "/usr/local/nfquery"
+    path = "/home/serdar/nfquery"
+    parsers_path = path + "/parsers"
 
 # ------------------------------------------------------------------------------------- #
-                        ####################### 
-                        #       NETWORKING    #
-                        ####################### 
-
 class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
     '''
         The RequestHandler class for our server.
@@ -53,12 +50,8 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
 
 # ------------------------------------------------------------------------------------- #
-                        ####################### 
-                        #       MAIN          #
-                        ####################### 
-
 if __name__ == "__main__":
-    #multiprocessing.log_to_stderr(logging.DEBUG)
+    #multiprocessing.log_to_stderr(logging.INFO)
 
     # LOGGING ' e bir coloring mekanizmasi lazim!!!!!!!
     logging.basicConfig(level=logging.DEBUG)
@@ -74,19 +67,20 @@ if __name__ == "__main__":
 
     config_file = Config(args.config_file)
 
-    # Database Connection Start
+    # Start Database Connection
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
+
+    nfquery_globals.path = config_file.nfquery.path
+    nfquery_globals.parsers_path = config_file.nfquery.parsers_path
+
 
     # Multiprocessing 
     #modules = ["querymanager", "querygenerator", "queryrepository", "scheduler"]
 
     #q_manager = QueryManager()
-
     q_generator = QueryGenerator(config_file.parsers)
-        
     #q_manager.start()
-
     # This will launch the q_generator process and execute the parsers
     q_generator.start()
 
@@ -95,13 +89,13 @@ if __name__ == "__main__":
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((config_file.nfquery.host, config_file.nfquery.port), ThreadingTCPRequestHandler)
- 
+
     # This will keep running the server until interrupting it with the keyboard Ctrl-C or something else.
     try:
         nfquerylog.info('listening for plugin connections...')
         server.serve_forever()
     except KeyboardInterrupt:
-        print 'keyboard Interrupt'
+        nfquerylog.debug('keyboard Interrupt')
         # Database Connection End
         database.close_database_connection()
 

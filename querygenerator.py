@@ -7,6 +7,7 @@ import sys
 
 
 # nfquery imports
+from nfquery import nfquery_globals
 from query import query
 from subscription import subscription
 from db import db
@@ -63,13 +64,15 @@ class QueryGenerator(multiprocessing.Process):
         if not self.parser_list:
             sys.exit('No parser is found, please check your nfquery.conf file!')
         else:
-            from parsers.amadaParser import fetch_source, parse_source
-            # source_link = "http://amada.abuse.ch/blocklist.php?download=ipblocklist"
-            # fetch_source('http://amada.abuse.ch/blocklist.php?download=ipblocklist')
-            # source_file = nfquery + sourcepath + "blocklist"
-            source_file = "/usr/local/nfquery/" + "sources/amada/" + "blocklist"
-            parse_source(source_file)
-            #print locals()
+            for i in range(len(self.parser_list)):
+                print nfquery_globals.parsers_path
+                sys.path.append(nfquery_globals.parsers_path)
+                #print'from parser.' + self.parser_list[i].name.split('.py')[0] + ' import fetch_source, parse_source'
+                exec('from ' + self.parser_list[i].name.split('.py')[0] + ' import fetch_source, parse_source')
+                fetch_source(self.parser_list[i].sourcelink,self.parser_list[i].sourcefile)
+                #self.parser_list[i].parser_output
+                #parse_source(self.parser_list[i].parser_sourcefile)
+                #print locals()
 
 
     def checkParsers(self):
@@ -85,8 +88,8 @@ class QueryGenerator(multiprocessing.Process):
        
         # Check for each parser, if it is registered.
         for i in range(len(self.parser_list)):
-            if self.parser_list[i].parser_name in parsers:
-                self.qglogger.info('Parser  "%s" Exists, OK!' % self.parser_list[i].parser_name)
+            if self.parser_list[i].name in parsers:
+                self.qglogger.info('Parser  "%s" Exists, OK!' % self.parser_list[i].name)
             else:
                 sys.exit('Parser doesn\'t exist, NOT!')
         return 1
