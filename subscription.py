@@ -61,7 +61,6 @@ class subscription():
             except Exception, e:
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
-            
 
         self.logger.info('"source" subscription types generated\n')
 
@@ -149,11 +148,11 @@ class subscription():
         self.cursor.close()
         db.give_database_connection()
 
+
+
+
     def generateJSONPacketsFromSubscription(self):
         pass
-
-
-
 
 
 
