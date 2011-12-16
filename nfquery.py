@@ -82,7 +82,6 @@ if __name__ == "__main__":
     #modules = ["querymanager", "querygenerator", "queryrepository", "scheduler"]
 
     #q_manager = QueryManager()
-    #print config_file.parsers
 
     q_generator = QueryGenerator(config_file.parsers)
         
@@ -90,10 +89,6 @@ if __name__ == "__main__":
 
     # This will launch the q_generator process and execute the parsers
     q_generator.start()
-    
-    # Subscription Generation
-    # to test subscription constructor overloading 
-    # subscription1 = subscription.getInstance('name','qlist',2011)
 
     #subscription1 = subscription()
     #subscription1.createSubscriptionTypes()
@@ -101,8 +96,7 @@ if __name__ == "__main__":
     # Server Start
     server = SocketServer.ThreadingTCPServer((config_file.nfquery.host, config_file.nfquery.port), ThreadingTCPRequestHandler)
  
-    # Activate the server; 
-    # This will keep running until interrupting the server with the keyboard Ctrl-C
+    # This will keep running the server until interrupting it with the keyboard Ctrl-C or something else.
     try:
         nfquerylog.info('listening for plugin connections...')
         server.serve_forever()
