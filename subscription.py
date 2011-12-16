@@ -54,15 +54,13 @@ class subscription():
         self.cursor.execute(statement)
         source_name_list = self.cursor.fetchall()
         for subscription_desc in source_name_list:
-            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES(%d,'%s')''' % (subscription_type, subscription_desc[0])
-            print statement
+            statement = '''INSERT IGNORE INTO subscription(subscription_type,subscription_desc) VALUES(%d,'%s')''' % (subscription_type, subscription_desc[0])
             try:
                 self.cursor.execute(statement)
-                print '\033[1;38m ' + statement + ' \033[1;m'
+                print '\033[1;36m ' + statement + ' \033[1;m'
             except Exception, e:
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
- 
             
 
         self.logger.info('"source" subscription types generated\n')
@@ -79,10 +77,15 @@ class subscription():
             for threat_type in threat_type_list:
                 statement = '''SELECT source_name FROM source where source_id=%d''' % (source_id)
                 self.cursor.execute(statement)
-                subscription_desc = str(self.cursor.fetchone()) + "," + str(threat_type)
-                statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type,subscription_desc)
-                #cursor.execute(statement)
-                print '\033[1;42m' + statement + '\033[1;m'
+                #self.cursor.fetchall()[0]
+                subscription_desc = str(self.cursor.fetchone()[0]) + "," + str(threat_type[0])
+                statement = '''INSERT IGNORE INTO subscription(subscription_type,subscription_desc) VALUES('%s','%s')''' % (subscription_type,subscription_desc)
+                try:
+                    self.cursor.execute(statement)
+                    print '\033[1;36m ' + statement + ' \033[1;m'
+                except Exception, e:
+                    sys.exit ("Error %s" % (repr(e)))
+                    return 0
 
         self.logger.info('"source + threat_type" subscription types generated\n')
         
@@ -96,9 +99,17 @@ class subscription():
                 statement = ''' SELECT threat_type, threat_name FROM threat WHERE threat_id=%d''' % (threat_id)
                 self.cursor.execute(statement)
                 threat_type, threat_name = self.cursor.fetchone()
-                subscription_desc = str(source_id) + ',' + str(threat_type) + ',' + str(threat_name)
-                statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type, subscription_desc)
-                print statement
+                statement = '''SELECT source_name FROM source where source_id=%d''' % source_id[0]                
+                self.cursor.execute(statement)
+                source_name = self.cursor.fetchone()
+                subscription_desc = str(source_name[0]) + ',' + str(threat_type) + ',' + str(threat_name)
+                statement = '''INSERT IGNORE INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type, subscription_desc)
+                try:
+                    self.cursor.execute(statement)
+                    print '\033[1;36m ' + statement + ' \033[1;m'
+                except Exception, e:
+                    sys.exit ("Error %s" % (repr(e)))
+                    return 0
 
         self.logger.info('\033[1;33m"source + threat_type + threat_name" subscription types generated\033[1;m\n')
 
@@ -108,9 +119,13 @@ class subscription():
         self.cursor.execute(statement)
         threat_type_list = self.cursor.fetchall()
         for threat_type in threat_type_list:
-            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type,threat_type[0])
-            print statement
-            #self.cursor.execute(statement)
+            statement = '''INSERT IGNORE INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type,threat_type[0])
+            try:
+                self.cursor.execute(statement)
+                print '\033[1;36m ' + statement + ' \033[1;m'
+            except Exception, e:
+                sys.exit ("Error %s" % (repr(e)))
+                return 0
             
         self.logger.info('\033[1;33m"threat_type" subscription types generated\033[1;m\n')
 
@@ -120,11 +135,19 @@ class subscription():
         self.cursor.execute(statement)
         threat_name_list = self.cursor.fetchall() 
         for threat_name in threat_name_list:
-            statement = '''INSERT INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type,threat_name[0])
-            print statement
-            #self.cursor.execute(statement)
+            statement = '''INSERT IGNORE INTO subscription(subscription_type,subscription_desc) VALUES('%s', '%s')''' % (subscription_type,threat_name[0])
+            try:
+                self.cursor.execute(statement)
+                print '\033[1;36m ' + statement + ' \033[1;m'
+            except Exception, e:
+                sys.exit ("Error %s" % (repr(e)))
+                return 0
 
         self.logger.info('\033[1;33m"threat_name" subscription types generated\033[1;m\n')
+
+        #close the cursor and give the database connection.
+        self.cursor.close()
+        db.give_database_connection()
 
     def generateJSONPacketsFromSubscription(self):
         pass
