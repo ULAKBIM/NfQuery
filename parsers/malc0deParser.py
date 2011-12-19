@@ -4,48 +4,58 @@
 
 from datetime import date
 import os
+import sys 
 
-nfquery = "/usr/local/nfquery/"
-sourcepath = nfquery + "sources/malc0de/"
-outputpath = nfquery + "outputs/malc0de/"
-mal_name="DNSBlackhole"
-blocklist={}
+# nfquery modules
+from querygenerator import create_query
 
-def sourceFetch():
-    malc0de_bl_source = "http://malc0de.com/bl/IP_Blacklist.txt  "
-    os.system("fetch  " + malc0de_bl_source)
-    os.system("mv IP_Blacklist.txt " + sourcepath)
+sys.path.append('..')
 
+__all__ = ['fetch_source', 'parse_source']
 
-def sourceParse():    
-    blfile=open(sourcepath + "IP_Blacklist.txt","r")
-    blocklist[mal_name]=""
+def fetch_source(source_link, source_file):
+    os.system("fetch  -o " + source_file + " " + source_link)
+
+def parse_source(source_name, source_link, source_file):
+    today = date.today().isoformat()
+    sourcefile=open(source_file, "r")
+    # Manual ? 
+    blacklist[mal_name]="DNSBlackhole"
     for i in blfile.readlines()[4:]:
         mal_ipaddr = i.split("\n")[0]
-        blocklist[mal_name]=blocklist[mal_name] + " " + mal_ipaddr 
+        blacklist[mal_name]=blacklist[mal_name] + " " + mal_ipaddr 
+    create_query(source_name, source_desc, source_link, mal_name, "", 1, blacklist[mal_name], today)
 
-def createOutput():
-    today=date.today().isoformat()
-    source="malc0de DNS Blackhole"
-    port="-"
-    MalOutput=open(outputpath + "MalOutput.malc0de","w")
-    alignment="%-*s%-*s%-*s%-*s%*s"
-    column1_width=20
-    column2_width=20
-    column3_width=20
-    column4_width=20
-    column5_width=20
-    MalOutput.write(alignment % (column1_width, "MalType", column2_width, "MalIPaddress", column3_width, "Port", column4_width, "Source", column5_width, "Date\n"))
-    for mal_name, mal_ipaddr in blocklist.items():
-        for each_ip in mal_ipaddr.split(" ")[1:]:
-            MalOutput.write( alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today+"\n"))
-    MalOutput.close()
+# CHECK IT # def createOutput():
+# CHECK IT #     today=date.today().isoformat()
+# CHECK IT #     source="malc0de DNS Blackhole"
+# CHECK IT #     port="-"
+# CHECK IT #     MalOutput=open(outputpath + "MalOutput.malc0de","w")
+# CHECK IT #     alignment="%-*s%-*s%-*s%-*s%*s"
+# CHECK IT #     column1_width=20
+# CHECK IT #     column2_width=20
+# CHECK IT #     column3_width=20
+# CHECK IT #     column4_width=20
+# CHECK IT #     column5_width=20
+# CHECK IT #     MalOutput.write(alignment % (column1_width, "MalType", column2_width, "MalIPaddress", column3_width, "Port", column4_width, "Source", column5_width, "Date\n"))
+# CHECK IT #     for mal_name, mal_ipaddr in blocklist.items():
+# CHECK IT #         for each_ip in mal_ipaddr.split(" ")[1:]:
+# CHECK IT #             MalOutput.write( alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today+"\n"))
+# CHECK IT #     MalOutput.close()
+
+
+def main():
+    ''' 
+        source_name should be registered to Query Server before using its parser.
+    '''
+    fetch_source(source_link, source_file)
+    parse_source(source_file)
 
 
 
-#sourceFetch()
-sourceParse()
-createOutput()
+if __name__ == "__main__":
+    print 'calling main'
+    main()
 
 
 

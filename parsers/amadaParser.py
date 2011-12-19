@@ -17,7 +17,7 @@ __all__ = ['fetch_source', 'parse_source']
 def fetch_source(source_link, source_file):
     os.system("fetch -o " + source_file + " " + source_link)
 
-def parse_source(source_file):
+def parse_source(source_name, source_link, source_file):
     '''
      Amada gives information in two columns like that 
      ------------------------------------------------ 
@@ -82,9 +82,8 @@ def main():
     ''' 
         source_name should be registered to Query Server before using its parser.
     '''
-    
-    #fetch_source(source_link)
-    parse_source(sourceFile)
+    fetch_source(source_link, source_file)
+    parse_source(source_file)
 
 
 

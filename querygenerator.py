@@ -65,33 +65,43 @@ class QueryGenerator(multiprocessing.Process):
             sys.exit('No parser is found, please check your nfquery.conf file!')
         else:
             for i in range(len(self.parser_list)):
-                print nfquery_globals.parsers_path
+                self.qglogger.debug(nfquery_globals.parsers_path)
                 sys.path.append(nfquery_globals.parsers_path)
-                #print'from parser.' + self.parser_list[i].name.split('.py')[0] + ' import fetch_source, parse_source'
-                exec('from ' + self.parser_list[i].name.split('.py')[0] + ' import fetch_source, parse_source')
-                fetch_source(self.parser_list[i].sourcelink,self.parser_list[i].sourcefile)
-                #self.parser_list[i].parser_output
-                #parse_source(self.parser_list[i].parser_sourcefile)
-                #print locals()
+                exec('from ' + self.parser_list[i].script.split('.py')[0] + ' import fetch_source, parse_source')
+                fetch_source(self.parser_list[i].sourcelink, self.parser_list[i].sourcefile)
+                source_file = nfquery_globals.parsers_path + '/' + self.parser_list[i].sourcefile
+                parse_source(self.parser_list[i].sourcename, self.parser_list[i].sourcelink, source_file)
 
 
     def checkParsers(self):
         self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         # fetch registered parser names from the database and check them with existing parser file names.
-        statement = 'SELECT parser_desc FROM parser'
+        statement = 'SELECT parser_script FROM parser'
         self.cursor.execute(statement)
         registered_parsers = self.cursor.fetchall()
+        statement = 'SELECT source_name FROM source'
+        self.cursor.execute(statement)
+        registered_sources = self.cursor.fetchall()
+
         # Convert 'tuple of tuples' to 'a single tuple'
         parsers = ()
         for (p,) in registered_parsers:
             parsers = parsers + (p,)
-       
+
+        sources = ()
+        for (s,) in registered_sources:
+            sources = sources + (s,)
+
         # Check for each parser, if it is registered.
         for i in range(len(self.parser_list)):
-            if self.parser_list[i].name in parsers:
-                self.qglogger.info('Parser  "%s" Exists, OK!' % self.parser_list[i].name)
+            if self.parser_list[i].script in parsers:
+                self.qglogger.info('Parser  "%s" Exists, OK!' % self.parser_list[i].script)
+                if self.parser_list[i].sourcename in sources:
+                    self.qglogger.info('Parser Source "%s" Exists, OK!' % self.parser_list[i].sourcename)
+                else:
+                    sys.exit('Parser Source "%s" doesn\'t exist\nPlease check the nfquery.conf file' % self.parser_list[i].sourcename)
             else:
-                sys.exit('Parser doesn\'t exist, NOT!')
+                sys.exit('Parser %s doesn\'t exist\nPlease check the nfquery.conf file' % self.parser_list[i].script)
         return 1
 
 
@@ -274,11 +284,12 @@ class QueryGenerator(multiprocessing.Process):
     def generateJSONPacketsFromSubscription():
         pass
 
-
+# place this function in elsewhere
 def create_query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time):
     '''
       Get query information FROM parser and pass to the Query Generator.
     '''
+    # Check for threat type and name
     myquery = query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time)
     myquery.insert_query()
     #myquery.print_content()
