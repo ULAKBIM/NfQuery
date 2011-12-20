@@ -19,9 +19,11 @@ def fetch_source(source_link, source_file):
 def parse_source(source_name, source_link, source_file):
     today = date.today().isoformat()
     sourcefile=open(source_file, "r")
+    blacklist = {}
     # Manual ? 
-    blacklist[mal_name]="DNSBlackhole"
-    for i in blfile.readlines()[4:]:
+    mal_name = "DNSBlackhole"
+    blacklist[mal_name] = ""
+    for i in sourcefile.readlines()[4:]:
         mal_ipaddr = i.split("\n")[0]
         blacklist[mal_name]=blacklist[mal_name] + " " + mal_ipaddr 
     create_query(source_name, source_desc, source_link, mal_name, "", 1, blacklist[mal_name], today)
