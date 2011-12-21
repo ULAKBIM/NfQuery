@@ -71,3 +71,15 @@
             
             """ 
         ---------------------------------------------------------------------------
+
+    * parserlardan bir ip listesi istiyoruz ve bu ip listesini create_query fonksiyonunu
+    kullanarak bize yollayin diyoruz. Burda istedigimiz listenin bir formati var, ipler ara
+    sinda birer bosluk olacak sekilde istiyoruz. 
+
+    ip_list='192.140.123.2 12.1.2.3 192.168.5.4 '
+
+    Fakat diyelimki bu listenin basinda sonunda fazladan space karakteri kaldi o zaman cakiyor.
+    Bu yuzden space karakter kontrolu yapiyoruz, formati duzgun belirtmeyi unutmayalim.
+
+    * fetch komutu vb. komutlar freebsd specific olmasin, alternatiflerini bulalim, farkli distributionlarda
+    fetch parametresi yine aynimi nasil olacak bi bakalim.

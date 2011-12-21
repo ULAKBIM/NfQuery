@@ -63,7 +63,7 @@ class db:
                 except MySQLdb.Error, e:
                    sys.exit ("Error %d: %s" % (e.args[0], e.args[1]))
             else:
-                print 'Existing Database Connection Returned\n'
+                print '\033[1;37m Existing Database Connection Returned \033[1;m\n'
                 return self.__connection
 
         def syncConnection(self):
