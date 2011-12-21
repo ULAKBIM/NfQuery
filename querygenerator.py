@@ -51,26 +51,13 @@ class QueryGenerator(multiprocessing.Process):
         connection = db.get_database_connection()
         self.cursor = connection.cursor()
 
+
     def run(self):
         self.checkParsers()
         self.executeParsers()
         self.subscription = subscription()
         self.subscription.createSubscriptionTypes()
         #self.generateSubscriptionPackets()
-
-
-    def executeParsers(self):
-        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
-        if not self.parser_list:
-            sys.exit('No parser is found, please check your nfquery.conf file!')
-        else:
-            for i in range(len(self.parser_list)):
-                self.qglogger.debug(nfquery_globals.parsers_path)
-                sys.path.append(nfquery_globals.parsers_path)
-                exec('from ' + self.parser_list[i].script.split('.py')[0] + ' import fetch_source, parse_source')
-                fetch_source(self.parser_list[i].sourcelink, self.parser_list[i].sourcefile)
-                source_file = nfquery_globals.parsers_path + '/' + self.parser_list[i].sourcefile
-                parse_source(self.parser_list[i].sourcename, self.parser_list[i].sourcelink, source_file)
 
 
     def checkParsers(self):
@@ -103,6 +90,25 @@ class QueryGenerator(multiprocessing.Process):
             else:
                 sys.exit('Parser %s doesn\'t exist\nPlease check the nfquery.conf file' % self.parser_list[i].script)
         return 1
+
+    
+    def executeParsers(self):
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
+        if not self.parser_list:
+            sys.exit('No parser is found, please check your nfquery.conf file!')
+        else:
+            for i in range(len(self.parser_list)):
+                self.qglogger.debug(nfquery_globals.parsers_path)
+                # import parsers
+                sys.path.append(nfquery_globals.parsers_path)
+                exec('from ' + self.parser_list[i].script.split('.py')[0] + ' import fetch_source, parse_source')
+                #print 'from ' + self.parser_list[i].script.split('.py')[0] + ' import fetch_source, parse_source'
+                # fetch source
+                fetch_source(self.parser_list[i].sourcelink, self.parser_list[i].sourcefile)
+                source_file = self.parser_list[i].sourcefile
+                #print source_file
+                # parse fetched file
+                parse_source(self.parser_list[i].sourcename, self.parser_list[i].sourcelink, source_file)
 
 
     def generateSubscriptionPackets(self):
@@ -285,12 +291,12 @@ class QueryGenerator(multiprocessing.Process):
         pass
 
 # place this function in elsewhere
-def create_query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time):
+def create_query(source_name, source_link, threat_type, threat_name, output_type, output, creation_time):
     '''
       Get query information FROM parser and pass to the Query Generator.
     '''
     # Check for threat type and name
-    myquery = query(source_name, source_desc, source_link, threat_type, threat_name, output_type, output, creation_time)
+    myquery = query(source_name, source_link, threat_type, threat_name, output_type, output, creation_time)
     myquery.insert_query()
     #myquery.print_content()
 

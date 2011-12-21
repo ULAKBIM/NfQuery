@@ -15,6 +15,8 @@ sys.path.append('..')
 __all__ = ['fetch_source', 'parse_source']
 
 def fetch_source(source_link, source_file):
+    print source_link
+    print source_file
     os.system("fetch -o " + source_file + " " + source_link)
 
 def parse_source(source_name, source_link, source_file):
@@ -35,7 +37,6 @@ def parse_source(source_name, source_link, source_file):
     '''
 
     sourcefile = open(source_file,"r")
-    source_desc = "Amada C&C IP Blocklist"
     today=date.today().isoformat()
     parsed_info={}
    
@@ -55,7 +56,7 @@ def parse_source(source_name, source_link, source_file):
 
     # output_type=1 means we give an ip list 
     for threat_name, ip_address in parsed_info.items():
-        create_query(source_name, source_desc, source_link, "Botnet", threat_name, 1, ip_address, today)
+        create_query(source_name, source_link, "Botnet", threat_name, 1, ip_address, today)
 
 
 
