@@ -57,7 +57,7 @@ class QueryGenerator(multiprocessing.Process):
         self.executeParsers()
         self.subscription = subscription()
         self.subscription.createSubscriptionTypes()
-        #self.generateSubscriptionPackets()
+        self.generateSubscriptionPackets()
 
 
     def checkParsers(self):

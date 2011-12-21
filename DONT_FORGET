@@ -83,3 +83,8 @@
 
     * fetch komutu vb. komutlar freebsd specific olmasin, alternatiflerini bulalim, farkli distributionlarda
     fetch parametresi yine aynimi nasil olacak bi bakalim.
+
+    * ip olarak 0.0.0.0 gelmis kontrol etmeden eklemisiz.
+
+    * threat tablosuna threat_name kismi NULL olarak girilen threat_type larin bastan tanimlanmis ve duyurulmus 
+    olmasi lazim. Orda bi blacklist felan dusunulebilinir. Malcode iccin DNSBlackhole mesela

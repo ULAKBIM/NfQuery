@@ -15,8 +15,6 @@ sys.path.append('..')
 __all__ = ['fetch_source', 'parse_source']
 
 def fetch_source(source_link, source_file):
-    print source_link
-    print source_file
     os.system("fetch -o " + source_file + " " + source_link)
 
 def parse_source(source_name, source_link, source_file):
