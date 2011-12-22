@@ -21,7 +21,8 @@ class nfquery(multiprocessing.Process):
     def run():
         pass
 
-class nfquery_globals:
+class globals:
+    
     #path = "/usr/local/nfquery"
     path = "/home/serdar/nfquery"
     parsers_path = path + "/parsers"
@@ -65,6 +66,7 @@ if __name__ == "__main__":
     parser.add_argument('config_file', metavar="--conf", type=str, nargs='?', help='nfquery configuration file')
     args = parser.parse_args()
 
+    # Parse Config File
     config_file = Config(args.config_file)
 
     # Start Database Connection
@@ -74,18 +76,9 @@ if __name__ == "__main__":
     nfquery_globals.path = config_file.nfquery.path
     nfquery_globals.parsers_path = config_file.nfquery.parsers_path
 
-
-    # Multiprocessing 
-    #modules = ["querymanager", "querygenerator", "queryrepository", "scheduler"]
-
-    #q_manager = QueryManager()
+    # Start Query Generator
     q_generator = QueryGenerator(config_file.parsers)
-    #q_manager.start()
-    # This will launch the q_generator process and execute the parsers
     q_generator.start()
-
-    #subscription1 = subscription()
-    #subscription1.createSubscriptionTypes()
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((config_file.nfquery.host, config_file.nfquery.port), ThreadingTCPRequestHandler)

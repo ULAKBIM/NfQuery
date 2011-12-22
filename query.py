@@ -51,7 +51,6 @@ class query():
                                threat types which are published in nfquery website. Malware, Botnet, Spam, DoS, Virus, 
                                DNSBlacklist are main example threat types. Other kind of information is default ignored.
                                
- 
         threat_name          : Name of the given threat. It is optional. Threat name can be the name of any malware,
                                botnet or other type of threats indicated in threat_type variable. Example threat names 
                                can be seen below. 
@@ -74,7 +73,6 @@ class query():
                                example Domain List output: ['0o0o0o0o0.com 19js810300z.com 1efmdfieha-mff.com 1iii1i11i1ii.com 1zabslwvn538n4i5tcjl.com']
     
                                example Port List output: ['58470 58443 58439 58431 58427 58419 58417 58411 58398 58389']
-    
     
         creation_time        : Time of the query creation.
                                example creation_time : "01.04.2011"
