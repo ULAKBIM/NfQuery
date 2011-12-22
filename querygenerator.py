@@ -121,14 +121,14 @@ class QueryGenerator(multiprocessing.Process):
         registered_sources = self.cursor.fetchall()
         self.qglogger.info('Generating Subscriptions...')
         for (source_id,) in registered_sources:
-            self.generateSourceSubscriptionPackets(source_id)
+            self.generateSourceSubscriptions(source_id)
         self.generateThreatTypeSubscriptions()
         self.generateThreatNameSubscriptions()
         self.generateSourceThreatTypeSubscriptions()
         self.generateSourceThreatNameSubscriptions()
    
 
-    def generateSourceSubscriptionPackets(self, source_id):
+    def generateSourceSubscriptions(self, source_id):
         try:
             self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
             statement = """SELECT source_name FROM source WHERE source_id=%d""" % (source_id)

@@ -148,9 +148,3 @@ class subscription():
         self.cursor.close()
         db.give_database_connection()
 
-
-    def generateJSONPacketsFromSubscription(self):
-        pass
-
-
-
