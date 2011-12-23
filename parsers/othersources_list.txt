@@ -1,5 +1,8 @@
 
 ___SourceName______                        _IP_          Domain          Port        ThreatType      
+
+
+# http://zeltser.com/combating-malicious-software/malicious-ip-blocklists.html     BU LIKNTE DE BIRCOK SOURCE VAR AMA ASAGIDAKILERLE KESISIYOR.
    
 #aMaDa Blocklist                            X              X               -             X
 #DNS-BH Malware Domain Blocklist            -              -               -             -        // Gives output in BIND file format
@@ -31,5 +34,6 @@ ___SourceName______                        _IP_          Domain          Port   
 # CAIDA bisey veriyor mu?
 # http://www.surbl.org/df data feed veriyor
 # http://www.phishtank.com/stats/2006/10/   top ten domain kullanilabilir mi?
+#
 #
 
