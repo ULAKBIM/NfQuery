@@ -54,9 +54,7 @@ def parse_source(source_name, source_link, source_file):
 
     # output_type=1 means we give an ip list 
     for threat_name, ip_address in parsed_info.items():
-        create_query(source_name, source_link, "Botnet", threat_name, 1, ip_address, today)
-
-
+        create_query(threat_type, 1, ip_address, today)
 
     #def createOutput(source_name):
     #    today=date.today().isoformat()
