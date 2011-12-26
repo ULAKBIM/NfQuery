@@ -88,3 +88,7 @@
 
     * threat tablosuna threat_name kismi NULL olarak girilen threat_type larin bastan tanimlanmis ve duyurulmus 
     olmasi lazim. Orda bi blacklist felan dusunulebilinir. Malcode iccin DNSBlackhole mesela
+
+    * THREAT_NAME i kaldirdik bu girdiden onceki notlerin bazilari anlamsiz olabilir ona gore!
+
+    * IPv6 icin database ' e ip6 ekleyelim.

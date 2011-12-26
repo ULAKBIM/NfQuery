@@ -41,9 +41,9 @@ class query():
         
         source_id            : id of the security source
 
-        threat_type          : Type of the given threat information. Threat type must be one of the 
+        list_type            : Type of the given threat information. List type must be one of the 
                                threat types which are published in nfquery website. Malware, Botnet, Spam, DoS, Virus, 
-                               DNSBlacklist are main example threat types. Other kind of information is default ignored.
+                               DNSBlacklisti, Phishing are main threat types. Other kind of information is default ignored.
                                
         output_type          : Type of the given list information provided by that source. output_type must be a number 
                                between 1-3. Meaning of the numbers can be seen below.
@@ -63,24 +63,27 @@ class query():
                                example Port List output: ['58470 58443 58439 58431 58427 58419 58417 58411 58398 58389']
     
         creation_time        : Time of the query creation.
-                               example creation_time : "01.04.2011"
-    
-    '''
+                               example creation_time : "01.04.2011/14:22"
 
+        update_time          : Last update time of the query.
+                               example update_time : "01.04.2011/14:22"
+
+    '''
     
-    def __init__(self, source_id, list_type, output_type, output, creation_time=None, update_time=None):
+    def __init__(self, source_name, list_type, output_type, output, creation_time=None, update_time=None):
         '''
-            Assign initial VALUES of the query.
+            Assign initial values of the query.
         '''
         if (not (4>output_type>0)):
             sys.exit('output_type must be between 1-3, please look at the definition.\n')
-        self.source_id = source_id
+        self.source_name = source_name
         self.list_type = list_type
-        self.threat_name = threat_name
         self.output_type = output_type
         self.output = output
+        print output
         self.creation_time = creation_time
-        # get the hash of output_list to INSERT INTO query table
+        self.update_time = update_time
+        # get the hash of output to check if the query is updated.
         m = hashlib.md5()
         m.update(self.output)
         self.hash_value = m.hexdigest()
@@ -99,7 +102,7 @@ class query():
 
             = Source Check =
             
-            Source related information should be registered to Query Server in the configuration file or FROM the web interface. 
+            Source related information should be registered to Query Server in the configuration file or from the web interface. 
             We will check if it exists in the source table before inserting the parsed information. not surce_name but source_id 
             could be given as a parameter to create_query function, then we can check source_id below. 
             That means source id, name, description and link should be configurable FROM the web interface.
