@@ -17,7 +17,7 @@ __all__ = ['fetch_source', 'parse_source']
 def fetch_source(source_link, source_file):
     os.system("fetch -o " + source_file + " " + source_link)
 
-def parse_source(source_name, source_link, source_file):
+def parse_source(source_name, source_file):
     '''
      Amada gives information in two columns like that 
      ------------------------------------------------ 
@@ -33,28 +33,23 @@ def parse_source(source_name, source_link, source_file):
      ------------------------------------------------ 
      so parser parses the file after the 5th line
     '''
-
     sourcefile = open(source_file,"r")
-    today=date.today().isoformat()
-    parsed_info={}
-   
-    # parse the file line by line and create a dictionary
-    # for passing threat_name and output information to
-    # createQuery() function.
-    for line in sourcefile.readlines()[5:]:
-        ip_address = line.split(" ")[0]
-        threat_name = line.split(" ")[2].split("\n")[0]
-        if (threat_name in parsed_info.keys()):
-            parsed_info[threat_name] = parsed_info[threat_name] + " " + ip_address
-        else:
-            parsed_info[threat_name] = ip_address
+    
+    # list_types = Botnet, Malware, Spam, Phishing, Virus
+    list_type = 1
 
-    # threat_types = {'Botnet':'', 'Malware':'', 'Spam':'', 'DoS':'', 'Virus':''} but we only 
-    # have botnet so we don;t need  another for loop  
+    # output_types = IP, Domain, Port, IP+Port
+    output_type = 1
+    
+    update_time = date.today().isoformat()
+    ip_list = ''
+   
+    # parse the file line by line and create an ip list
+    for line in sourcefile.readlines()[5:]:
+        ip_list += line.split(" ")[0]
 
     # output_type=1 means we give an ip list 
-    for threat_name, ip_address in parsed_info.items():
-        create_query(threat_type, 1, ip_address, today)
+    create_query(source_name, list_type, output_type, ip_list, update_time)
 
     #def createOutput(source_name):
     #    today=date.today().isoformat()

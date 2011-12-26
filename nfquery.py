@@ -21,11 +21,10 @@ class nfquery(multiprocessing.Process):
     def run():
         pass
 
-class globals:
-    
+class get:
     #path = "/usr/local/nfquery"
     path = "/home/serdar/nfquery"
-    parsers_path = path + "/parsers"
+    sources_path = path + "/parsers"
 
 # ------------------------------------------------------------------------------------- #
 class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
@@ -69,16 +68,25 @@ if __name__ == "__main__":
     # Parse Config File
     config_file = Config(args.config_file)
 
+    # Check for config file sections
+    if config_file.
+
     # Start Database Connection
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
 
-    nfquery_globals.path = config_file.nfquery.path
-    nfquery_globals.parsers_path = config_file.nfquery.parsers_path
+    get.path = config_file.nfquery.path
+    get.sources_path = config_file.nfquery.sources_path
+
+    # Check if source information configured correctly
+    if not config_file.sources:
+        nfquerylog.warning('Please configure source information in nfquery.conf file\n')
+        sys.exit()
 
     # Start Query Generator
-    q_generator = QueryGenerator(config_file.parsers)
+    q_generator = QueryGenerator(config_file.sources)
     q_generator.start()
+
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((config_file.nfquery.host, config_file.nfquery.port), ThreadingTCPRequestHandler)
