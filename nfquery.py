@@ -10,10 +10,13 @@ import MySQLdb
 import time
 import logging
 
+
+
 # nfquery imports
 from db import *
 from querygenerator import *
 from subscription import *
+#from ColoredFormatter import ColoredLogger
 #from ansistrm import ColorizingStreamHandler
 
 # ------------------------------------------------------------------------------------- #
@@ -53,9 +56,19 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 if __name__ == "__main__":
     #multiprocessing.log_to_stderr(logging.INFO)
 
-    # LOGGING ' e bir coloring mekanizmasi lazim!!!!!!!
     logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
+    logging.setLoggerClass(ColoredFormatter)
+    
+    ################ Quick and Dirty Solution for Color Formatting ######################################## 
+    # logging.addLevelName(logging.DEBUG, "\033[1;31m%s\033[1;m" % logging.getLevelName(logging.DEBUG))
+    # logging.addLevelName(logging.INFO, "\033[1;36m%s\033[1;m" % logging.getLevelName(logging.INFO))
+    # logging.addLevelName(logging.WARNING, "\033[1;31m%s\033[1;m" % logging.getLevelName(logging.WARNING))
+    # ################ Quick and Dirty Solution for Color Formatting ######################################## 
+    
+    #logging.basicConfig(level=logging.DEBUG)
     nfquerylog = logging.getLogger('nfquery')
+    nfquerylog.add
     #nfquerylog.addHandler(ColorizingStreamHandler())
     nfquerylog.debug('Starting NfQuery...')
     nfquerylog.debug('Parsing command line arguments')
@@ -66,11 +79,60 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Parse Config File
-    config_file = Config(args.config_file)
+    #configkeys = {'nfquery':'','database','sources'}
+    try:
+        config_file = Config(args.config_file)
+    except Exception, e:
+        nfquerylog.info("Please check configuration file syntax\n")
+        nfquerylog.info("Here is the error details:\n")
+        nfquerylog.info("%s" % e)
+        sys.exit()
 
-    # Check for config file sections
-    if config_file.
+    # Prepare Config File Sections
+    ConfigSections = { 
+                       'nfquery'  : ['path','sources_path','host','port','ipv6'], 
+                       'database' : ['db_host','db_name','db_user','db_password'], 
+                       'sources'  : ['sourcename','listtype','sourcelink','sourcefile','parser']
+                     }
 
+    # Check Config File Sections
+    sections = config_file.keys()
+    if(set(sections).issubset(set(ConfigSections.keys()))):
+        nfquerylog.info('Main configuration options are OK')
+        for section,option in config_file.iteritems():
+            # Check if the section has a loop like 'sources' option.
+            if hasattr(option, 'keys') and hasattr(option, '__getitem__'):
+                nfquerylog.debug('This section is a mapping')
+                if (set(ConfigSections[section]).issubset(set(option.keys()))):
+                    nfquerylog.debug(str(ConfigSections[section]) + 'exists')
+                else:
+                    nfquerylog.info(str(ConfigSections[section]) + ' option does not exists in the configuration file.')
+                    nfquerylog.info('Please add the required option and check configuration file manual')
+                    sys.exit()
+            elif hasattr(option, '__iter__'):
+                nfquerylog.debug('This section is a sequence')
+                if (set(ConfigSections[section]).issubset(set(option[0].keys()))):
+                    nfquerylog.debug(str(ConfigSections[section]) + 'exists')
+                else:
+                    nfquerylog.info(str(ConfigSections[section]) + ' option does not exists in the configuration file.')
+                    nfquerylog.info('Please add the required option and check configuration file manual')
+                    sys.exit()
+            else:
+                nfquerylog.info('Unknown configuration file option value, Check the code!')
+                sys.exit()
+    else:
+        nfquerylog.info('One of the main configuration options does not exists')
+        nfquerylog.info('Please add the required option and check configuration file manual')
+
+
+
+        #print type(items[1])
+
+    #print dir(config_file)
+    sys.exit()
+
+    # Test DB Connection
+    dbdbd
     # Start Database Connection
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
