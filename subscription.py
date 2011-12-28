@@ -1,7 +1,6 @@
 #!/usr/local/bin/python
 
 from db import db
-#from ansistrm import ColorizingStreamHandler
 import logging
 import sys
 
