@@ -10,14 +10,13 @@ import MySQLdb
 import time
 import logging
 
-
-
 # nfquery imports
 from db import *
 from querygenerator import *
 from subscription import *
-#from ColoredFormatter import ColoredLogger
+from logger  import ColoredLogger
 #from ansistrm import ColorizingStreamHandler
+
 
 # ------------------------------------------------------------------------------------- #
 class nfquery(multiprocessing.Process):
@@ -56,48 +55,39 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 if __name__ == "__main__":
     #multiprocessing.log_to_stderr(logging.INFO)
 
-    logging.basicConfig(level=logging.DEBUG)
-    logging.basicConfig(level=logging.INFO)
-    logging.setLoggerClass(ColoredFormatter)
-    
-    ################ Quick and Dirty Solution for Color Formatting ######################################## 
-    # logging.addLevelName(logging.DEBUG, "\033[1;31m%s\033[1;m" % logging.getLevelName(logging.DEBUG))
-    # logging.addLevelName(logging.INFO, "\033[1;36m%s\033[1;m" % logging.getLevelName(logging.INFO))
-    # logging.addLevelName(logging.WARNING, "\033[1;31m%s\033[1;m" % logging.getLevelName(logging.WARNING))
-    # ################ Quick and Dirty Solution for Color Formatting ######################################## 
-    
-    #logging.basicConfig(level=logging.DEBUG)
+    logging.setLoggerClass(ColoredLogger)
     nfquerylog = logging.getLogger('nfquery')
-    nfquerylog.add
-    #nfquerylog.addHandler(ColorizingStreamHandler())
-    nfquerylog.debug('Starting NfQuery...')
-    nfquerylog.debug('Parsing command line arguments')
+    nfquerylog.setLevel(logging.DEBUG)
+    nfquerylog.setLevel(logging.DEBUG)
 
     # Parse Command Line Arguments
     parser = argparse.ArgumentParser(description="Process arguments")
-    parser.add_argument('config_file', metavar="--conf", type=str, nargs='?', help='nfquery configuration file')
+    parser.add_argument('--conf', metavar="config_file", type=str,  help='nfquery configuration file')
+    #parser.add_argument('debug', metavar="--debug", type=str, help='enable debug mode')
     args = parser.parse_args()
-
+    
     # Parse Config File
-    #configkeys = {'nfquery':'','database','sources'}
     try:
-        config_file = Config(args.config_file)
+        config_file = Config(args.conf)
     except Exception, e:
-        nfquerylog.info("Please check configuration file syntax\n")
-        nfquerylog.info("Here is the error details:\n")
+        nfquerylog.info("Please check configuration file syntax")
+        nfquerylog.info("Here is the error details:")
         nfquerylog.info("%s" % e)
         sys.exit()
 
+    nfquerylog.debug('Starting NfQuery...')
+    nfquerylog.debug('Parsing configuration file options')
+
     # Prepare Config File Sections
     ConfigSections = { 
-                       'nfquery'  : ['path','sources_path','host','port','ipv6'], 
+                       'nfquery'  : ['path','sources_path','host','port','ipv6', 'logfile'], 
                        'database' : ['db_host','db_name','db_user','db_password'], 
                        'sources'  : ['sourcename','listtype','sourcelink','sourcefile','parser']
                      }
 
     # Check Config File Sections
     sections = config_file.keys()
-    if(set(sections).issubset(set(ConfigSections.keys()))):
+    if(set(ConfigSections.keys()).issubset(set(sections))):
         nfquerylog.info('Main configuration options are OK')
         for section,option in config_file.iteritems():
             # Check if the section has a loop like 'sources' option.
@@ -107,7 +97,7 @@ if __name__ == "__main__":
                     nfquerylog.debug(str(ConfigSections[section]) + 'exists')
                 else:
                     nfquerylog.info(str(ConfigSections[section]) + ' option does not exists in the configuration file.')
-                    nfquerylog.info('Please add the required option and check configuration file manual')
+                    nfquerylog.info('Please add the required option to conf file and check the manual')
                     sys.exit()
             elif hasattr(option, '__iter__'):
                 nfquerylog.debug('This section is a sequence')
@@ -115,21 +105,22 @@ if __name__ == "__main__":
                     nfquerylog.debug(str(ConfigSections[section]) + 'exists')
                 else:
                     nfquerylog.info(str(ConfigSections[section]) + ' option does not exists in the configuration file.')
-                    nfquerylog.info('Please add the required option and check configuration file manual')
+                    nfquerylog.info('Please add the required option to conf file and check the manual')
                     sys.exit()
             else:
                 nfquerylog.info('Unknown configuration file option value, Check the code!')
                 sys.exit()
     else:
         nfquerylog.info('One of the main configuration options does not exists')
-        nfquerylog.info('Please add the required option and check configuration file manual')
+        nfquerylog.info('You should have all \'nfquery, database, sources\' options in the conf file')
+        nfquerylog.info('Please add the required option and check the manual')
 
 
 
         #print type(items[1])
 
     #print dir(config_file)
-    sys.exit()
+    #sys.exit()
 
     # Test DB Connection
     dbdbd
