@@ -11,8 +11,6 @@ from nfquery import get
 from query import query
 from subscription import subscription
 from db import db
-#from ansistrm import ColorizingStreamHandler
-
 
     # --------------------------- JSON TEST -----------------------------------#
     #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__ #

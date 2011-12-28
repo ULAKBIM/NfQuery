@@ -130,6 +130,7 @@ class query():
         # Begin with try to catch database exceptions.
         new_query_flag=0
         try:
+            print self.source_name
             # Check if we have this source or not.
             statement = """SELECT source_id FROM source WHERE source_name='%s'""" % (self.source_name)
             cursor.execute(statement)
