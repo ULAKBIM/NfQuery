@@ -80,7 +80,7 @@ class query():
         self.list_type = list_type
         self.output_type = output_type
         self.output = output
-        print output
+        #print output
         self.creation_time = creation_time
         self.update_time = update_time
         # get the hash of output to check if the query is updated.
@@ -94,38 +94,18 @@ class query():
     ## ------------------------------------------------------------ ##
 
     # 1) code maintain edilmesi lazim
-    # 2) print statementlarin logging e donusturulmesi lazim.
 
     def insert_query(self):
         '''
-            Insert query information to database.
+            Inserts query information to database.
 
-            = Source Check =
-            
-            Source related information should be registered to Query Server in the configuration file or from the web interface. 
-            We will check if it exists in the source table before inserting the parsed information. not surce_name but source_id 
-            could be given as a parameter to create_query function, then we can check source_id below. 
-            That means source id, name, description and link should be configurable FROM the web interface.
-            
-            = Threat Check =
-            
-            Check threat type and threat name to INSERT INTO database tables. By default, a threat type is recorded without a threat name.
-            Then for new threat names for this threat type, it is inserted with another id.
-
-            = Insert Query =
-
-            Inserts parsed query information to database. Parameter check is done by the query class constructor.
-
-            = Output Check =
-
-            Check output type and call the appropriate function.
+            1) Check Source
+            2) Insert Query : Inserts parsed query information to database. Parameter check is done by the query class constructor.
+            3) Check Output : Check output type and call the appropriate insert function.
         '''
         
         connection = db.get_database_connection()
         cursor = connection.cursor()
-
-        # BU KISMI YENI SOURCE_THREAT_RELATION TABLOSUNA GORE TEKRAR YAZALIM,
-        # HASH_VALUE ' YA GORE QUERY YI UPDATE EDIP ETMEYECEGIMIZE KARAR VERELIM.
 
         # Begin with try to catch database exceptions.
         new_query_flag=0
