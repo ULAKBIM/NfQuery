@@ -11,12 +11,12 @@ class subscription():
         self.cursor = connection.cursor()
         self.initiateLogger('Subscription')
         self.logger.info('In %s' % sys._getframe().f_code.co_name)
-        self.logger.info('Initializing new subscription with constructor')
+        self.logger.info('Initializing new subscription(with default)')
 
     @classmethod
     def getInstance(self, subscription_name, subscription_query_list, subscription_update_time):
         print 'In %s' % sys._getframe().f_code.co_name 
-        print 'Initializing new subscription instance'
+        print 'Initializing new subscription(with instance)'
         self.subscription_name = subscription_name
         self.subscription_query_list = subscription_query_list
         self.subscription_update_time = subscription_update_time

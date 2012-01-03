@@ -7,10 +7,10 @@ import sys
 import os.path
 
 # nfquery imports
-from nfquery import get
 from query import query
 from subscription import subscription
 from db import db
+from defaults import defaults
 
     # --------------------------- JSON TEST -----------------------------------#
     #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__ #
@@ -43,6 +43,14 @@ class QueryGenerator(multiprocessing.Process):
 
 
     def run(self):
+        #from nfquery import get
+        # Check for reconfiguration
+
+        #print get.reconfigure
+        if (defaults.reconfigure_flag):
+            print 'I will'
+        else:
+            print 'Won\'t reconfigure'
         self.checkParsers()
         self.executeParsers()
         self.subscription = subscription()
@@ -55,7 +63,6 @@ class QueryGenerator(multiprocessing.Process):
             Check if the parser exists in the given path.
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        
         for i in range(len(self.sources)):
             if os.path.exists(self.sources[i].parser):
                 self.qglogger.info('Parser "%s" Exists, OK!' % self.sources[i].parser)
@@ -67,7 +74,7 @@ class QueryGenerator(multiprocessing.Process):
         self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         for i in range(len(self.sources)):
             # import parsers
-            sys.path.append(get.sources_path)
+            sys.path.append(defaults.sources_path)
             exec('from ' + (self.sources[i].parser.split('/').pop()).split('.py')[0] + ' import fetch_source, parse_source')
             # call generic parser modules
             fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)

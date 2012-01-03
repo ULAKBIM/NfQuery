@@ -15,18 +15,14 @@ from db import *
 from querygenerator import *
 from subscription import *
 from logger  import ColoredLogger
+from defaults import defaults
 
 # ------------------------------------------------------------------------------------- #
-class nfquery(multiprocessing.Process):
-    def run():
-        pass
-
-class get:
-    #path = "/usr/local/nfquery"
-    path = "/home/serdar/nfquery"
-    sources_path = path + "/parsers"
-
+# class nfquery(multiprocessing.Process):
+#    def run():
+#        pass
 # ------------------------------------------------------------------------------------- #
+
 class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
     '''
         The RequestHandler class for our server.
@@ -51,11 +47,11 @@ class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
 # ------------------------------------------------------------------------------------- #
 if __name__ == "__main__":
-
     # Parse Command Line Arguments
     parser = argparse.ArgumentParser(description="Process arguments")
     parser.add_argument('--conf', type=str, required=True, help='nfquery configuration file')
     parser.add_argument('--debug', action='store_true', help='enable debug mode')
+    parser.add_argument('--reconfig', action='store_true', help='reconfigure sources')
     args = parser.parse_args()
 
     # Start Logging Module
@@ -66,9 +62,8 @@ if __name__ == "__main__":
         # Enable Debugging
         nfquerylog.setLevel(logging.DEBUG)
     else:
-        # Log only info messages
+        # Log info messages
         nfquerylog.setLevel(logging.INFO)
-   
    
     #multiprocessing.log_to_stderr(logging.INFO)
 
@@ -80,9 +75,17 @@ if __name__ == "__main__":
         nfquerylog.info("Here is the error details:")
         nfquerylog.info("%s" % e)
         sys.exit()
+   
+    # Check if we reconfigure sources
+    if args.reconfig:
+        nfquerylog.info("Reconfiguring sources")
+        reconfigure_flag = 1
+    else:
+        nfquerylog.info("'Not reconfiguring, daily routine ;)")
 
     nfquerylog.debug('Starting NfQuery...')
     nfquerylog.warning('Starting NfQuery...')
+    nfquerylog.info('Starting NfQuery...')
     nfquerylog.debug('Parsing configuration file options')
 
     # Prepare Config File Sections
@@ -121,18 +124,16 @@ if __name__ == "__main__":
         nfquerylog.info('One of the main configuration options does not exists')
         nfquerylog.info('You should have all \'nfquery, database, sources\' options in the conf file')
         nfquerylog.info('Please add the required option and check the manual')
-
-
+    
     #print dir(config_file)
     #sys.exit()
 
     # Start Database Connection
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
-
-    # Get global variables
-    get.path = config_file.nfquery.path
-    get.sources_path = config_file.nfquery.sources_path
+  
+    # Assign reconfigure flag
+    defaults.reconfigure_flag = reconfigure_flag
 
     # Start Query Generator
     q_generator = QueryGenerator(config_file.sources)
