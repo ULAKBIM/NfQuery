@@ -55,6 +55,7 @@
             Methods for derived classes:
             
             - finish_request(request, client_address)
+           
             
             Class variables that may be overridden by derived classes or
             instances:
@@ -92,3 +93,10 @@
     * THREAT_NAME i kaldirdik bu girdiden onceki notlerin bazilari anlamsiz olabilir ona gore!
 
     * IPv6 icin database ' e ip6 ekleyelim.
+
+    * Dosya actigimiz kapadigimiz ya da db baglantisi yaptigimiz kisimlar icin asagidaki statement i uygulayalim.
+     
+            with open("myfile.txt") as f:
+                for line in f:
+                   print line 
+

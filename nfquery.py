@@ -79,7 +79,7 @@ if __name__ == "__main__":
     # Check if we reconfigure sources
     if args.reconfig:
         nfquerylog.info("Reconfiguring sources")
-        reconfigure_flag = 1
+        defaults.reconfigure_flag = reconfigure_flag
     else:
         nfquerylog.info("'Not reconfiguring, daily routine ;)")
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     ConfigSections = { 
                        'nfquery'  : ['path','sources_path','host','port','ipv6', 'logfile'], 
                        'database' : ['db_host','db_name','db_user','db_password'], 
-                       'sources'  : ['sourcename','listtype','sourcelink','sourcefile','parser']
+                       'sources'  : ['sourcename','listtype','sourcelink','sourcefile','parser','time_interval']
                      }
 
     # Check Config File Sections
@@ -128,13 +128,14 @@ if __name__ == "__main__":
     #print dir(config_file)
     #sys.exit()
 
+
+    # 1) Check if paths are correct 
+    # 2) Test for database connection   
+
     # Start Database Connection
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
   
-    # Assign reconfigure flag
-    defaults.reconfigure_flag = reconfigure_flag
-
     # Start Query Generator
     q_generator = QueryGenerator(config_file.sources)
     q_generator.start()
