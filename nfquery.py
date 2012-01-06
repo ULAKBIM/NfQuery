@@ -79,7 +79,7 @@ if __name__ == "__main__":
     # Check if we reconfigure sources
     if args.reconfig:
         nfquerylog.info("Reconfiguring sources")
-        defaults.reconfigure_flag = reconfigure_flag
+        defaults.reconfigure_flag = args.reconfig
     else:
         nfquerylog.info("'Not reconfiguring, daily routine ;)")
 
