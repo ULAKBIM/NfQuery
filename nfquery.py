@@ -76,13 +76,6 @@ if __name__ == "__main__":
         nfquerylog.info("%s" % e)
         sys.exit()
    
-    # Check if we reconfigure sources
-    if args.reconfig:
-        nfquerylog.info("Reconfiguring sources")
-        defaults.reconfigure_flag = args.reconfig
-    else:
-        nfquerylog.info("'Not reconfiguring, daily routine ;)")
-
     nfquerylog.debug('Starting NfQuery...')
     nfquerylog.warning('Starting NfQuery...')
     nfquerylog.info('Starting NfQuery...')
@@ -128,6 +121,12 @@ if __name__ == "__main__":
     #print dir(config_file)
     #sys.exit()
 
+	# Check if we reconfigure sources
+    if args.reconfig:
+        nfquerylog.info("Reconfiguring sources")
+        defaults.reconfigure_flag = args.reconfig
+    else:
+        nfquerylog.info("'Not reconfiguring, daily routine ;)")
 
     # 1) Check if paths are correct 
     # 2) Test for database connection   
