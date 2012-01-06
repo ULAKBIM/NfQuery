@@ -12,6 +12,7 @@ from query import query
 from subscription import subscription
 from db import db
 from defaults import defaults
+from logger import ColoredLogger
 
     # --------------------------- JSON TEST -----------------------------------#
     #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__ #
@@ -32,15 +33,12 @@ __all__ = ['create_query', 'QueryGenerator']
 class QueryGenerator(multiprocessing.Process):
 
     def __init__(self, sources):
-        multiprocessing.Process.__init__(self)
-        self.sources = sources
-        logging.basicConfig(level=logging.INFO)
-        self.qglogger = logging.getLogger('QueryGenerator')
-        self.qglogger.setLevel(logging.INFO)
-        #self.qglogger.addHandler(ColorizingStreamHandler())
-        connection = db.get_database_connection()
-        print 'here'
-        self.cursor = connection.cursor()
+		multiprocessing.Process.__init__(self)
+		self.sources = sources
+		logging.setLoggerClass(ColoredLogger)
+		self.qglogger = logging.getLogger('QueryGenerator')
+		self.connection = db.get_database_connection()
+		self.cursor = self.connection.cursor()
 
 
     def run(self):
@@ -62,58 +60,64 @@ class QueryGenerator(multiprocessing.Process):
         # Calculate the checksum
         conf_checksum = hashlib.md5()
         for i in range(len(self.sources)):
-            # However the parser_name column belongs to the parser table, we'll use it in calculation of the checksum of the source,
-            # and the checksum will be stored in source table.
-            conf_checksum.update(
-                                self.sources[i].sourcename  +
-                                str(self.sources[i].listtype)     +
-                                self.sources[i].sourcelink   +
-                                self.sources[i].sourcefile   +
-                                self.sources[i].parser
-                               )        
-            statement = 'SELECT source_checksum FROM source WHERE source_name="%s"' % (self.sources[i].sourcename)
-            self.cursor.execute(statement)
-            dbchecksum = self.cursor.fetchone()
-            if not dbchecksum:
-                # If can't find a checksum, add this new source
-                self.qglogger.info('Adding new source %s' % self.sources[i].sourcename)
-                try:
-                    statement = 'INSERT INTO parser (parser_name, time_interval) VALUES("%s", %d)' % (self.sources[i].parser, self.sources[i].time_interval)
-                    self.cursor.execute(statement)
-                    parser_id = (self.cursor.lastrowid,)
-                    statement = 'INSERT INTO source (source_name, source_link, list_id, parser_id, source_checksum) ' + 'VALUES("%s", "%s", %d, %d, "%s")' % (
-                                self.sources[i].sourcename, self.sources[i].sourcelink, self.sources[i].listtype, parser_id, conf_checksum.hexdigest() )
-                    self.cursor.execute(statement)
-                    qglogger.info('New Source added successfully : "%s"' % self.sources[i].sourcename)
-                except MySQLdb.OperationalError, e:
-                    connection.rollback()
-                    self.qglogger.error("Error %d: %s" % (e.args[0],e.args[1]))
-                    sys.exit()
-            elif conf_checksum.hexdigest() != dbchecksum:
-                # Update the source information
-                self.qglogger.info('Updating the source %s' % self.sources[i].sourcename)
-                try:
-                    # Update source table
-                    statement = 'UPDATE source SET source_name="%s", source_link="%s", list_id=%d, source_checksum="%s" ' + 'WHERE source_name="%s" ' % (
-                                self.sources[i].sourcename, self.sources[i].sourcelink, self.sources[i].listtype, conf_checksum.hexdigest()
-                                )
-                    self.cursor.execute(statement)
-                    # Update parser table
-                    statement = 'UPDATE parser SET parser_name="%s", time_interval=%d WHERE parser_id=(SELECT parser_id FROM source WHERE source_name="%s")' % (
-                                self.sources[i].parser, self.sources[i].time_interval, self.sources[i].sourcename )
-                    self.cursor.exucute(statement)
-                    qglogger.info('Source updated successfully : "%s"' % self.sources[i].sourcename)
-                except MySQLdb.OperationalError, e:
-                    connection.rollback()
-                    self.qglogger.error("Error %d: %s" % (e.args[0],e.args[1]))
-                    sys.exit()
-            elif conf_checksum.hexdigest() == dbchecksum:
-                self.qglogger.info('Can\'t touch the source %s' % self.sources[i].sourcename)
-            else:
-                self.qglogger.info('NOOOOOOO')
-                print 'conf checksum ' + conf_checksum.hexdigest()
-                print 'dbchecksum ' + dbchecksum
-                sys.exit()
+			# However the parser_name column belongs to the parser table, we'll use it in calculation of the checksum of the source,
+			# and the checksum will be stored in source table.
+			conf_checksum.update( self.sources[i].sourcename     + 
+			                      str(self.sources[i].listtype)  + 
+								  self.sources[i].sourcelink     + 
+								  self.sources[i].sourcefile     +
+								  self.sources[i].parser 		 +
+								  str(self.sources[i].time_interval)
+			)
+			statement = 'SELECT source_checksum FROM source WHERE source_name="%s"' % (self.sources[i].sourcename)
+			self.cursor.execute(statement)
+			dbchecksum = self.cursor.fetchone()
+			self.qglogger.debug('dbchecksum : '  + str(dbchecksum))
+			self.qglogger.debug('conf_checksum : ' + str(conf_checksum.hexdigest()))
+			if not dbchecksum:
+				# If can't find a checksum, add this new source
+				self.qglogger.info('Adding new source %s' % self.sources[i].sourcename)
+				try:
+				    statement = 'INSERT INTO parser (parser_script, time_interval) VALUES("%s", %d)' % (self.sources[i].parser, self.sources[i].time_interval)
+				    self.cursor.execute(statement)
+				    parser_id = self.cursor.lastrowid
+				    statement = 'INSERT INTO source (source_name, source_link, list_id, parser_id, source_checksum) VALUES("%s", \'%s\', %d, %d, "%s")' % (
+				                self.sources[i].sourcename, self.sources[i].sourcelink, self.sources[i].listtype, parser_id, conf_checksum.hexdigest() )
+				    self.cursor.execute(statement)
+				    self.qglogger.info('New Source added successfully : "%s"' % self.sources[i].sourcename)
+				except Exception, e:
+				    self.connection.rollback()
+				    self.qglogger.error("Error %s" % e)
+				    sys.exit()
+			elif str(conf_checksum.hexdigest()) != str(dbchecksum[0]):
+			    # Update the source information
+			    self.qglogger.info('Updating the source %s' % self.sources[i].sourcename)
+			    try:
+					# Update source table
+					statement = 'UPDATE source SET source_link="%s", list_id=%d, source_checksum="%s" WHERE source_name="%s" ' % (
+					            self.sources[i].sourcelink, self.sources[i].listtype, conf_checksum.hexdigest(), self.sources[i].sourcename
+					            )
+					self.cursor.execute(statement)
+					# Update parser table
+					statement = 'UPDATE parser SET parser_script="%s", time_interval=%d WHERE parser_id=(SELECT parser_id FROM source WHERE source_name="%s")' % (
+								 self.sources[i].parser, self.sources[i].time_interval, self.sources[i].sourcename )
+					self.cursor.execute(statement)
+					self.qglogger.info('Source updated successfully : "%s"' % self.sources[i].sourcename)
+			    except Exception, e:
+					self.connection.rollback()
+					self.qglogger.error("Error  %s" % (e.args[0]))
+					sys.exit()
+			elif str(conf_checksum.hexdigest()) == str(dbchecksum[0]):
+				self.qglogger.info('No need to reconfigure source :  %s' % self.sources[i].sourcename)
+			else:
+			    self.qglogger.info('CHECK CODE')
+			    print 'conf checksum ' + conf_checksum.hexdigest()
+			    print 'dbchecksum ' + dbchecksum
+			    sys.exit()
+            
+        #close the cursor and give the database connection.
+        self.cursor.close()
+        db.give_database_connection()
 
 
 
@@ -303,11 +307,11 @@ class QueryGenerator(multiprocessing.Process):
                     result = self.cursor.fetchall()
                     if result:
                         query_id_list.append(result)
-                if not query_id_list:
-                    self.qglogger.debug("No query is available for %s subscription." % (threat_id))
-                else:
-                    subscription_list.append(subscription.getInstance(str(source_id) + "," + str(threat_id), query_id_list, '2011'))
-                query_id_list = []        
+                        if not query_id_list:
+                            self.qglogger.debug("No query is available for %s subscription." % (threat_id))
+                        else:
+                            subscription_list.append(subscription.getInstance(str(source_id) + "," + str(threat_id), query_id_list, '2011'))
+                            query_id_list = []        
             for s in subscription_list:
                 self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
                 print "threat type subscription packets --------------->  %s" % (s.__dict__)
