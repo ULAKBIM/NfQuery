@@ -40,20 +40,20 @@ class ColoredFormatter(logging.Formatter):
 
 # Custom logger class with multiple destinations
 class ColoredLogger(logging.Logger):
-	FORMAT = "[$BOLD%(name)-s$RESET][%(levelname)-s]  %(message)s (%line : (lineno)d)"
-    #FORMAT = "%(asctime)s [$BOLD%(name)-s$RESET][%(levelname)-s]  %(message)s "
-    COLOR_FORMAT = formatter_message(FORMAT, True)
-
-    def __init__(self, name):
-        # By default level is set to INFO
-        logging.Logger.__init__(self, name, logging.INFO)
-
-        color_formatter = ColoredFormatter(self.COLOR_FORMAT)
-
-        console = logging.StreamHandler()
-        console.setFormatter(color_formatter)
-
-        self.addHandler(console)
-        return
+	#FORMAT = "[$BOLD%(name)-s$RESET][%(levelname)-s]  %(message)s (%line : (lineno)d)"
+	FORMAT = "%(asctime)s [$BOLD%(name)-s$RESET][%(levelname)-s]  %(message)s %(lineno)d)"
+	COLOR_FORMAT = formatter_message(FORMAT, True)
+	
+	def __init__(self, name):
+	    # By default level is set to INFO
+	    logging.Logger.__init__(self, name, logging.INFO)
+	
+	    color_formatter = ColoredFormatter(self.COLOR_FORMAT)
+	
+	    console = logging.StreamHandler()
+	    console.setFormatter(color_formatter)
+	
+	    self.addHandler(console)
+	    return
 
 

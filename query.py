@@ -3,11 +3,13 @@
 import sys
 import socket, struct
 import MySQLdb
+import logging
 import hashlib
 
 # nfquery import
 from db import *
-
+from defaults import defaults
+from logger import ColoredLogger
 
 __all__ = ['query']
 
@@ -41,10 +43,6 @@ class query():
         
         source_id            : id of the security source
 
-        list_type            : Type of the given threat information. List type must be one of the 
-                               threat types which are published in nfquery website. Malware, Botnet, Spam, DoS, Virus, 
-                               DNSBlacklisti, Phishing are main threat types. Other kind of information is default ignored.
-                               
         output_type          : Type of the given list information provided by that source. output_type must be a number 
                                between 1-3. Meaning of the numbers can be seen below.
 
@@ -62,31 +60,31 @@ class query():
     
                                example Port List output: ['58470 58443 58439 58431 58427 58419 58417 58411 58398 58389']
     
-        creation_time        : Time of the query creation.
-                               example creation_time : "01.04.2011/14:22"
-
         update_time          : Last update time of the query.
                                example update_time : "01.04.2011/14:22"
 
     '''
     
-    def __init__(self, source_name, list_type, output_type, output, creation_time=None, update_time=None):
+    def __init__(self, source_name, output_type, output, update_time=None):
         '''
             Assign initial values of the query.
         '''
         if (not (4>output_type>0)):
             sys.exit('output_type must be between 1-3, please look at the definition.\n')
         self.source_name = source_name
-        self.list_type = list_type
         self.output_type = output_type
         self.output = output
         #print output
-        self.creation_time = creation_time
+        # if first, it's creation_time
         self.update_time = update_time
         # get the hash of output to check if the query is updated.
         m = hashlib.md5()
         m.update(self.output)
         self.hash_value = m.hexdigest()
+        logging.setLoggerClass(ColoredLogger)
+        self.qlogger = logging.getLogger('Query')
+        self.qlogger.setLevel(defaults.loglevel)
+
 
 
     ## ------------------------------------------------------------ ##
@@ -97,115 +95,70 @@ class query():
 
     def insert_query(self):
         '''
-            Inserts query information to database.
+            Inserts query information to database. 
+            To tables query, query_ip and ip
 
-            1) Check Source
-            2) Insert Query : Inserts parsed query information to database. Parameter check is done by the query class constructor.
-            3) Check Output : Check output type and call the appropriate insert function.
+            | query_id    | int(10) unsigned     | NO   | PRI | NULL    | auto_increment |        
+            | source_id   | int(10) unsigned     | NO   | MUL | NULL    |                |
+            | update_time | varchar(20)          | YES  |     | NULL    |                |       # update time
+            | query_type  | smallint(5) unsigned | NO   |     | NULL    |                |        # ip,domain,port,ip+port 
+            | hash_value  | varchar(32)          | NO   |     | NULL    |                |        # hash value of this query    
+
+
         '''
-        
+        self.qlogger.debug('In %s' % sys._getframe().f_code.co_name)
         connection = db.get_database_connection()
         cursor = connection.cursor()
 
         # Begin with try to catch database exceptions.
-        new_query_flag=0
         try:
             print self.source_name
             # Check if we have this source or not.
             statement = """SELECT source_id FROM source WHERE source_name='%s'""" % (self.source_name)
             cursor.execute(statement)
             source_id = cursor.fetchone()
+             
             if source_id is None:
-                sys.exit("Wrong source name is given! Please check if you give one of the source names published in the NfQuery Web Site" )
-            
-            # Check if we have this threat type or not.
-            statement = """SELECT threat_id FROM threat WHERE threat_type='%s'""" % (self.threat_type)
+                print 'There is an error!!!'
+                sys.exit()
+
+            statement = """SELECT query_id FROM query WHERE source_id=%d""" % (source_id[0])
             cursor.execute(statement)
-            threat_id = cursor.fetchone()
-            if threat_id is None:
-                sys.exit( "Wrong threat type is given! Please check if you give one of the threat types published in the NfQuery Web Site" )
-            # Check if we have the given threat name for this threat type.
-            elif self.threat_name is not None:
-                statement = """SELECT threat_id FROM threat WHERE threat_name='%s' AND threat_type='%s'""" % (self.threat_name, self.threat_type)
-                cursor.execute(statement) 
-                threat_id = cursor.fetchone()
-                if threat_id is None:
-                    # Add new threat name for this threat type.
-                    cursor.execute("INSERT INTO threat (threat_type,threat_name) VALUES('" + self.threat_type + "','" + self.threat_name + "')")
-                    threat_id = (cursor.lastrowid,)
-                    new_query_flag=1
-            # Threat name is not given, get the threat type id.
-            else: 
-                cursor.execute("SELECT threat_id FROM threat WHERE threat_type='" + self.threat_type + "' AND threat_name IS NULL")
-                threat_id = (cursor.lastrowid,)
-         
-            # if new_query_flag is SET insert the new query.
-            # this means we didn't insert such a query with this threat_id before.
-            if new_query_flag:
-                # source_threat relation check
-                statement = """SELECT st_id FROM source_threat_relation WHERE source_id=%d AND threat_id=%d""" % (source_id[0], threat_id[0])
-                cursor.execute(statement)
-                st_id=cursor.fetchone()
-                if not st_id:
-                    # Query Creation 
-                    statement = """INSERT INTO source_threat_relation (source_id, threat_id) VALUES( %d, %d)""" % (source_id[0], threat_id[0])
-                    cursor.execute(statement)
-                    print 'New source_threat relation inserted\n'
-                statement = """ INSERT INTO query (source_id, threat_id, creation_time, query_type, hash_value) VALUES( %d, %d, '%s', %d, '%s') """ %  (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
+            query_id = cursor.fetchone()
+
+            if query_id is None:
+                '''Adding new query'''
+                statement = """ INSERT INTO query (source_id, query_type, hash_value, creation_time) VALUES( %d, %d, '%s', %s) """ % ( 
+                                source_id[0], self.output_type, self.hash_value, self.update_time )
+                print statement
                 cursor.execute(statement)
                 query_id=(cursor.lastrowid,)
-                print '\033[1;34m New query inserted \033[1;m'
-                print '\033[1;34m New query id is %d \033[1;m' % query_id 
+                print query_id[0]
                 self.insert_query_ip(cursor, query_id)
+                print 'New query is added'
             else:
-                # If this is not a new query, it could be inserted and deleted in the past or it could exist now in the query table, 
-                # so we should check the table for query.
-                statement = """
-                                SELECT query_id FROM query WHERE source_id=%d AND threat_id=%d
-                            """ % (source_id[0], threat_id[0])
+                statement = """ SELECT hash_value FROM query WHERE source_id=%d""" % source_id
                 cursor.execute(statement)
-                query_id = cursor.fetchone()
-                if query_id:
-                    print '\033[1;31m Query exists \033[1;m'
-                    statement = """SELECT hash_value FROM query WHERE query_id=%d""" % (query_id)
+                hash_value = cursor.fetchone()
+                if hash_value is None:
+                    ''' Fatal Error'''
+                    self.qlogger.error('Fatal Error : hash_value is None')
+                if hash_value == self.hash_value:
+                    '''Don't update this query'''
+                    self.qlogger.info('No need to update this query')
+                else:
+                    '''Update query'''
+                    self.qlogger.info('Updating the query')
+                    statement = """ UPDATE query SET query_type=%s, hash_value='%s', update_time='%s' """ % (self.output_type, self.hash_value, self.update_time)
                     cursor.execute(statement)
-                    hash_value = cursor.fetchone()
-                    print '\033[1;31m hash_value=%s, self.hash = %s \033[1;m' % (hash_value, self.hash_value)
-                    if hash_value[0] == self.hash_value:
-                        print '\033[1;31m Query is not updated \033[1;m'
-                    else:
-                        statement = """
-                                        UPDATE query SET hash_value='%s' WHERE query_id=%d
-                                    """ % (self.hash_value, query_id[0])
-                        print statement
-                        cursor.execute(statement)
-                        print '\033[1;32m Query is updated \033[1;m'
-                        print '\033[1;32m Updated query id is %d \033[1;m' % query_id 
-                        self.insert_query_ip(cursor, query_id)
-                else:       
-                    # insert the query 
-                    statement = """ INSERT INTO query (source_id, threat_id, creation_time, query_type, hash_value) VALUES( %d, %d, '%s', %d, '%s')  """ % (source_id[0], threat_id[0], self.creation_time, self.output_type, self.hash_value)
-                    cursor.execute(statement)
-                    query_id=(cursor.lastrowid,)
-                    print '\033[1;34m New query inserted \033[1;m'
-                    print '\033[1;34m New query id is %d \033[1;m' % query_id
                     self.insert_query_ip(cursor, query_id)
-
-            cursor.close()
-            db.give_database_connection()
         except MySQLdb.OperationalError, e:
             connection.rollback()
             sys.exit("Error %d: %s" % (e.args[0],e.args[1]))
         
-        # THIS PART WILL EXIST IF AN OUTPUT TYPE WILL BE OR NOT?
-        # Check output type and call the appropriate function.
-        #if self.output_type is 1:
-        #    self.insert_query_ip(cursor, query_id)
-        #elif self.output_type is 2:
-        #    self.insert_query_domain(cursor, query_id)
-        #else:
-        #    self.insert_query_port(cursor, query_id)
-        
+        cursor.close()                      
+        db.give_database_connection()
+
         
     def insert_query_ip(self, cursor, query_id):
         '''
@@ -219,17 +172,32 @@ class query():
                 try:
                     # Check if we already have this ip.
                     statement="""SELECT ip_id FROM ip WHERE ip_int=%ld""" % (ip_int)
+                    #print statement
                     cursor.execute(statement)
                     ip_id = cursor.fetchone()
-                    # Insert new ip.
                     if ip_id is None:
+                        # Insert new ip.
                         statement = """ INSERT INTO ip (ip, ip_int) VALUES('%s',%ld)""" % (ip, ip_int)
                         cursor.execute(statement)
                         ip_id=(cursor.lastrowid,)
-                    # Create query-ip relation
-                    statement = """ INSERT INTO query_ip (query_id, ip_id) VALUES(%ld,%ld)""" % (query_id[0], ip_id[0]) 
-                    cursor.execute(statement)
-                    print statement
+                        print 'New ip is inserted'
+                        statement = """ INSERT INTO query_ip (query_id, ip_id) VALUES(%ld,%ld)""" % (query_id[0], ip_id[0])
+                        cursor.execute(statement)
+                        print 'Creating new query-ip relation'
+                    else:
+                        print 'We already have this ip'
+                        statement = """ SELECT qp_id FROM query_ip WHERE query_id=%d AND  ip_id=%d""" % (query_id[0], ip_id[0])
+                        cursor.execute(statement)
+                        qp_id = cursor.fetchone()
+                        # Check if we already have this ip-query relation
+                        if qp_id is not None:
+                            print 'We\'ve query-ip relation already'
+                        else:
+                            # Create query-ip relation
+                            statement = """ INSERT INTO query_ip (query_id, ip_id) VALUES(%ld,%ld)""" % (query_id[0], ip_id[0]) 
+                            cursor.execute(statement)
+                            print 'Creating new query-ip relation'
+                            #print statement
                 except MySQLdb.OperationalError, e:
                     connection.rollback()
                     sys.exit("Error %d: %s" % (e.args[0],e.args[1])) 
