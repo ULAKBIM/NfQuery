@@ -3,6 +3,11 @@
 import MySQLdb
 import time
 import sys
+import logging
+
+
+from logger import ColoredLogger
+
 
 
 __all__ = ['db']
@@ -13,59 +18,41 @@ class db:
         A python singleton class designed for database connection pooling
 
         db class deals with the db operations. It gets the database configuration parameters
-        and initiates database connection instance. The attributes and functions described
-        below.
-
-         ----------------
-        | Attributes     |
-         ----------------
-
-        db_host :
-
-        db_name :
-
-        db_user :
-
-        db_password :
-
-         ----------------
-        | Functions      |
-         ----------------
-
-        connect_db :
-
-        get_connection_instance:
-
+        and initiates database connection instance.
     '''
     class __db():
         """ Implementation of the singleton interface """
         __connection=None
         def __init__(self, db_host, db_user, db_password, db_name):
-             self.db_host = db_host
-             self.db_name = db_name
-             self.db_user = db_user
-             self.db_password = db_password
+			self.db_host = db_host
+			self.db_name = db_name
+			self.db_user = db_user
+			self.db_password = db_password
+			logging.setLoggerClass(ColoredLogger)
+			self.qrlogger = logging.getLogger('QueryRepository')
 
         def getID(self):
             """ Test method, return singleton id """
             return id(self)
 
         def getConnection(self):
-            """ Test method, return connection """
-            if self.__connection is None:
-                '''                                                                                                             
-                   Establishes mysql connection.
-                '''
-                try :
-                   self.__connection = MySQLdb.connect(self.db_host, self.db_user, self.db_password, self.db_name)
-                   print 'Database Connection Established'
-                   return self.__connection
-                except MySQLdb.Error, e:
-                   sys.exit ("Error %d: %s" % (e.args[0], e.args[1]))
-            else:
-                print '\033[1;37m Existing Database Connection Returned \033[1;m\n'
-                return self.__connection
-
+			""" Test method, return connection """
+			self.qrlogger.debug('In %s' % sys._getframe().f_code.co_name)
+			if self.__connection is None:
+				'''                                                                                                             
+				   Establishes mysql connection.
+				'''
+				try :
+				   self.__connection = MySQLdb.connect(self.db_host, self.db_user, self.db_password, self.db_name)
+				   self.qrlogger.info('Database Connection Established')
+				   return self.__connection
+				except MySQLdb.Error, e:
+				   self.qrlogger.error("Error %d: %s" % (e.args[0], e.args[1]))
+				   sys.exit()
+			else:
+			    self.qrlogger.info('Existing Database Connection Returned')
+			    return self.__connection
+			
         def syncConnection(self):
             """
                 Commits changes to database
@@ -73,7 +60,8 @@ class db:
             if self.__connection is None:
                 sys.exit('No connection exists, can not sync!\n')
             else:
-                self.__connection.commit()
+				self.qrlogger.info('Changes are committed to database')
+				self.__connection.commit()
 
         def closeConnection(self):
             """
@@ -82,7 +70,8 @@ class db:
             if self.__connection is None:
                 sys.exit('No connection to close\n Check your code\n')
             else:
-                self.__connection.close()
+				self.qrlogger.info('Closing database connection')
+				self.__connection.close()
 
 
     # storage for the instance reference
@@ -94,9 +83,6 @@ class db:
             db.__dbinstance = db.__db(db_host, db_user, db_password, db_name)
             # Store instance reference as the only member in the handle
             self.__dict__['_Singleton__instance'] = db.__dbinstance
-            print 'Creating Database Instance'
-        else:
-            print 'Using Existing Database Instance'
 
     @staticmethod
     def get_database_connection():

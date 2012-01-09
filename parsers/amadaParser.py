@@ -36,7 +36,7 @@ def parse_source(source_name, source_file):
     sourcefile = open(source_file,"r")
     
     # list_types = Botnet, Malware, Spam, Phishing, Virus
-    list_type = 1
+    # THINK ! #list_type = 1
 
     # output_types = IP, Domain, Port, IP+Port
     output_type = 1
@@ -46,10 +46,10 @@ def parse_source(source_name, source_file):
    
     # parse the file line by line and create an ip list
     for line in sourcefile.readlines()[5:]:
-        ip_list += line.split(" ")[0]
+        ip_list += line.split(" ")[0] + ' '
 
     # output_type=1 means we give an ip list 
-    create_query(source_name, list_type, output_type, ip_list, update_time)
+    create_query(source_name, output_type, ip_list, update_time)
 
     #def createOutput(source_name):
     #    today=date.today().isoformat()

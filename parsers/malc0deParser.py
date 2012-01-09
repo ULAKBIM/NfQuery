@@ -14,24 +14,23 @@ sys.path.append('..')
 __all__ = ['fetch_source', 'parse_source']
 
 def fetch_source(source_link, source_file):
-    print "fetch  -o " + source_file + " " + source_link
     os.system("fetch  -o " + source_file + " " + source_link)
 
-def parse_source(source_name, source_link, source_file):
+def parse_source(source_name, source_file):
     '''
         This file will be automatically updated daily and populated with the last 30 days of malicious IP addresses.'
         Last updated 2011-12-20  
     '''
-    today = date.today().isoformat()
+    update_time = date.today().isoformat()
     sourcefile=open(source_file, "r")
-    blacklist = {}
-    # Manual ? 
-    mal_name = "DNSBlackhole"
-    blacklist[mal_name] = ""
+  
+    # output_types = IP, Domain, Port, IP+Port 
+    output_type = 1
+    ip_list = ''
     for i in sourcefile.readlines()[4:]:
-        mal_ipaddr = i.split("\n")[0]
-        blacklist[mal_name]=blacklist[mal_name] + " " + mal_ipaddr 
-    create_query(source_name, source_link, mal_name, "", 1, blacklist[mal_name], today)
+        ip_list += i.split("\n")[0] + ' '
+
+    create_query(source_name, output_type, ip_list, update_time)
 
 # CHECK IT # def createOutput():
 # CHECK IT #     today=date.today().isoformat()

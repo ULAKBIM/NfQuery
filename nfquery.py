@@ -60,10 +60,12 @@ if __name__ == "__main__":
 
     if args.debug:
         # Enable Debugging
-        nfquerylog.setLevel(logging.DEBUG)
+		nfquerylog.setLevel(logging.DEBUG)
+		defaults.loglevel = logging.DEBUG
     else:
-        # Log info messages
-        nfquerylog.setLevel(logging.INFO)
+		# Log info messages
+		nfquerylog.setLevel(logging.INFO)
+		defaults.loglevel = logging.INFO
    
     #multiprocessing.log_to_stderr(logging.INFO)
 
@@ -118,9 +120,6 @@ if __name__ == "__main__":
         nfquerylog.info('You should have all \'nfquery, database, sources\' options in the conf file')
         nfquerylog.info('Please add the required option and check the manual')
     
-    #print dir(config_file)
-    #sys.exit()
-
 	# Check if we reconfigure sources
     if args.reconfig:
         nfquerylog.info("Reconfiguring sources")
