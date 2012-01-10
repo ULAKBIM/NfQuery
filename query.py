@@ -112,12 +112,10 @@ class query():
 
         # Begin with try to catch database exceptions.
         try:
-            print self.source_name
             # Check if we have this source or not.
             statement = """SELECT source_id FROM source WHERE source_name='%s'""" % (self.source_name)
             cursor.execute(statement)
             source_id = cursor.fetchone()
-             
             if source_id is None:
                 print 'There is an error!!!'
                 sys.exit()
@@ -130,28 +128,29 @@ class query():
                 '''Adding new query'''
                 statement = """ INSERT INTO query (source_id, query_type, hash_value, creation_time) VALUES( %d, %d, '%s', %s) """ % ( 
                                 source_id[0], self.output_type, self.hash_value, self.update_time )
-                print statement
                 cursor.execute(statement)
                 query_id=(cursor.lastrowid,)
-                print query_id[0]
                 self.insert_query_ip(cursor, query_id)
                 print 'New query is added'
             else:
                 statement = """ SELECT hash_value FROM query WHERE source_id=%d""" % source_id
                 cursor.execute(statement)
                 hash_value = cursor.fetchone()
-                if hash_value is None:
-                    ''' Fatal Error'''
-                    self.qlogger.error('Fatal Error : hash_value is None')
-                if hash_value == self.hash_value:
+                if hash_value[0] == self.hash_value:
                     '''Don't update this query'''
                     self.qlogger.info('No need to update this query')
-                else:
+                elif hash_value[0] != self.hash_value:
                     '''Update query'''
                     self.qlogger.info('Updating the query')
-                    statement = """ UPDATE query SET query_type=%s, hash_value='%s', update_time='%s' """ % (self.output_type, self.hash_value, self.update_time)
+                    statement = """ UPDATE query SET query_type=%s, hash_value='%s', update_time='%s' WHERE query_id=%d """ % (self.output_type, self.hash_value, self.update_time, query_id[0])
                     cursor.execute(statement)
                     self.insert_query_ip(cursor, query_id)
+                elif hash_value is None:
+                    ''' Fatal Error'''
+                    self.qlogger.error('Fatal Error : hash_value is None')
+
+
+
         except MySQLdb.OperationalError, e:
             connection.rollback()
             sys.exit("Error %d: %s" % (e.args[0],e.args[1]))
@@ -176,31 +175,30 @@ class query():
                     cursor.execute(statement)
                     ip_id = cursor.fetchone()
                     if ip_id is None:
-                        # Insert new ip.
+                        # Insert new ip and query-ip relation.
                         statement = """ INSERT INTO ip (ip, ip_int) VALUES('%s',%ld)""" % (ip, ip_int)
                         cursor.execute(statement)
                         ip_id=(cursor.lastrowid,)
-                        print 'New ip is inserted'
+                        self.qlogger.debug('New ip is inserted')
                         statement = """ INSERT INTO query_ip (query_id, ip_id) VALUES(%ld,%ld)""" % (query_id[0], ip_id[0])
                         cursor.execute(statement)
-                        print 'Creating new query-ip relation'
+                        self.qlogger.debug('New query-ip relation is inserted')
                     else:
-                        print 'We already have this ip'
+                        # Check if we already have this ip-query relation
                         statement = """ SELECT qp_id FROM query_ip WHERE query_id=%d AND  ip_id=%d""" % (query_id[0], ip_id[0])
                         cursor.execute(statement)
                         qp_id = cursor.fetchone()
-                        # Check if we already have this ip-query relation
                         if qp_id is not None:
-                            print 'We\'ve query-ip relation already'
+                            self.qlogger.debug('We already have this query-ip relation')
                         else:
                             # Create query-ip relation
                             statement = """ INSERT INTO query_ip (query_id, ip_id) VALUES(%ld,%ld)""" % (query_id[0], ip_id[0]) 
                             cursor.execute(statement)
-                            print 'Creating new query-ip relation'
-                            #print statement
+                            self.qlogger.debug('New query-ip relation is inserted')
                 except MySQLdb.OperationalError, e:
                     connection.rollback()
-                    sys.exit("Error %d: %s" % (e.args[0],e.args[1])) 
+                    qlogger.error('Error %d: %s'  % (e.args[0],e.args[1]))
+                    sys.exit() 
          
  
 

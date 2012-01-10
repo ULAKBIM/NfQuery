@@ -170,7 +170,7 @@ class QueryGenerator(multiprocessing.Process):
             sys.path.append(defaults.sources_path)
             exec('from ' + (self.sources[i].parser.split('/').pop()).split('.py')[0] + ' import fetch_source, parse_source')
             # call generic parser modules
-            fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
+            # TEMP COMMENT # fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
             parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
 
 
