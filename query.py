@@ -66,46 +66,54 @@ class query():
     '''
     
     def __init__(self, source_name, output_type, output, update_time=None):
-        '''
-            Assign initial values of the query.
-        '''
-        if (not (4>output_type>0)):
-            sys.exit('output_type must be between 1-3, please look at the definition.\n')
-        self.source_name = source_name
-        self.output_type = output_type
-        self.output = output
-        #print output
-        # if first, it's creation_time
-        self.update_time = update_time
-        # get the hash of output to check if the query is updated.
-        m = hashlib.md5()
-        m.update(self.output)
-        self.hash_value = m.hexdigest()
-        logging.setLoggerClass(ColoredLogger)
+        '''Start logging and assign default values'''
+        logging.setLoggerClass(ColoredLogger)        
         self.qlogger = logging.getLogger('Query')
         self.qlogger.setLevel(defaults.loglevel)
 
+        if (not (4>output_type>0)):
+            sys.exit('output_type must be between 1-3, please look at the definition.\n')
 
-
-    ## ------------------------------------------------------------ ##
-    ##                      INSERT FUNCTIONS                        ##
-    ## ------------------------------------------------------------ ##
-
-    # 1) code maintain edilmesi lazim
-
+        self.source_name = source_name
+        self.output_type = output_type
+        self.output = output
+        self.update_time = update_time         # if first, it's creation_time
+        m = hashlib.md5()        # get the hash of output to check if the query is updated. 
+        m.update(self.output)
+        self.hash_value = m.hexdigest()
+        
+        
     def insert_query(self):
         '''
             Inserts query information to database. 
             To tables query, query_ip and ip
 
-            | query_id    | int(10) unsigned     | NO   | PRI | NULL    | auto_increment |        
-            | source_id   | int(10) unsigned     | NO   | MUL | NULL    |                |
-            | update_time | varchar(20)          | YES  |     | NULL    |                |       # update time
-            | query_type  | smallint(5) unsigned | NO   |     | NULL    |                |        # ip,domain,port,ip+port 
-            | hash_value  | varchar(32)          | NO   |     | NULL    |                |        # hash value of this query    
+            query
+            +---------------+----------------------+------+-----+---------+----------------+
+            | query_id    | int(10) unsigned     | NO   | PRI | NULL    | auto_increment   |        
+            | source_id   | int(10) unsigned     | NO   | MUL | NULL    |                  |
+            | update_time | varchar(20)          | YES  |     | NULL    |                  |        # update time
+            | query_type  | smallint(5) unsigned | NO   |     | NULL    |                  |        # ip,domain,port,ip+port 
+            | hash_value  | varchar(32)          | NO   |     | NULL    |                  |        # hash value of this query    
+            +---------------+----------------------+------+-----+---------+----------------+
 
+            query_ip
+            +----------+------------------+------+-----+---------+----------------+
+            | qp_id    | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
+            | query_id | int(10) unsigned | NO   | MUL | NULL    |                |
+            | ip_id    | int(10) unsigned | NO   | MUL | NULL    |                |
+            +----------+------------------+------+-----+---------+----------------+
 
+            ip
+            +--------+---------------------+------+-----+---------+----------------+
+            | Field  | Type                | Null | Key | Default | Extra          |
+            +--------+---------------------+------+-----+---------+----------------+
+            | ip_id  | int(10) unsigned    | NO   | PRI | NULL    | auto_increment |
+            | ip     | varchar(20)         | NO   |     | NULL    |                |
+            | ip_int | bigint(20) unsigned | NO   |     | NULL    |                |
+            +--------+---------------------+------+-----+---------+----------------+
         '''
+
         self.qlogger.debug('In %s' % sys._getframe().f_code.co_name)
         connection = db.get_database_connection()
         cursor = connection.cursor()
@@ -148,8 +156,6 @@ class query():
                 elif hash_value is None:
                     ''' Fatal Error'''
                     self.qlogger.error('Fatal Error : hash_value is None')
-
-
 
         except MySQLdb.OperationalError, e:
             connection.rollback()

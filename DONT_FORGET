@@ -104,3 +104,8 @@
 
 	* IMPORTANT !!! : Parserlarin create_query fonksiyonuna, ip listesini hangi formatta gonderecegini belirtmemiz lazim, bununla alakali bor guide olmasi lazim.
 					  ip_list : 'a b c d . .  ' birer bosluk halinda mesela
+	
+	* Mysql querylerini hazirlarken yazdigin statement degiskenleri icindeki butun %s leri tek tirnak icine al. '%s' seklinde.				  
+
+
+

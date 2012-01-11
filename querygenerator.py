@@ -48,8 +48,8 @@ class QueryGenerator(multiprocessing.Process):
             self.reconfigureSources()    
         self.checkParsers()
         self.executeParsers()
-        #self.subscription = subscription()
-        #self.subscription.createSubscriptionTypes()
+        self.subscription = subscription()
+        self.subscription.createSubscriptionTypes()
         #self.generateSubscriptionPackets()
 
 
@@ -176,82 +176,48 @@ class QueryGenerator(multiprocessing.Process):
 
     def generateSubscriptionPackets(self):
         self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
-        '''
-        '''
-        statement = 'SELECT source_id FROM source'
-        self.cursor.execute(statement)
-        registered_sources = self.cursor.fetchall()
         self.qglogger.info('Generating Subscriptions...')
-        for (source_id,) in registered_sources:
-            self.generateSourceSubscriptions(source_id)
-        self.generateThreatTypeSubscriptions()
-        self.generateThreatNameSubscriptions()
-        self.generateSourceThreatTypeSubscriptions()
-        self.generateSourceThreatNameSubscriptions()
+        self.generateSourceNameSubscriptions()
+        self.generateListTypeSubscriptions()
    
 
-    def generateSourceSubscriptions(self, source_id):
+    def generateSourceSubscriptions(self, source_name):
         try:
             self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
-            statement = """SELECT source_name FROM source WHERE source_id=%d""" % (source_id)
+			statement = """SELECT subscription_id FROM subscription where """
+            statement = """SELECT source_id FROM source WHERE source_name='%s'""" % (source_name)
             self.cursor.execute(statement)
             source_name = self.cursor.fetchone()
-            subscription_list = []
-            if not source_name:
-                sys.exit("There is no source registered in the database with this name.") 
-            statement = """SELECT query_id FROM query WHERE source_id=%d""" % (source_id)
-            self.cursor.execute(statement)
-            query_id = self.cursor.fetchall()
-            #print query_id
-            if not query_id:
-                self.qglogger.debug("We don't have any query for this source.")
-                self.qglogger.info("No query is available for %s subscription." % (source_name) )
+            print source_name
+			if source_name is None:
+                self.qglogger.error("Source is not registered to database. Run reconfig.")
+                sys.exit()
             else:
-                for qid in query_id:
-                    statement = ( """SELECT subscription_query.query_id FROM subscription,subscription_query """ + 
-                                  """WHERE subscription.subscription_desc='%s' """ % (source_name) + 
-                                  """AND subscription.subscription_id=subscription_query.subscription_id"""
-                                )
-                    #print statement
-                    self.cursor.execute(statement)
-                    query_id_list = self.cursor.fetchall()
-                    if query_id_list:
-                        subscription_list.append(subscription.getInstance(source_name, query_id_list, '2011'))
-                        ###### gather subscription information #####   
-                        #for (query_id,) in query_id_list:
-                        #    self.cursor.execute(""" SELECT ip.ip FROM query,query_ip,ip WHERE query.query_id=%s and query.query_id=query_ip.query_id and query_ip.ip_id=ip.ip_id""", (query_id))
-                        #    ip_list = self.cursor.fetchall()
-                        #    # subscription_desc, subs
-                        #    # Generate the subscription object
-                        ############################################
-                for i in subscription_list:
-                    print "source subscription packets for %s --> %s" % (source_name, i.__dict__)
-                return subscription_list   
+				statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % (source_name)
+				self.cursor.execute(statement)
+				subscription_id = self.cursor.fethone()
+				if subscription_id is None:
+					self.qglogger.error('No subscription name is found for source : %s') % (source_name)
+					sys.exit()
+				else:
+			    	statement = """SELECT query_id FROM query WHERE source_id=%d""" % (source_id)
+                	self.cursor.execute(statement)
+                	query_id = self.cursor.fetchall()
+                	print query_id
+                	if query_id is None:
+                	    self.qglogger.debug("We don't have any query for this source.")
+                	    self.qglogger.error("%s subscription is not created." % (source_name) )
+						sys.exit()
+                	else:
+                	    for qid in query_id:
+                	        statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" + 
+                	                      """VALUES(%d, %d)""" % (subscription_id, qid) )
+                	        self.cursor.execute(statement)
+                	        print statement
         except Exception, e:
             sys.exit ("Error %s" % repr(e))
             return 0
 
-
-
-    def generateThreatNameSubscriptions(self, threat_id=None):
-        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
-        try:
-            statement = """SELECT threat_id FROM threat WHERE threat_name<>'NULL' GROUP BY threat_name"""
-            self.cursor.execute(statement)
-            subscription_list = []
-            for threat_id in self.cursor.fetchall():
-                statement = """SELECT query_id FROM query WHERE threat_id=%s""" % threat_id
-                self.cursor.execute(statement)
-                query_id_list = self.cursor.fetchall()
-                if not query_id_list:
-                    self.qglogger.info("No query is available for %d subscription." % (threat_id) )
-                else:
-                    subscription_list.append(subscription.getInstance(threat_id, query_id_list, '2011'))
-            for i in subscription_list:
-                print "threat name subscription packets for %s --> %s" % (threat_id, i.__dict__)
-        except Exception, e:
-            sys.exit ("Error %s" % repr(e))
-            return 0
 
 
     def generateThreatTypeSubscriptions(self, threat_type=None):
@@ -278,76 +244,6 @@ class QueryGenerator(multiprocessing.Process):
         except Exception, e:
             sys.exit ("Error %s" % repr(e))
             return 0
-
-
-    def generateSourceThreatTypeSubscriptions(self, source_id=None, threat_id=None):
-        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
-        try:
-            statement = """SELECT threat_type FROM threat GROUP BY threat_type"""
-            self.cursor.execute(statement)
-            threat_type_list = self.cursor.fetchall()
-            statement = """SELECT source_id FROM source"""
-            self.cursor.execute(statement)
-            source_id_list = self.cursor.fetchall()
-            for threat_type in threat_type_list:
-                self.qglogger.debug("Executing For threat type = %s""" % threat_type)
-                statement = """ SELECT threat_id FROM threat WHERE threat_type='%s'""" % threat_type
-                self.cursor.execute(statement)
-                thread_id_list = self.cursor.fetchall()
-                subscription_list = []
-                query_id_list = []
-                for source_id in source_id_list:
-                    self.qglogger.debug("Executing For source_id = %d""" % source_id)
-                    # This looks for each threat_id which belongs to that threat_type   
-                    for threat_id in thread_id_list:
-                        statement = """SELECT query_id FROM query WHERE threat_id=%d AND source_id=%d""" % (threat_id[0], source_id[0])
-                        self.cursor.execute(statement)
-                        result = self.cursor.fetchall()
-                        if result:
-                            query_id_list.append(result)
-                    if not query_id_list:
-                        self.qglogger.debug("No query is available for %s subscription." % (threat_type))
-                    else:
-                        subscription_list.append(subscription.getInstance(str(source_id) + "," + str(threat_type), query_id_list, '2011'))
-                    query_id_list = []        
-                for s in subscription_list:
-                    self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
-        except Exception, e:
-            sys.exit ("Error %s" % repr(e))
-            return 0
-
-    def generateSourceThreatNameSubscriptions(self, source_id=None, threat_id=None):
-        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
-        try:
-            statement = """SELECT threat_id FROM threat WHERE threat_name IS NOT NULL group by threat_name"""
-            self.cursor.execute(statement)
-            threat_id_list = self.cursor.fetchall()
-            statement = """SELECT source_id FROM source"""
-            self.cursor.execute(statement)
-            source_id_list = self.cursor.fetchall()
-            query_id_list = []
-            subscription_list = []
-            for source_id in source_id_list:
-                self.qglogger.debug("Executing For source_id = %d""" % source_id)
-                # This looks for each threat_id which belongs to that threat_type   
-                for threat_id in threat_id_list:
-                    statement = """SELECT query_id FROM query WHERE threat_id=%d AND source_id=%d""" % (threat_id[0], source_id[0])
-                    self.cursor.execute(statement)
-                    result = self.cursor.fetchall()
-                    if result:
-                        query_id_list.append(result)
-                        if not query_id_list:
-                            self.qglogger.debug("No query is available for %s subscription." % (threat_id))
-                        else:
-                            subscription_list.append(subscription.getInstance(str(source_id) + "," + str(threat_id), query_id_list, '2011'))
-                            query_id_list = []        
-            for s in subscription_list:
-                self.qglogger.debug("threat type subscription packets --------------->  %s" % (s.__dict__))
-                print "threat type subscription packets --------------->  %s" % (s.__dict__)
-        except Exception, e:
-            sys.exit ("Error %s" % repr(e))
-            return 0 
-
 
     def generateJSONPacketsFromSubscription():
         pass
