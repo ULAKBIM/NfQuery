@@ -8,8 +8,6 @@ import logging
 
 from logger import ColoredLogger
 
-
-
 __all__ = ['db']
 
 
