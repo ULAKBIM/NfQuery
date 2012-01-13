@@ -165,7 +165,7 @@ class QueryGenerator(multiprocessing.Process):
 
     
     def executeParsers(self):
-        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         for i in range(len(self.sources)):
             # import parsers
             sys.path.append(defaults.sources_path)
@@ -176,14 +176,14 @@ class QueryGenerator(multiprocessing.Process):
 
 
     def generateSubscriptionPackets(self):
-        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qglogger.info('Generating Subscriptions...')
         self.generateSourceSubscriptions()
         self.generateListTypeSubscriptions()
    
 
     def generateSourceSubscriptions(self):
-        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         try:
             # Check if source_name is not given, so we work for all sources.
             statement = """SELECT subscription_name FROM subscription WHERE subscription_type=1"""
@@ -241,7 +241,7 @@ class QueryGenerator(multiprocessing.Process):
 
 
     def generateListTypeSubscriptions(self):
-        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         try:
             # Check if source_name is not given, so we work for all sources.
             statement = """SELECT subscription_name FROM subscription WHERE subscription_type=2"""

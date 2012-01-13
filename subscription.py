@@ -15,7 +15,7 @@ class subscription():
         connection = db.get_database_connection()
         self.cursor = connection.cursor()
         self.initiateLogger('SubscriptionGenerator')
-        self.slogger.info('In %s' % sys._getframe().f_code.co_name)
+        self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
 
     #@classmethod
     #def getInstance(self, subscription_name, subscription_query_list, subscription_update_time):
@@ -30,10 +30,10 @@ class subscription():
         logging.setLoggerClass(ColoredLogger)
         self.slogger = logging.getLogger('SubscriptionGenerator')
         self.slogger.setLevel(defaults.loglevel)
-        self.slogger.info('In %s' % sys._getframe().f_code.co_name)
+        self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
 
     def createSubscriptionTypes(self):
-        self.slogger.info('In %s' % sys._getframe().f_code.co_name)
+        self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
         '''
             We have 2 different subscription types.
             
@@ -65,7 +65,6 @@ class subscription():
                 errorcode = message[0] # get MySQL error code
                 if errorcode == 1062:
                     self.slogger.debug('Duplicate Entry Warning / No Problem.')
-                    self.slogger.info('Duplicate Entry Warning / No Problem.')
             except Exception, e:
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
@@ -86,7 +85,6 @@ class subscription():
                 errorcode = message[0] # get MySQL error code
                 if errorcode == 1062:
                     self.slogger.debug('Duplicate Entry Warning / No Problem.')
-                    self.slogger.info('Duplicate Entry Warning / No Problem.')
             except Exception, e:
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
