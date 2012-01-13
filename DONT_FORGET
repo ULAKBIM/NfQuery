@@ -107,5 +107,7 @@
 	
 	* Mysql querylerini hazirlarken yazdigin statement degiskenleri icindeki butun %s leri tek tirnak icine al. '%s' seklinde.				  
 
+    * BELKI BIRGUN SQLALCHEMY KULLANIRIZ!!!
+
 
 

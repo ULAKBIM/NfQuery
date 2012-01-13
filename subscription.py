@@ -7,6 +7,7 @@ from defaults import defaults
 
 import logging
 import sys
+import MySQLdb
 
 class subscription():
     
@@ -60,9 +61,15 @@ class subscription():
             try:
                 self.cursor.execute(statement)
                 print statement
+            except MySQLdb.IntegrityError, message:
+                errorcode = message[0] # get MySQL error code
+                if errorcode == 1062:
+                    self.slogger.debug('Duplicate Entry Warning / No Problem.')
+                    self.slogger.info('Duplicate Entry Warning / No Problem.')
             except Exception, e:
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
+
         self.slogger.info('"source" subscription types generated\n')
 
         # 2) List Type
@@ -75,6 +82,11 @@ class subscription():
             try:
                 self.cursor.execute(statement)
                 print statement 
+            except MySQLdb.IntegrityError, message:
+                errorcode = message[0] # get MySQL error code
+                if errorcode == 1062:
+                    self.slogger.debug('Duplicate Entry Warning / No Problem.')
+                    self.slogger.info('Duplicate Entry Warning / No Problem.')
             except Exception, e:
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
@@ -82,5 +94,5 @@ class subscription():
 
         #close the cursor and give the database connection.
         self.cursor.close()
-        db.give_database_connection()
+        db.sync_database_connection()
 

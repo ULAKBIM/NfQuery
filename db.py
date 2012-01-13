@@ -97,7 +97,7 @@ class db:
             return db.__dbinstance.getConnection()
 
     @staticmethod
-    def give_database_connection():
+    def sync_database_connection():
         '''
            Commit changes to database which is done by a temporary connection instance.
            NOT CLOSES THE DB CONNECTION!!
@@ -110,7 +110,6 @@ class db:
             Closes the database connection
         '''
         db.__dbinstance.closeConnection()
-
 
     #def __getattr__(self, attr):
     #    """ Delegate access to implementation """

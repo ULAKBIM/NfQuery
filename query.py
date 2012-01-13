@@ -162,7 +162,7 @@ class query():
             sys.exit("Error %d: %s" % (e.args[0],e.args[1]))
         
         cursor.close()                      
-        db.give_database_connection()
+        db.sync_database_connection()
 
         
     def insert_query_ip(self, cursor, query_id):
