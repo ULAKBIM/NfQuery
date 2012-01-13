@@ -6,6 +6,7 @@ import multiprocessing
 import sys
 import os.path
 import hashlib
+import MySQLdb
 
 # nfquery imports
 from query import query
@@ -50,7 +51,7 @@ class QueryGenerator(multiprocessing.Process):
         self.executeParsers()
         self.subscription = subscription()
         self.subscription.createSubscriptionTypes()
-        #self.generateSubscriptionPackets()
+        self.generateSubscriptionPackets()
 
 
     def reconfigureSources(self):
@@ -87,8 +88,6 @@ class QueryGenerator(multiprocessing.Process):
                         self.qglogger.info('Reconfiguration is not completed')
                         self.qglogger.error("Error  %s" % (e.args[0]))
                         sys.exit()
-        self.qglogger.info('Reconfiguration is completed')
-        sys.exit()
     
         for i in range(len(self.sources)):
             # Calculate the checksum
@@ -146,11 +145,11 @@ class QueryGenerator(multiprocessing.Process):
                 print 'dbchecksum ' + dbchecksum
                 sys.exit()
         
-		#self.reconfigureSubscriptions()
-		    
+        #self.reconfigureSubscriptions() # ?????
+            
         #close the cursor and give the database connection.
         self.cursor.close()
-        db.give_database_connection()
+        db.sync_database_connection()
 
 
     def checkParsers(self):
@@ -179,117 +178,135 @@ class QueryGenerator(multiprocessing.Process):
     def generateSubscriptionPackets(self):
         self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         self.qglogger.info('Generating Subscriptions...')
-        self.generateSourceNameSubscriptions()
+        self.generateSourceSubscriptions()
         self.generateListTypeSubscriptions()
    
 
-    def generateSourceSubscriptions(self, source_name=None):
+    def generateSourceSubscriptions(self):
         self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
         try:
-			# Check if source_name is given, so we work only for one source.
-			if source_name is not None:
-            	statement = """SELECT source_id FROM source WHERE source_name='%s'""" % (source_name)
-            	self.cursor.execute(statement)
-            	source_id = self.cursor.fetchone()
-            	print source_id
-			else:
-				# Check if source_name is not given, so we work for all sources.
-				statement = """SELECT source_id FROM source GROUP BY source_name"""
-				self.cursor.execute(statement)
-				source_id = self.cursor.fetchall()
-				print source_id
-
-			if source_id is None:
-                self.qglogger.error("Source is not registered to database. Run reconfig or check sources."
+            # Check if source_name is not given, so we work for all sources.
+            statement = """SELECT subscription_name FROM subscription WHERE subscription_type=1"""
+            self.cursor.execute(statement)
+            source_name_list = self.cursor.fetchall()
+            if source_name_list is None:
+                self.qglogger.error("Source is not registered to database. Run reconfig or check sources.")
                 sys.exit()
+            self.qglogger.debug(source_name_list)
+            for source_name in source_name_list:
+                statement = """SELECT query_id FROM query WHERE source_id IN(SELECT source_id FROM source WHERE source_name='%s')""" % source_name[0]
+                self.cursor.execute(statement)
+                query_id_list = self.cursor.fetchall()
+                if query_id_list is None:
+                    self.qglogger.debug("We don't have any query for this source.")
+                    self.qglogger.error("%s subscription creation is failed." % (source_name) )   # We exit, but may be we can wait for the parser to be executed.
+                    sys.exit()
+                statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % source_name
+                self.cursor.execute(statement)
+                subscription_id = self.cursor.fetchone()
+                statement = """SELECT subs_query_id FROM subscription_query WHERE subscription_id=%d""" % subscription_id
+                self.cursor.execute(statement)
+                subs_query_id = self.cursor.fetchone()
+                if subs_query_id is None:
+                    for qid in query_id_list:
+                        ########### eger subs_query_id varsa burada update yapilacak, yoksa eklenecek 
+                        statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" + 
+                                      """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
+                        self.cursor.execute(statement)
+                        self.qglogger.debug(statement)
+                else:
+                    statement = ("""SELECT query_id FROM subscription_query WHERE subscription_id=%d""" % subscription_id[0])
+                    self.cursor.execute(statement)
+                    query_ids = self.cursor.fetchall()
+                    for qid in query_id_list:
+                        if not (qid in query_ids):
+                            statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" +
+                                      """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
+                            self.cursor.execute(statement)
+                            self.qglogger.debug(statement)
+        except MySQLdb.IntegrityError, message:
+            errorcode = message[0] # get MySQL error code
+            if errorcode == 1062:
+                self.qglogger.debug('Duplicate Entry Warning / No Problem.')
+                self.qglogger.info('Duplicate Entry Warning / No Problem.')
             else:
-				#statement = """SELECT subscription_id FROM subscription_query WHERE subscription_"""
-				statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % (source_name)
-				self.cursor.execute(statement)
-				subscription_id = self.cursor.fethone()
-				if subscription_id is None:
-					self.qglogger.error('No subscription name is found for source : %s') % (source_name)
-					self.qglogger.error("May be,we don't have any query for this source or the subscription is not ready yet. : %s") % (source_name)
-					sys.exit()
-				else:
-			    	statement = """SELECT query_id FROM query WHERE source_id=%d""" % (source_id)
-                	self.cursor.execute(statement)
-                	query_id = self.cursor.fetchall()
-                	print query_id
-                	if query_id is None:
-                	    self.qglogger.debug("We don't have any query for this source.")
-                	    self.qglogger.error("%s subscription creation is failed." % (source_name) )   # We exit, but may be we can wait for the parser to be executed.
-						sys.exit()
-                	else:
-                	    for qid in query_id:
-                	        statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" + 
-                	                      """VALUES(%d, %d)""" % (subscription_id, qid) )
-                	        self.cursor.execute(statement)
-                	        print statement
+                self.qglogger.error("'Error %s" % (repr(e)))
+                sys.exit()
         except Exception, e:
-            sys.exit ("Error %s" % repr(e))
+            self.qglogger.error("Error %s" % (repr(e)))
+            sys.exit ()
             return 0
+        db.sync_database_connection()
 
 
 
-   def generateListTypeSubscriptions(self, list_type=None):
-       self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
-       try:
-   		if list_type is not None:
-           	statement = """SELECT list_id FROM list WHERE list_type='%s'""" % (list_type)
-           	self.cursor.execute(statement)
-           	list_id = self.cursor.fetchone()
-           	print list_id
-   		else:
-   			# Check if source_name is not given, so we work for all sources.
-   			statement = """SELECT list_id FROM source GROUP BY list_type"""
-   			self.cursor.execute(statement)
-   			list_id = self.cursor.fetchall()
-   			print list_id
-                                                                                                                                                                      
-   		if list_id is None:
-               self.qglogger.error("List type is not registered to database. Run reconfig or check default list types" #### Check this message again
-               sys.exit()
-        else:
-   			statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % (list_type)
-   			self.cursor.execute(statement)
-   			subscription_id = self.cursor.fethone()
-   			if subscription_id is None:
-   				self.qglogger.error('No subscription name is found for source : %s') % (source_name)
-   				self.qglogger.error("May be,we don't have any query for this source or the subscription is not ready yet. : %s") % (source_name)
-   				sys.exit()
-   			else:
-   		    	statement = """SELECT query_id FROM query WHERE source_id=%d""" % (source_id)
-               	self.cursor.execute(statement)
-               	query_id = self.cursor.fetchall()
-               	print query_id
-               	if query_id is None:
-               	    self.qglogger.debug("We don't have any query for this source.")
-               	    self.qglogger.error("%s subscription creation is failed." % (source_name) )   # We exit, but may be we can wait for the parser to be executed.
-   					sys.exit()
-               	else:
-               	    for qid in query_id:
-               	        statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" + 
-               	                      """VALUES(%d, %d)""" % (subscription_id, qid) )
-               	        self.cursor.execute(statement)
-               	        print statement
-       except Exception, e:
-           sys.exit ("Error %s" % repr(e))
-           return 0
+    def generateListTypeSubscriptions(self):
+        self.qglogger.info('In %s' % sys._getframe().f_code.co_name)
+        try:
+            # Check if source_name is not given, so we work for all sources.
+            statement = """SELECT subscription_name FROM subscription WHERE subscription_type=2"""
+            self.cursor.execute(statement)
+            list_type_list = self.cursor.fetchall()
+            if list_type_list is None:
+                self.qglogger.error("List type is not registered to database. Run reconfig or check sources.")
+                sys.exit()
+            self.qglogger.debug(list_type_list)
+            for list_type in list_type_list:
+                statement = """SELECT query_id FROM query WHERE source_id IN (SELECT source_id FROM source where list_id IN(SELECT list_id FROM list WHERE list_type='%s'))""" % list_type[0]
+                self.cursor.execute(statement)
+                query_id_list = self.cursor.fetchall()
+                if query_id_list is None:
+                    self.qglogger.debug("We don't have any query for this list type.")
+                    self.qglogger.error("%s subscription is failed." % (list_type[0]) ) 
+                else:
+                    statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % list_type[0]
+                    self.cursor.execute(statement)
+                    subscription_id = self.cursor.fetchone()
+                    statement = """SELECT subs_query_id FROM subscription_query WHERE subscription_id=%d""" % subscription_id
+                    self.cursor.execute(statement)
+                    subs_query_id = self.cursor.fetchone()
+                if subs_query_id is None:
+                    for qid in query_id_list:
+                        ########### eger subs_query_id varsa burada update yapilacak, yoksa eklenecek 
+                        statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" +
+                                      """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
+                        self.cursor.execute(statement)
+                        self.qglogger.debug(statement)
+                else:
+                    statement = ("""SELECT query_id FROM subscription_query WHERE subscription_id=%d""" % subscription_id[0])
+                    self.cursor.execute(statement)
+                    query_ids = self.cursor.fetchall()
+                    for qid in query_id_list:
+                        if not (qid in query_ids):
+                            statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" +
+                                      """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
+                            self.cursor.execute(statement)
+                            self.qglogger.debug(statement)
+        except MySQLdb.IntegrityError, message:
+            errorcode = message[0] # get MySQL error code
+            if errorcode == 1062:
+                self.qglogger.debug('Duplicate Entry Warning / No Problem.')
+                self.qglogger.info('Duplicate Entry Warning / No Problem.')
+            else:
+                self.qglogger.error("'Error %s" % (repr(e)))
+                sys.exit()
+        except Exception, e:
+            self.qglogger.error("Error %s" % (repr(e)))
+            sys.exit ()
+            return 0
+        db.sync_database_connection()
 
 
-
-
-   def generateJSONPacketsFromSubscription():
+    def generateJSONPacketsFromSubscription():
         pass
+
+
 
 # place this function in elsewhere
 def create_query(source_name, output_type, output, creation_time):
     '''
       Get query information from parser and insert the query to database.
     '''
-    connection = db.get_database_connection()
-    cursor = connection.cursor()
     myquery = query(source_name, output_type, output, creation_time)
     myquery.insert_query()
     #myquery.print_content()
