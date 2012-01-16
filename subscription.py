@@ -69,7 +69,7 @@ class subscription():
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
 
-        self.slogger.info('"source" subscription types generated\n')
+        self.slogger.info('"source" subscription types generated')
 
         # 2) List Type
         subscription_type=2

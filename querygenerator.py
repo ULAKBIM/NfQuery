@@ -46,11 +46,13 @@ class QueryGenerator(multiprocessing.Process):
     def run(self):
         # Check for reconfiguration
         if (defaults.reconfigure_flag):
-            self.reconfigureSources()    
+            self.reconfigureSources()
+            sys.exit()
+
         self.checkParsers()
         self.executeParsers()
         self.subscription = subscription()
-        self.subscription.createSubscriptionTypes()
+        #self.subscription.createSubscriptionTypes()
         self.generateSubscriptionPackets()
 
 
