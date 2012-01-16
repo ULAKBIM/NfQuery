@@ -5,12 +5,6 @@
 from datetime import date
 import os
 
-nfquery = "/usr/local/nfquery/"
-sourcepath = nfquery + "sources/SpyEyeTracker/"
-outputpath = nfquery + "outputs/SpyEyeTracker/"
-mal_name="SpyEyeTracker"
-blocklist={}
-
 def sourceFetch():
     SpyEyeTracker_bl_source = "https://spyeyetracker.abuse.ch/blocklist.php?download=ipblocklist  "
     os.system("fetch  " + SpyEyeTracker_bl_source)
