@@ -69,8 +69,6 @@ class subscription():
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
 
-        self.slogger.info('"source" subscription types generated')
-
         # 2) List Type
         subscription_type=2
         statement = '''SELECT list_type FROM list GROUP BY list_type'''
@@ -88,7 +86,6 @@ class subscription():
             except Exception, e:
                 sys.exit ("Error %s" % (repr(e)))
                 return 0
-        self.slogger.info('list_type subscriptions generated')
 
         #close the cursor and give the database connection.
         self.cursor.close()

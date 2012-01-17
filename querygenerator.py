@@ -29,7 +29,7 @@ from logger import ColoredLogger
     #print loaded                                                              #
     # --------------------------- JSON TEST -----------------------------------#
     
-__all__ = ['create_query', 'QueryGenerator']
+__all__ = ['QueryGenerator']
 
 class QueryGenerator(multiprocessing.Process):
 
@@ -47,14 +47,16 @@ class QueryGenerator(multiprocessing.Process):
         # Check for reconfiguration
         if (defaults.reconfigure_flag):
             self.reconfigureSources()
+            # reconfigure subscription types 
+            subs = subscription()
+            subs.createSubscriptionTypes()
             sys.exit()
-
-        self.checkParsers()
-        self.executeParsers()
-        self.subscription = subscription()
-        #self.subscription.createSubscriptionTypes()
-        self.generateSubscriptionPackets()
-
+        else:
+            a1 = self.checkParsers()
+            a2 = self.executeParsers()
+            a3 = self.subscription = subscription()
+            a4 = self.createSubscriptions()
+            print a1,a2,a3,a4
 
     def reconfigureSources(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -146,13 +148,11 @@ class QueryGenerator(multiprocessing.Process):
                 print 'conf checksum ' + conf_checksum.hexdigest()
                 print 'dbchecksum ' + dbchecksum
                 sys.exit()
-        
-        #self.reconfigureSubscriptions() # ?????
-            
         #close the cursor and give the database connection.
         self.cursor.close()
         db.sync_database_connection()
-
+       
+    
 
     def checkParsers(self):
         '''
@@ -171,20 +171,28 @@ class QueryGenerator(multiprocessing.Process):
         for i in range(len(self.sources)):
             # import parsers
             sys.path.append(defaults.sources_path)
-            exec('from ' + (self.sources[i].parser.split('/').pop()).split('.py')[0] + ' import fetch_source, parse_source')
-            # call generic parser modules
-            # TEMP COMMENT # fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
-            parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
+            try: 
+                a = 'from ' + (self.sources[i].parser.split('/').pop()).split('.py')[0] + ' import fetch_source, parse_source'
+                a
+                # call generic parser modules
+                # fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
+                result = parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
+                if result>0:
+                    print 'I catch'
+                    sys.exit(1)
+            except Exception, e:
+                self.qglogger.error('got exception: %r, exiting' % (e))
+                sys.exit()
+            
 
-
-    def generateSubscriptionPackets(self):
+    def createSubscriptions(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qglogger.info('Generating Subscriptions...')
-        self.generateSourceSubscriptions()
-        self.generateListTypeSubscriptions()
+        self.createSourceSubscriptions()
+        self.createListSubscriptions()
    
 
-    def generateSourceSubscriptions(self):
+    def createSourceSubscriptions(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         try:
             # Check if source_name is not given, so we work for all sources.
@@ -206,23 +214,23 @@ class QueryGenerator(multiprocessing.Process):
                 statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % source_name
                 self.cursor.execute(statement)
                 subscription_id = self.cursor.fetchone()
-                statement = """SELECT subs_query_id FROM subscription_query WHERE subscription_id=%d""" % subscription_id
+                statement = """SELECT subs_packet_id FROM subscription_packets WHERE subscription_id=%d""" % subscription_id
                 self.cursor.execute(statement)
-                subs_query_id = self.cursor.fetchone()
-                if subs_query_id is None:
+                subs_packet_id = self.cursor.fetchone()
+                if subs_packet_id is None:
                     for qid in query_id_list:
-                        ########### eger subs_query_id varsa burada update yapilacak, yoksa eklenecek 
-                        statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" + 
+                        ########### eger subs_packet_id varsa burada update yapilacak, yoksa eklenecek 
+                        statement = ( """INSERT INTO subscription_packets(subscription_id, query_id)""" + 
                                       """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
                         self.cursor.execute(statement)
                         self.qglogger.debug(statement)
                 else:
-                    statement = ("""SELECT query_id FROM subscription_query WHERE subscription_id=%d""" % subscription_id[0])
+                    statement = ("""SELECT query_id FROM subscription_packets WHERE subscription_id=%d""" % subscription_id[0])
                     self.cursor.execute(statement)
                     query_ids = self.cursor.fetchall()
                     for qid in query_id_list:
                         if not (qid in query_ids):
-                            statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" +
+                            statement = ( """INSERT INTO subscription_packets(subscription_id, query_id)""" +
                                       """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
                             self.cursor.execute(statement)
                             self.qglogger.debug(statement)
@@ -242,7 +250,7 @@ class QueryGenerator(multiprocessing.Process):
 
 
 
-    def generateListTypeSubscriptions(self):
+    def createListSubscriptions(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         try:
             # Check if source_name is not given, so we work for all sources.
@@ -264,23 +272,23 @@ class QueryGenerator(multiprocessing.Process):
                     statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % list_type[0]
                     self.cursor.execute(statement)
                     subscription_id = self.cursor.fetchone()
-                    statement = """SELECT subs_query_id FROM subscription_query WHERE subscription_id=%d""" % subscription_id
+                    statement = """SELECT subs_packet_id FROM subscription_packets WHERE subscription_id=%d""" % subscription_id
                     self.cursor.execute(statement)
-                    subs_query_id = self.cursor.fetchone()
-                if subs_query_id is None:
+                    subs_packet_id = self.cursor.fetchone()
+                if subs_packet_id is None:
                     for qid in query_id_list:
-                        ########### eger subs_query_id varsa burada update yapilacak, yoksa eklenecek 
-                        statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" +
+                        ########### eger subs_packet_id varsa burada update yapilacak, yoksa eklenecek 
+                        statement = ( """INSERT INTO subscription_packets(subscription_id, query_id)""" +
                                       """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
                         self.cursor.execute(statement)
                         self.qglogger.debug(statement)
                 else:
-                    statement = ("""SELECT query_id FROM subscription_query WHERE subscription_id=%d""" % subscription_id[0])
+                    statement = ("""SELECT query_id FROM subscription_packets WHERE subscription_id=%d""" % subscription_id[0])
                     self.cursor.execute(statement)
                     query_ids = self.cursor.fetchall()
                     for qid in query_id_list:
                         if not (qid in query_ids):
-                            statement = ( """INSERT INTO subscription_query(subscription_id, query_id)""" +
+                            statement = ( """INSERT INTO subscription_packets(subscription_id, query_id)""" +
                                       """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
                             self.cursor.execute(statement)
                             self.qglogger.debug(statement)
@@ -299,19 +307,32 @@ class QueryGenerator(multiprocessing.Process):
         db.sync_database_connection()
 
 
-    def generateJSONPacketsFromSubscription():
-        pass
+#-------------------------------------------------------------------------------------------------------------------------------#
 
+#    def generateSubscriptions(self, subscription_type=None, subscription_name=None):
+#        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+#        if subscription_type is not None:
+#            # means all sources and lists subscriptions
+#            try:
+#                statement = """ SELECT subscription_id FROM subscription WHERE subscription_type=%d""" % subscription_type
+#                
+#        elif not(subscription_name is None):
+#            # means for a specific subscription
+#            try:
+#                statement = """ SELECT subscription_id FROM subscription WHERE subscription_type=%d"""
+#        try:
+#            statement = """SELECT subscription_name FROM subscription WHERE subscription_type=2"""
 
-
-# place this function in elsewhere
-def create_query(source_name, output_type, output, creation_time):
-    '''
-      Get query information from parser and insert the query to database.
-    '''
-    myquery = query(source_name, output_type, output, creation_time)
-    myquery.insert_query()
-    #myquery.print_content()
+## place this function in elsewhere
+#def create_query(source_name, output_type, output, creation_time):
+#    '''
+#      Get query information from parser and insert the query to database.
+#    '''
+#    myquery = query(source_name, output_type, output, creation_time)
+#    result = myquery.insert_query()
+#    if result>0:
+#        sys.exit(1)
+#    #myquery.print_content()
 
 
 

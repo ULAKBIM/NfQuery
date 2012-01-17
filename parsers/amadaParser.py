@@ -7,7 +7,7 @@ import os
 import sys 
 
 # nfquery modules
-from querygenerator import create_query
+from api import create_query
 
 sys.path.append('..')
 
@@ -49,7 +49,11 @@ def parse_source(source_name, source_file):
         ip_list += line.split(" ")[0] + ' '
 
     # output_type=1 means we give an ip list 
-    create_query(source_name, output_type, ip_list, update_time)
+    result = create_query(source_name, output_type, ip_list, update_time)
+    if result>0:
+        sys.exit(1)
+    else:
+        print 'Parser execution finished succesfully'
 
     #def createOutput(source_name):
     #    today=date.today().isoformat()
