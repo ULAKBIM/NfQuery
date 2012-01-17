@@ -110,4 +110,10 @@
     * BELKI BIRGUN SQLALCHEMY KULLANIRIZ!!!
 
 
-
+    * >> import multiprocessing.Queue
+      >> queue = Queue()
+      ImportError: This platform lacks a functioning sem_open implementation, therefore, the required synchronization primitives needed will not function, see issue 3770.
+        
+      Bu mevzu yuzunden Queue ' yu kullanamayabiliriz, multiprocessing ' de problemler olabilir o yuzden testlerde dikkat etmek lazim.
+      Su link yardimci olabilir : http://www.velocityreviews.com/forums/t717985-multiprocessing-on-freebsd.html
+    

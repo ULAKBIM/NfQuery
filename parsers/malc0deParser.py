@@ -7,7 +7,7 @@ import os
 import sys 
 
 # nfquery modules
-from querygenerator import create_query
+from api import create_query
 
 sys.path.append('..')
 

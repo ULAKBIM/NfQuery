@@ -11,7 +11,7 @@ from db import *
 from defaults import defaults
 from logger import ColoredLogger
 
-__all__ = ['query']
+__all__ = ['query', 'insert_query']
 
 
 # ------------------------------------------------------------ ##
@@ -125,8 +125,11 @@ class query():
             cursor.execute(statement)
             source_id = cursor.fetchone()
             if source_id is None:
-                print 'There is an error!!!'
-                sys.exit()
+                try:
+                    self.qlogger.error('Please reconfigure your sources, %s is not found in the database' % self.source_name)
+                    sys.exit(1)
+                except SystemExit,e:
+                    print 'herrrrrrrrrr' 
 
             statement = """SELECT query_id FROM query WHERE source_id=%d""" % (source_id[0])
             cursor.execute(statement)

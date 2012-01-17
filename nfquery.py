@@ -78,8 +78,6 @@ if __name__ == "__main__":
         nfquerylog.info("%s" % e)
         sys.exit()
    
-    nfquerylog.debug('Starting NfQuery...')
-    nfquerylog.warning('Starting NfQuery...')
     nfquerylog.info('Starting NfQuery...')
     nfquerylog.debug('Parsing configuration file options')
 
@@ -129,14 +127,23 @@ if __name__ == "__main__":
 
     # 1) Check if paths are correct 
     # 2) Test for database connection   
-
     # Start Database Connection
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
-  
-    # Start Query Generator
-    q_generator = QueryGenerator(config_file.sources)
-    q_generator.start()
+ 
+    try:
+        # Create a QG instance 
+        q_generator = QueryGenerator(config_file.sources)
+        # Start QG : execute run()
+        q_generator.start()
+        # Block the main thread until the process whose join() method is called terminates or until the optional timeout occurs.
+        # Means; wait for th QG to finish its run statement.
+        q_generator.join()
+    except Exception, e:
+        nfquerylog.error('got exception: %r, exiting NfQuery' % (e,))
+        database.close_database_connection()
+        sys.exit()
+
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((config_file.nfquery.host, config_file.nfquery.port), ThreadingTCPRequestHandler)
