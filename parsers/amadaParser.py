@@ -6,10 +6,12 @@ from datetime import date
 import os
 import sys 
 
+sys.path.append('..')
+
 # nfquery modules
 from api import create_query
 
-sys.path.append('..')
+#print sys.modules
 
 # importable functions 
 __all__ = ['fetch_source', 'parse_source']
@@ -50,10 +52,7 @@ def parse_source(source_name, source_file):
 
     # output_type=1 means we give an ip list 
     result = create_query(source_name, output_type, ip_list, update_time)
-    if result>0:
-        sys.exit(1)
-    else:
-        print 'Parser execution finished succesfully'
+    return result 
 
     #def createOutput(source_name):
     #    today=date.today().isoformat()

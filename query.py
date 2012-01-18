@@ -72,8 +72,8 @@ class query():
         self.qlogger.setLevel(defaults.loglevel)
 
         if (not (4>output_type>0)):
-            sys.exit('output_type must be between 1-3, please look at the definition.\n')
-
+            self.qlogger.error('output_type must be between 1-3, please look at the definition.\n')
+            
         self.source_name = source_name
         self.output_type = output_type
         self.output = output
@@ -125,11 +125,9 @@ class query():
             cursor.execute(statement)
             source_id = cursor.fetchone()
             if source_id is None:
-                try:
-                    self.qlogger.error('Please reconfigure your sources, %s is not found in the database' % self.source_name)
-                    sys.exit(1)
-                except SystemExit,e:
-                    print 'herrrrrrrrrr' 
+                self.qlogger.error('Please reconfigure your sources, or check the parser')
+                self.qlogger.error('%s is not found in the database' % self.source_name)
+                return 1
 
             statement = """SELECT query_id FROM query WHERE source_id=%d""" % (source_id[0])
             cursor.execute(statement)
@@ -159,13 +157,16 @@ class query():
                 elif hash_value is None:
                     ''' Fatal Error'''
                     self.qlogger.error('Fatal Error : hash_value is None')
+                    return 1
 
         except MySQLdb.OperationalError, e:
             connection.rollback()
-            sys.exit("Error %d: %s" % (e.args[0],e.args[1]))
+            self.qlogger.error("Error %d: %s" % (e.args[0],e.args[1]))
+            return 1
         
         cursor.close()                      
         db.sync_database_connection()
+        return 0
 
         
     def insert_query_ip(self, cursor, query_id):
@@ -207,7 +208,7 @@ class query():
                 except MySQLdb.OperationalError, e:
                     connection.rollback()
                     qlogger.error('Error %d: %s'  % (e.args[0],e.args[1]))
-                    sys.exit() 
+                    return 1
          
  
 
@@ -254,7 +255,8 @@ class query():
             cursor.execute(statement)
             source_id = cursor.fetchone()
             if source_id is None:
-                sys.exit("Wrong source name is given! Please check if you give one of the source names published in the NfQuery Web Site" )
+                self.qlogger.error("Wrong source name is given! Please check if you give one of the source names published in the NfQuery Web Site" )
+                return 1
             
             # Check if we have this threat type or not.
             statement = """SELECT threat_id FROM threat WHERE threat_type=%s""" % (self.threat_type)

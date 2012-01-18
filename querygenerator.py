@@ -8,6 +8,9 @@ import os.path
 import hashlib
 import MySQLdb
 
+from apscheduler.scheduler import Scheduler
+
+
 # nfquery imports
 from query import query
 from subscription import subscription
@@ -33,15 +36,39 @@ __all__ = ['QueryGenerator']
 
 class QueryGenerator(multiprocessing.Process):
 
+#    def __init__(self, sources):
+#        multiprocessing.Process.__init__(self)
+#        self.sources = sources
+#        logging.setLoggerClass(ColoredLogger)
+#        self.qglogger = logging.getLogger('QueryGenerator')
+#        self.qglogger.setLevel(defaults.loglevel)
+#        self.connection = db.get_database_connection()
+#        self.cursor = self.connection.cursor()
+#
+#
+#    def run(self):
+#        #self.proc_name = multiprocessing.current_process().name
+#        #print 'Doing something fancy in %s for %s!' % (self.proc_name, self.name)
+#        # Check for reconfiguration
+#        if (defaults.reconfigure_flag):
+#            self.reconfigureSources()
+#            # reconfigure subscription types 
+#            subs = subscription()
+#            subs.createSubscriptionTypes()
+#            sys.exit()
+#        else:
+#            self.checkParsers()
+#            self.executeParsers()
+#            self.subscription = subscription()
+#            self.createSubscriptions()
+    
     def __init__(self, sources):
-        multiprocessing.Process.__init__(self)
         self.sources = sources
         logging.setLoggerClass(ColoredLogger)
         self.qglogger = logging.getLogger('QueryGenerator')
         self.qglogger.setLevel(defaults.loglevel)
         self.connection = db.get_database_connection()
         self.cursor = self.connection.cursor()
-
 
     def run(self):
         # Check for reconfiguration
@@ -52,11 +79,21 @@ class QueryGenerator(multiprocessing.Process):
             subs.createSubscriptionTypes()
             sys.exit()
         else:
-            a1 = self.checkParsers()
-            a2 = self.executeParsers()
-            a3 = self.subscription = subscription()
-            a4 = self.createSubscriptions()
-            print a1,a2,a3,a4
+            self.checkParsers()
+            self.executeParsers()
+            self.subscription = subscription()
+            self.createSubscriptions()
+            self.schedule()
+    
+    def schedule(self):        
+        # Start the scheduler
+        sched = Scheduler()
+        sched.start()
+        
+        ## Schedule job_function to be called every two hours
+        sched.add_interval_job(self.executeParsers, minutes=1, start_date='2012-01-18 09:30')
+        print  'scheduled'
+
 
     def reconfigureSources(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -152,7 +189,6 @@ class QueryGenerator(multiprocessing.Process):
         self.cursor.close()
         db.sync_database_connection()
        
-    
 
     def checkParsers(self):
         '''
@@ -171,15 +207,20 @@ class QueryGenerator(multiprocessing.Process):
         for i in range(len(self.sources)):
             # import parsers
             sys.path.append(defaults.sources_path)
-            try: 
-                a = 'from ' + (self.sources[i].parser.split('/').pop()).split('.py')[0] + ' import fetch_source, parse_source'
-                a
+            try:
+                # This function is invoked by the import statement. It can be replaced (by importing the __builtin__ module and assigning to __builtin__.__import__) in order to change semantics of 
+                # the import statement, but nowadays it is usually simpler to use import hooks (see PEP 302). 
+                # !!! Direct use of __import__() is rare, except in cases WHERE YOU WANT TO IMPORT A MODULE WHOSE NAME IS ONLY KNOWN AT RUNTIME. 
+                
+                parser = __import__(('parsers.' + self.sources[i].parser.split('/').pop()).split('.py')[0], globals(), locals(), ['fetch_source','parse_source'], -1)
+                #'from ' + (self.sources[i].parser.split('/').pop()).split('.py')[0] + ' import fetch_source, parse_source'
+                 
                 # call generic parser modules
-                # fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
-                result = parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
-                if result>0:
-                    print 'I catch'
-                    sys.exit(1)
+                parser.fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
+                result = parser.parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
+                print result
+                if result > 0:
+                    self.qglogger.error('%s is exited with error code %d!' % (parser, result))
             except Exception, e:
                 self.qglogger.error('got exception: %r, exiting' % (e))
                 sys.exit()

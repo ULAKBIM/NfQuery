@@ -10,6 +10,9 @@ import MySQLdb
 import time
 import logging
 
+from apscheduler.scheduler import Scheduler
+
+
 # nfquery imports
 from db import *
 from querygenerator import *
@@ -67,7 +70,8 @@ if __name__ == "__main__":
 		nfquerylog.setLevel(logging.INFO)
 		defaults.loglevel = logging.INFO
    
-    #multiprocessing.log_to_stderr(logging.INFO)
+    multiprocessing.log_to_stderr()
+    #sys.stdout = nfquerylog
 
     # Parse Config File
     try:
@@ -131,19 +135,30 @@ if __name__ == "__main__":
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
  
-    try:
-        # Create a QG instance 
-        q_generator = QueryGenerator(config_file.sources)
-        # Start QG : execute run()
-        q_generator.start()
-        # Block the main thread until the process whose join() method is called terminates or until the optional timeout occurs.
-        # Means; wait for th QG to finish its run statement.
-        q_generator.join()
-    except Exception, e:
-        nfquerylog.error('got exception: %r, exiting NfQuery' % (e,))
-        database.close_database_connection()
-        sys.exit()
+    #try:
+    #    # Create a QG instance 
+    #    q_generator = QueryGenerator(config_file.sources)
+    #    # Start QG : execute run()
+    #    q_generator.start()
+    #    # Block the main thread until the process whose join() method is called terminates or until the optional timeout occurs.
+    #    # Means; wait for th QG to finish its run statement.
+    #    q_generator.join()
+    #except Exception, e:
+    #    nfquerylog.error('got exception: %r, exiting NfQuery' % (e,))
+    #    database.close_database_connection()
+    #    sys.exit()
 
+
+    q_generator = QueryGenerator(config_file.sources)
+    q_generator.run()
+   
+    # Start the scheduler
+    #sched = Scheduler()
+    #sched.start()
+
+    ## Schedule job_function to be called every two hours
+    #sched.add_interval_job(q_generator.executeParsers, minutes=time_interval, start_date='2012-01-18 09:30') 
+    ##sched.add_interval_job(q_generator.executeParsers, hours=3) 
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((config_file.nfquery.host, config_file.nfquery.port), ThreadingTCPRequestHandler)

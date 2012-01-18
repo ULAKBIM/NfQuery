@@ -4,7 +4,7 @@
 from query import query
 import sys
 
-def create_query():
+def create_query(source_name, output_type, output, creation_time):
     '''
         API function for parsers to insert query information into database.
 
@@ -27,6 +27,5 @@ def create_query():
     '''
     myquery = query(source_name, output_type, output, creation_time)
     result = myquery.insert_query()
-    if result>0:
-        sys.exit(1)
+    return result
     #myquery.print_content()
