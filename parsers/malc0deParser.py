@@ -30,7 +30,8 @@ def parse_source(source_name, source_file):
     for i in sourcefile.readlines()[4:]:
         ip_list += i.split("\n")[0] + ' '
 
-    create_query(source_name, output_type, ip_list, update_time)
+    result = create_query(source_name, output_type, ip_list, update_time)
+    return result
 
 # CHECK IT # def createOutput():
 # CHECK IT #     today=date.today().isoformat()
