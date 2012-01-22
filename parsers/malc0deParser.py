@@ -6,72 +6,59 @@ from datetime import date
 import os
 import sys 
 
-# nfquery modules
-from api import create_query
-
-sys.path.append('..')
-
+# importable functions 
 __all__ = ['fetch_source', 'parse_source']
 
 def fetch_source(source_link, source_file):
-    os.system("fetch  -o " + source_file + " " + source_link)
+    os.system("fetch -o " + source_file + " " + source_link)
 
-def parse_source(source_name, source_file):
+def parse_source_and_create_output(source_name, source_file, output_file):
     '''
-        This file will be automatically updated daily and populated with the last 30 days of malicious IP addresses.'
-        Last updated 2011-12-20  
-    '''
-    update_time = date.today().isoformat()
-    sourcefile=open(source_file, "r")
-  
-    # output_types = IP, Domain, Port, IP+Port 
-    output_type = 1
-    ip_list = ''
-    for i in sourcefile.readlines()[4:]:
-        ip_list += i.split("\n")[0] + ' '
-
-    result = create_query(source_name, output_type, ip_list, update_time)
-    return result
-
-# CHECK IT # def createOutput():
-# CHECK IT #     today=date.today().isoformat()
-# CHECK IT #     source="malc0de DNS Blackhole"
-# CHECK IT #     port="-"
-# CHECK IT #     MalOutput=open(outputpath + "MalOutput.malc0de","w")
-# CHECK IT #     alignment="%-*s%-*s%-*s%-*s%*s"
-# CHECK IT #     column1_width=20
-# CHECK IT #     column2_width=20
-# CHECK IT #     column3_width=20
-# CHECK IT #     column4_width=20
-# CHECK IT #     column5_width=20
-# CHECK IT #     MalOutput.write(alignment % (column1_width, "MalType", column2_width, "MalIPaddress", column3_width, "Port", column4_width, "Source", column5_width, "Date\n"))
-# CHECK IT #     for mal_name, mal_ipaddr in blocklist.items():
-# CHECK IT #         for each_ip in mal_ipaddr.split(" ")[1:]:
-# CHECK IT #             MalOutput.write( alignment % (column1_width, mal_name, column2_width, each_ip, column3_width, port, column4_width, source, column5_width, today+"\n"))
-# CHECK IT #     MalOutput.close()
-
-
-def main():
+        Malc0de Parser
     ''' 
-        source_name should be registered to Query Server before using its parser.
-    '''
-    fetch_source(source_link, source_file)
-    parse_source(source_file)
+ 
+    source = open(source_file,"r")
+    
+    # list_types = Botnet, Malware, Spam, Phishing, Virus
+    # THINK ! #list_type = 1
+
+    update_time = date.today().isoformat()
+    ip_list = ''
+   
+
+    try:
+        output = open(output_file, "w")
+    except Exception, e:
+        print 'Exception'
+    
+    output.write('sourcename : %s\n' % source_name)
+    output.write('update_time : %s\n' % update_time)
+    
+    # parse the file line by line and create an ip list
+    for line in source.readlines()[4:]:
+        ip_list += line.split("\n")[0] + ' '
+
+
+    output.write('ip_list : %s\n' % ip_list)
+
+    output.close()
+    source.close()
 
 
 
 if __name__ == "__main__":
     print 'calling main'
-    main()
 
+    # making parameter assignments manually for now.
 
+    source_name = 'Malc0de'
+    source_link = 'http://malc0de.com/bl/IP_Blacklist.txt'
+    source_file = '/usr/local/nfquery/sources/malc0de/malc0deSourceFile.txt'
+    output_file = '/usr/local/nfquery/sources/malc0de/malc0deOutputFile.txt'
 
-
-
-
-
-
-
-
-
-
+    fetch_source(source_link, source_file)
+    parse_source_and_create_output(source_name, source_file, output_file)
+    
+    
+    
+    
