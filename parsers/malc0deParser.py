@@ -1,8 +1,6 @@
 #!/usr/local/bin/python
 
-# Malware Database (AMaDa) :: AMaDa Blocklist Parser
-
-from datetime import date
+import datetime
 import os
 import sys 
 
@@ -22,15 +20,16 @@ def parse_source_and_create_output(source_name, source_file, output_file):
     # list_types = Botnet, Malware, Spam, Phishing, Virus
     # THINK ! #list_type = 1
 
-    update_time = date.today().isoformat()
+    update_time = datetime.datetime.now()
+    update_time = update_time.strftime("%Y-%m-%d %H:%M")
+    
     ip_list = ''
-   
 
     try:
         output = open(output_file, "w")
     except Exception, e:
         print 'Exception'
-    
+
     output.write('sourcename : %s\n' % source_name)
     output.write('update_time : %s\n' % update_time)
     
@@ -38,12 +37,10 @@ def parse_source_and_create_output(source_name, source_file, output_file):
     for line in source.readlines()[4:]:
         ip_list += line.split("\n")[0] + ' '
 
-
     output.write('ip_list : %s\n' % ip_list)
 
     output.close()
     source.close()
-
 
 
 if __name__ == "__main__":

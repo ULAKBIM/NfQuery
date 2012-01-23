@@ -2,14 +2,12 @@
 
 import simplejson 
 import logging
-import multiprocessing
+#import multiprocessing
 import sys
 import os.path
 import hashlib
 import MySQLdb
-
-from apscheduler.scheduler import Scheduler
-from apscheduler.scheduler import logger as schlogger
+import subprocess
 
 # nfquery imports
 from query import query
@@ -34,34 +32,8 @@ from logger import ColoredLogger
     
 __all__ = ['QueryGenerator']
 
-class QueryGenerator(multiprocessing.Process):
+class QueryGenerator:
 
-#    def __init__(self, sources):
-#        multiprocessing.Process.__init__(self)
-#        self.sources = sources
-#        logging.setLoggerClass(ColoredLogger)
-#        self.qglogger = logging.getLogger('QueryGenerator')
-#        self.qglogger.setLevel(defaults.loglevel)
-#        self.connection = db.get_database_connection()
-#        self.cursor = self.connection.cursor()
-#
-#
-#    def run(self):
-#        #self.proc_name = multiprocessing.current_process().name
-#        #print 'Doing something fancy in %s for %s!' % (self.proc_name, self.name)
-#        # Check for reconfiguration
-#        if (defaults.reconfigure_flag):
-#            self.reconfigureSources()
-#            # reconfigure subscription types 
-#            subs = subscription()
-#            subs.createSubscriptionTypes()
-#            sys.exit()
-#        else:
-#            self.checkParsers()
-#            self.executeParsers()
-#            self.subscription = subscription()
-#            self.createSubscriptions()
-    
     def __init__(self, sources):
         self.sources = sources
         # start logging
@@ -71,9 +43,6 @@ class QueryGenerator(multiprocessing.Process):
         # get db connection and the cursor
         self.connection = db.get_database_connection()
         self.cursor = self.connection.cursor()
-        # Start the scheduler
-        self.sched = Scheduler()
-        self.sched.start()
         
 
     def run(self):
@@ -89,11 +58,8 @@ class QueryGenerator(multiprocessing.Process):
             self.executeParsers()
             self.subscription = subscription()
             self.createSubscriptions()
-    
-#    def schedule(self, parser, time_interval): 
-        ## Schedule job_function to be called every two hours
-
-
+   
+ 
     def reconfigureSources(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qglogger.info('Reconfiguring sources')
@@ -209,39 +175,20 @@ class QueryGenerator(multiprocessing.Process):
             for i in range(len(self.sources)):
                 # import parsers
                 try:
-                    #parser = __import__(('parsers.' + self.sources[i].parser.split('/').pop()).split('.py')[0], globals(), locals(), ['fetch_source','parse_source'], -1)
-                    exec('from ' + (self.sources[i].parser.split('/').pop()).split('.py')[0] + ' import fetch_source, parse_source')
-                    # call generic parser modules
-                    #parser.fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
-                    #fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
-                    #result = parser.parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
-                    #result = parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
-                    parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
-                    #if result > 0:
-                    #    #self.qglogger.error('%s is exited with error code %d!' % (parser, result))
-                    #    self.qglogger.error('%s is exited with error code %d!' % (self.sources[i].parser, result))
-                    # Schedule the job for interval running
-                    #self.sched.add_interval_job(fetch_source, minutes=self.sources[i].time_interval, start_date='2012-01-18 09:30')
-                    self.sched.add_interval_job(fetch_source, args=[self.sources[i].sourcelink, self.sources[i].sourcefile], minutes=1)
-                    print fetch_source
-                    self.sched.add_interval_job(parse_source, args=[self.sources[i].sourcename, self.sources[i].sourcefile], minutes=1)
-                    print parse_source
+                    subprocess.call(['python', self.sources[i].parser])
                 except Exception, e:
                     self.qglogger.error('got exception: %r, exiting' % (e))
                     sys.exit()
         else:
-            self.qglogger.info('running only parser %s' % parser)
+            self.qglogger.info('running parser %s' % parser)
             for i in range(len(self.sources)):
                 if self.sources[i].parser == parser:
                     try:
-                        exec('from ' + (self.sources[i].parser.split('/').pop()).split('.py')[0] + ' import fetch_source, parse_source')
-                        #fetch_source(self.sources[i].sourcelink, self.sources[i].sourcefile)
-                        parse_source(self.sources[i].sourcename, self.sources[i].sourcefile)
+                        subprocess.call(["python ", self.sources[i].parser], stderr=subprocess.STDOUT)
                     except Exception, e:
                         self.qglogger.error('got exception: %r, exiting' % (e))
                         sys.exit()
-        #self.sched.print_jobs()
-           
+
 
     def createSubscriptions(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
