@@ -2,7 +2,7 @@
 
 # Malware Database (AMaDa) :: AMaDa Blocklist Parser
 
-from datetime import date
+import datetime
 import os
 import sys 
 
@@ -34,15 +34,16 @@ def parse_source_and_create_output(source_name, source_file, output_file):
     # list_types = Botnet, Malware, Spam, Phishing, Virus
     # THINK ! #list_type = 1
 
-    update_time = date.today().isoformat()
+    update_time = datetime.datetime.now()
+    update_time = update_time.strftime("%Y-%m-%d %H:%M")
+
     ip_list = ''
-   
 
     try:
         output = open(output_file, "w")
     except Exception, e:
         print 'Exception'
-    
+
     output.write('sourcename : %s\n' % source_name)
     output.write('update_time : %s\n' % update_time)
     
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     source_link = 'http://amada.abuse.ch/blocklist.php?download=ipblocklist'
     source_file = '/usr/local/nfquery/sources/amada/amadaSourceFile.txt'
     output_file = '/usr/local/nfquery/sources/amada/amadaOutputFile.txt'
-
+    
     fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_file)
     
