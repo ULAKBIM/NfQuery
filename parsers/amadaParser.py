@@ -29,8 +29,6 @@ def parse_source_and_create_output(source_name, source_file, output_file):
      so parser parses the file after the 5th line
     '''
 
-    source = open(source_file,"r")
-    
     # list_types = Botnet, Malware, Spam, Phishing, Virus
     # THINK ! #list_type = 1
 
@@ -40,6 +38,7 @@ def parse_source_and_create_output(source_name, source_file, output_file):
     ip_list = ''
 
     try:
+        source = open(source_file, "r")
         output = open(output_file, "w")
     except Exception, e:
         print 'Exception'
