@@ -89,7 +89,7 @@ if __name__ == "__main__":
     ConfigSections = { 
                        'nfquery'  : ['path','sources_path','host','port','ipv6', 'logfile'], 
                        'database' : ['db_host','db_name','db_user','db_password'], 
-                       'sources'  : ['sourcename','listtype','sourcelink','sourcefile','parser','time_interval']
+                       'sources'  : ['sourcename','listtype','sourcelink','sourcefile','outputfile','parser','time_interval']
                      }
 
     # Check Config File Sections
@@ -151,14 +151,19 @@ if __name__ == "__main__":
 
     q_generator = QueryGenerator(config_file.sources)
     q_generator.run()
-   
-    # Start the scheduler
-    #sched = Scheduler()
-    #sched.start()
+    #q_generator.createQuery()
 
-    ## Schedule job_function to be called every two hours
-    #sched.add_interval_job(q_generator.executeParsers, minutes=time_interval, start_date='2012-01-18 09:30') 
-    ##sched.add_interval_job(q_generator.executeParsers, hours=3) 
+    # Start the scheduler
+    sched = Scheduler()
+    sched.start()
+    nfquerylog.info('Starting the scheduler')
+
+    for index in range(len(config_file.sources)):
+        ## Schedule job_function to be called every two hours
+        nfquerylog.debug('Adding job to scheduler : %s', config_file.sources[index].parser)
+        sched.add_interval_job(q_generator.executeParsers, args=[config_file.sources[index].parser], minutes=config_file.sources[index].time_interval, start_date='2012-01-18 09:30') 
+        #sched.add_interval_job(q_generator.executeParsers, args=[config_file.sources[index].parser], minutes=1, start_date='2012-01-18 09:30')
+        #sched.add_interval_job(q_generator.executeParsers, hours=3) 
 
     # Server Start
     server = SocketServer.ThreadingTCPServer((config_file.nfquery.host, config_file.nfquery.port), ThreadingTCPRequestHandler)
