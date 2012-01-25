@@ -206,9 +206,7 @@ class QueryGenerator:
                 try:
                     outputfile = open(self.sources[i].outputfile, 'r')
                     data = json.load(outputfile)
-                    #print data['source_name']
-                    #print data['update_time']
-                    #print data['ip_list']
+                    #print data['source_name'], data['update_time'], data['ip_list']
                     outputfile.close()
                 except Exception, e:
                     self.qglogger.warning('got exception: %r' % (e))

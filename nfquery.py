@@ -154,9 +154,9 @@ if __name__ == "__main__":
     #q_generator.createQuery()
 
     # Start the scheduler
+    nfquerylog.info('Starting the scheduler')
     sched = Scheduler()
     sched.start()
-    nfquerylog.info('Starting the scheduler')
 
     for index in range(len(config_file.sources)):
         ## Schedule job_function to be called every two hours
