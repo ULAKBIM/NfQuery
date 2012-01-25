@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-import simplejson 
+import simplejson as json
 import logging
 #import multiprocessing
 import sys
@@ -168,28 +168,73 @@ class QueryGenerator:
 
     
     def executeParsers(self, parser=None):
-        sys.path.append(defaults.sources_path)
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if parser is None:
-            self.qglogger.info('running all parsers')
+            self.qglogger.debug('running all parsers')
             for i in range(len(self.sources)):
-                # import parsers
                 try:
-                    subprocess.call(['python', self.sources[i].parser])
+                    print 'parser = %s ' % self.sources[i].parser
+                    returncode = subprocess.call(['python', self.sources[i].parser])
+                    if returncode == 0:
+                        self.createQuery(self.sources[i].parser)
+                    else:
+                        self.qglogger.warning('Parser returned with error')
                 except Exception, e:
                     self.qglogger.error('got exception: %r, exiting' % (e))
-                    sys.exit()
+                    continue
+                    #sys.exit() ??
         else:
-            self.qglogger.info('running parser %s' % parser)
+            self.qglogger.debug('running parser %s' % parser)
             for i in range(len(self.sources)):
                 if self.sources[i].parser == parser:
                     try:
-                        subprocess.call(["python ", self.sources[i].parser], stderr=subprocess.STDOUT)
+                        returncode = subprocess.call(['python', self.sources[i].parser])
+                        if returncode == 0:
+                            self.createQuery(self.sources[i].parser)
+                        else:
+                            self.qglogger.warning('Parser returned with error')
                     except Exception, e:
                         self.qglogger.error('got exception: %r, exiting' % (e))
-                        sys.exit()
+                        continue
+                        #sys.exit() ??
 
 
+    def createQuery(self, parsername=None):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        if parsername is None:
+            for i in range(len(self.sources)):
+                try:
+                    outputfile = open(self.sources[i].outputfile, 'r')
+                    data = json.load(outputfile)
+                    #print data['source_name']
+                    #print data['update_time']
+                    #print data['ip_list']
+                    outputfile.close()
+                except Exception, e:
+                    self.qglogger.warning('got exception: %r' % (e))
+                    self.qglogger.warning('could not load output of parser %s' % self.sources[i].parser)
+                    continue
+                # Check values with db and conf file.
+                # source_name, listtype, output and update time check should be done here!!!!
+                myquery = query(data['source_name'], self.sources[i].listtype, data['ip_list'], data['update_time'])
+                result = myquery.insert_query()
+        else:
+            for i in range(len(self.sources)):
+                if parsername == self.sources[i].parser:
+                    try:
+                        outputfile = open(self.sources[i].outputfile, 'r')
+                        data = json.load(outputfile)
+                        outputfile.close()
+                    except Exception, e:
+                        self.qglogger.warning('got exception: %r' % (e))
+                        self.qglogger.warning('could not create queries for parser %s' % parsername)
+                        continue
+                    # Check values with db and conf file.
+                    # source_name, listtype, output and update time check should be done here!!!!
+                    myquery = query(data['source_name'], self.sources[i].listtype, data['ip_list'], data['update_time'])
+                    result = myquery.insert_query()
+
+            
     def createSubscriptions(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qglogger.info('Generating Subscriptions...')

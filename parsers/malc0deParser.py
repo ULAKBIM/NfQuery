@@ -3,6 +3,7 @@
 import datetime
 import os
 import sys 
+import simplejson as json
 
 # importable functions 
 __all__ = ['fetch_source', 'parse_source']
@@ -15,9 +16,6 @@ def parse_source_and_create_output(source_name, source_file, output_file):
         Malc0de Parser
     ''' 
     
-    # list_types = Botnet, Malware, Spam, Phishing, Virus
-    # THINK ! #list_type = 1
-
     update_time = datetime.datetime.now()
     update_time = update_time.strftime("%Y-%m-%d %H:%M")
     
@@ -28,15 +26,15 @@ def parse_source_and_create_output(source_name, source_file, output_file):
         output = open(output_file, "w")
     except Exception, e:
         print 'Exception'
+        sys.exit(1)
 
-    output.write('sourcename : %s\n' % source_name)
-    output.write('update_time : %s\n' % update_time)
-    
     # parse the file line by line and create an ip list
     for line in source.readlines()[4:]:
         ip_list += line.split("\n")[0] + ' '
 
-    output.write('ip_list : %s\n' % ip_list)
+    # JSON Part
+    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'ip_list' : ip_list}
+    output.write(json.dumps(json_dict))
 
     output.close()
     source.close()
@@ -49,8 +47,8 @@ if __name__ == "__main__":
 
     source_name = 'Malc0de'
     source_link = 'http://malc0de.com/bl/IP_Blacklist.txt'
-    source_file = '/usr/local/nfquery/sources/malc0de/malc0deSourceFile.txt'
-    output_file = '/usr/local/nfquery/sources/malc0de/malc0deOutputFile.txt'
+    source_file = '/usr/local/nfquery/sources/malc0de/malc0deSource.txt'
+    output_file = '/usr/local/nfquery/sources/malc0de/malc0deOutput.txt'
 
     fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_file)
