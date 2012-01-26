@@ -2,16 +2,14 @@
 
 import sys
 import socket, struct
-import MySQLdb
+from MySQLdb import DatabaseError
 import logging
 import hashlib
 
 # nfquery import
-from db import *
+from db import db
 from defaults import defaults
 from logger import ColoredLogger
-
-__all__ = ['query', 'insert_query']
 
 
 # ------------------------------------------------------------ ##
@@ -70,10 +68,6 @@ class query():
         logging.setLoggerClass(ColoredLogger)        
         self.qlogger = logging.getLogger('Query')
         self.qlogger.setLevel(defaults.loglevel)
-
-        if (not (4>output_type>0)):
-            self.qlogger.error('output_type must be between 1-3, please look at the definition.\n')
-            
         self.source_name = source_name
         self.output_type = output_type
         self.output = output
@@ -81,6 +75,7 @@ class query():
         m = hashlib.md5()        # get the hash of output to check if the query is updated. 
         m.update(self.output)
         self.hash_value = m.hexdigest()
+        #print self.hash_value
         
         
     def insert_query(self):
@@ -117,6 +112,8 @@ class query():
         self.qlogger.debug('In %s' % sys._getframe().f_code.co_name)
         connection = db.get_database_connection()
         cursor = connection.cursor()
+        #print connection
+        #print cursor
 
         # Begin with try to catch database exceptions.
         try:
@@ -135,7 +132,7 @@ class query():
 
             if query_id is None:
                 '''Adding new query'''
-                statement = """ INSERT INTO query (source_id, query_type, hash_value, creation_time) VALUES( %d, %d, '%s', %s) """ % ( 
+                statement = """ INSERT INTO query (source_id, query_type, hash_value, creation_time) VALUES( %d, %d, '%s', '%s') """ % ( 
                                 source_id[0], self.output_type, self.hash_value, self.update_time )
                 cursor.execute(statement)
                 query_id=(cursor.lastrowid,)
@@ -158,11 +155,19 @@ class query():
                     ''' Fatal Error'''
                     self.qlogger.error('Fatal Error : hash_value is None')
                     return 1
-
-        except MySQLdb.OperationalError, e:
+        except DatabaseError, e:
             connection.rollback()
             self.qlogger.error("Error %d: %s" % (e.args[0],e.args[1]))
             return 1
+        #except MySQLdb.OperationalError, e:
+        #    connection.rollback()
+        #    self.qlogger.error("Error %d: %s" % (e.args[0],e.args[1]))
+        #    return 1
+        except Exception, e:
+            connection.rollback()
+            self.qlogger.error("Error %d: %s" % (e.args[0],e.args[1]))
+            return 1
+
         
         cursor.close()                      
         db.sync_database_connection()

@@ -122,5 +122,13 @@
     * IMPORTANT : parserlari subprocess.call(['python', self.sources[i].parser]) seklinde cagiriyoruz. Parserlari nobody ile calistirmamiz lazim!!!
 
     * nfquery cok uzun calistiginda, mysql server has gone away hatasi aliyoruz. bir de henuz daemonize etmis degiliz.
-                   
- 
+      1) Bunu test ettim fakat hata tekrar etmedi, son testlerde tekrar ortaya cikacaktir.
+            -> Cozum olarak timestamp kullanilarak belli bir sureden sonra connection flush edilebilir.
+
+    * List id ' yi nfquery.conf ' tan list type ' i okuyup list tablosundan cekiyor ve query olustururken kullaniyoruz. List id yi cekebilmemiz icin list tablosunun 
+    nfquery setup ' i sirasinda default valuelarla olusturulmus olmasi gerekiyor. List tablosu hazir gelse bile, yeni list type eklemeyi etkinlestirmemiz icin bir 
+    yontem bulmamiz gerekiyor. (--reconfigure gibi yapilabilir.)
+
+    * Tum exceptlerdeki sys.exit leri gozden gecirip gereksiz olanlari silelim.                   
+
+    * http://eric.lubow.org/2010/python/when-to-use-mysql-cursor-classes-in-python/ 

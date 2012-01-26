@@ -89,7 +89,7 @@ if __name__ == "__main__":
     ConfigSections = { 
                        'nfquery'  : ['path','sources_path','host','port','ipv6', 'logfile'], 
                        'database' : ['db_host','db_name','db_user','db_password'], 
-                       'sources'  : ['sourcename','listtype','sourcelink','sourcefile','outputfile','parser','time_interval']
+                       'sources'  : ['sourcename','sourcelink','sourcefile','listtype','outputtype','outputfile','parser','time_interval']
                      }
 
     # Check Config File Sections

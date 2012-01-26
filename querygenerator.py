@@ -2,7 +2,7 @@
 
 import simplejson as json
 import logging
-#import multiprocessing
+import multiprocessing
 import sys
 import os.path
 import hashlib
@@ -32,9 +32,11 @@ from logger import ColoredLogger
     
 __all__ = ['QueryGenerator']
 
-class QueryGenerator:
-
+#class QueryGenerator:
+class QueryGenerator(multiprocessing.Process):
+    
     def __init__(self, sources):
+        multiprocessing.Process.__init__(self)
         self.sources = sources
         # start logging
         logging.setLoggerClass(ColoredLogger)
@@ -117,8 +119,15 @@ class QueryGenerator:
                     statement = 'INSERT INTO parser (parser_script, time_interval) VALUES("%s", %d)' % (self.sources[i].parser, self.sources[i].time_interval)
                     self.cursor.execute(statement)
                     parser_id = self.cursor.lastrowid
+                    statement = 'SELECT list_id FROM list WHERE list_type="%s"' % (self.sources[i].listtype)
+                    self.cursor.execute(statement)
+                    list_id = self.cursor.fetchone()
+                    if list_id is None:
+                        self.qglogger.error('List type can not be found in the database, please check your configuration.')
+                        self.qglogger.error('Passing to source entry for reconfiguraiton')
+                        continue
                     statement = 'INSERT INTO source (source_name, source_link, list_id, parser_id, source_checksum) VALUES("%s", \'%s\', %d, %d, "%s")' % (
-                                self.sources[i].sourcename, self.sources[i].sourcelink, self.sources[i].listtype, parser_id, conf_checksum.hexdigest() )
+                                self.sources[i].sourcename, self.sources[i].sourcelink, list_id[0], parser_id, conf_checksum.hexdigest() )
                     self.cursor.execute(statement)
                     self.qglogger.info('New Source added successfully : "%s"' % self.sources[i].sourcename)
                 except Exception, e:
@@ -214,7 +223,7 @@ class QueryGenerator:
                     continue
                 # Check values with db and conf file.
                 # source_name, listtype, output and update time check should be done here!!!!
-                myquery = query(data['source_name'], self.sources[i].listtype, data['ip_list'], data['update_time'])
+                myquery = query(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
                 result = myquery.insert_query()
         else:
             for i in range(len(self.sources)):
@@ -228,8 +237,10 @@ class QueryGenerator:
                         self.qglogger.warning('could not create queries for parser %s' % parsername)
                         continue
                     # Check values with db and conf file.
-                    # source_name, listtype, output and update time check should be done here!!!!
-                    myquery = query(data['source_name'], self.sources[i].listtype, data['ip_list'], data['update_time'])
+                    # source_name, outputtype, output and update time check should be done here!!!!
+                    #if (not (4>output_type>0)):
+                    #    self.qlogger.error('output_type must be between 1-3, please look at the definition.\n')
+                    myquery = query(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
                     result = myquery.insert_query()
 
             
