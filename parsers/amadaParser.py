@@ -13,7 +13,7 @@ __all__ = ['fetch_source', 'parse_source']
 def fetch_source(source_link, source_file):
     os.system("fetch -o " + source_file + " " + source_link)
 
-def parse_source_and_create_output(source_name, source_file, output_file):
+def parse_source_and_create_output(source_name, source_file, output_type, output_file):
     '''
      Amada gives information in two columns like that 
      ------------------------------------------------ 
@@ -47,7 +47,7 @@ def parse_source_and_create_output(source_name, source_file, output_file):
         ip_list += line.split(" ")[0] + ' '
 
     # JSON Part
-    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'ip_list' : ip_list}
+    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'ip_list' : ip_list}
     output.write(json.dumps(json_dict))
 
     output.close()
@@ -62,10 +62,11 @@ if __name__ == "__main__":
     source_name = 'Amada'
     source_link = 'http://amada.abuse.ch/blocklist.php?download=ipblocklist'
     source_file = '/usr/local/nfquery/sources/amada/amadaSource.txt'
+    output_type  = 1 
     output_file = '/usr/local/nfquery/sources/amada/amadaOutput.txt'
     
-    fetch_source(source_link, source_file)
-    parse_source_and_create_output(source_name, source_file, output_file)
+    #fetch_source(source_link, source_file)
+    parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
     
     

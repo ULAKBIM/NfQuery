@@ -11,7 +11,7 @@ __all__ = ['fetch_source', 'parse_source']
 def fetch_source(source_link, source_file):
     os.system("fetch -o " + source_file + " " + source_link)
 
-def parse_source_and_create_output(source_name, source_file, output_file):
+def parse_source_and_create_output(source_name, source_file, output_type, output_file):
     '''
         Malc0de Parser
     ''' 
@@ -33,7 +33,7 @@ def parse_source_and_create_output(source_name, source_file, output_file):
         ip_list += line.split("\n")[0] + ' '
 
     # JSON Part
-    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'ip_list' : ip_list}
+    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'ip_list' : ip_list}
     output.write(json.dumps(json_dict))
 
     output.close()
@@ -45,13 +45,14 @@ if __name__ == "__main__":
 
     # making parameter assignments manually for now.
 
-    source_name = 'Malc0de'
+    source_name = 'malc0de'
     source_link = 'http://malc0de.com/bl/IP_Blacklist.txt'
     source_file = '/usr/local/nfquery/sources/malc0de/malc0deSource.txt'
+    output_type = 1 # Ip list
     output_file = '/usr/local/nfquery/sources/malc0de/malc0deOutput.txt'
 
-    fetch_source(source_link, source_file)
-    parse_source_and_create_output(source_name, source_file, output_file)
+#    fetch_source(source_link, source_file)
+    parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
     
     

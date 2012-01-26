@@ -1,0 +1,12 @@
+
+    26 Ocak 2012
+
+    * scheduler duzgun calismiyor, 2 dakka sonra calis diyorsun, ama main basladiktan sonraki ilk dakkada once bir calistirip, bundan 2 dakka sonra calistirmaya basliyor
+
+    * executeParsers fonksiyonunu scheduler ' a ekledigimizde, bir muddet sonra database objeleri kayboluyor, mysql has gone away problemi ve  
+      ' Exception _mysql_exceptions.ProgrammingError: (2014, "Commands out of sync; you can't run this command now") in <bound method Cursor.__del__ of <MySQLdb.cursors
+      .Cursor object at 0x28a9824c>> ignored ' hatalarini aliyoruz. 
+
+
+
+
