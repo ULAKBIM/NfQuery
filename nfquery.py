@@ -42,11 +42,17 @@ class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
         # just send back the same data, but upper-cased
         self.request.send(self.data.upper())
 
-class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-    daemon_threads=True
-    allow_reuse_address=True
-    def __init__(self, server_address, RequestHandlerClass):
-        SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
+#class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+#    daemon_threads=True
+#    allow_reuse_address=True
+#    def __init__(self, server_address, RequestHandlerClass):
+#        SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
+#        print 'used'
+#        # start logging
+#        logging.setLoggerClass(ColoredLogger)
+#        self.slogger = logging.getLogger('ThreadingTCPServer')
+#        self.slogger.setLevel(defaults.loglevel)
+#        self.slogger.info('Server is initiated')
 
 # ------------------------------------------------------------------------------------- #
 if __name__ == "__main__":
@@ -134,21 +140,8 @@ if __name__ == "__main__":
     # Start Database Connection
     database = db(config_file.database.db_host, config_file.database.db_user, config_file.database.db_password, config_file.database.db_name)
     connection = database.get_database_connection()
- 
-    #try:
-    #    # Create a QG instance 
-    #    q_generator = QueryGenerator(config_file.sources)
-    #    # Start QG : execute run()
-    #    q_generator.start()
-    #    # Block the main thread until the process whose join() method is called terminates or until the optional timeout occurs.
-    #    # Means; wait for th QG to finish its run statement.
-    #    q_generator.join()
-    #except Exception, e:
-    #    nfquerylog.error('got exception: %r, exiting NfQuery' % (e,))
-    #    database.close_database_connection()
-    #    sys.exit()
 
-
+    # Start Query Generator 
     q_generator = QueryGenerator(config_file.sources)
     q_generator.run()
     #q_generator.createQuery()
