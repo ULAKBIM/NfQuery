@@ -32,11 +32,8 @@ from logger import ColoredLogger
     
 __all__ = ['QueryGenerator']
 
-#class QueryGenerator:
-class QueryGenerator(multiprocessing.Process):
-    
+class QueryGenerator:
     def __init__(self, sources):
-        multiprocessing.Process.__init__(self)
         self.sources = sources
         # start logging
         logging.setLoggerClass(ColoredLogger)

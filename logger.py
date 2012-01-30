@@ -47,7 +47,7 @@ class ColoredLogger(logging.Logger):
     def __init__(self, name):
         # By default level is set to INFO
         logging.Logger.__init__(self, name, logging.INFO)
-        logging.basicConfig(filename='/tmp/nfquery.log1')
+        logging.basicConfig(filename='/tmp/nfquery.log')
     
         color_formatter = ColoredFormatter(self.COLOR_FORMAT)
     
