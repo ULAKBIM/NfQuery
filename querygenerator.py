@@ -37,8 +37,7 @@ class QueryGenerator:
         self.sources = sources
         # start logging
         logging.setLoggerClass(ColoredLogger)
-        self.qglogger = logging.getLogger('QueryGenerator')
-        self.qglogger.setLevel(defaults.loglevel)
+        self.qglogger = createLogger('QueryGenerator', defaults.loglevel)
         # get db connection and the cursor
         self.connection = db.get_database_connection()
         self.cursor = self.connection.cursor()
