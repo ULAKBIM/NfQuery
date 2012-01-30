@@ -132,3 +132,6 @@
     * Tum exceptlerdeki sys.exit leri gozden gecirip gereksiz olanlari silelim.                   
 
     * http://eric.lubow.org/2010/python/when-to-use-mysql-cursor-classes-in-python/ 
+
+
+    * Bazi kodlar icin link vermek ve mail atmak lazim, mesela coloredlogger classi ve daemonizing icin.

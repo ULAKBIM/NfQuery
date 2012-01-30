@@ -12,12 +12,11 @@ import logging
 
 from apscheduler.scheduler import Scheduler
 
-
 # nfquery imports
 from db import *
 from querygenerator import *
 from subscription import *
-from logger  import ColoredLogger
+from logger  import createLogger
 from defaults import defaults
 
 # ------------------------------------------------------------------------------------- #
@@ -57,13 +56,12 @@ class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
 # ------------------------------------------------------------------------------------- #
 
 class nfquery:
+    
     def __init__(self):
-        # Start Logging Module
-        logging.setLoggerClass(ColoredLogger)
-        self.nfquerylog = logging.getLogger('nfquery')
-        multiprocessing.log_to_stderr()
+        self.nfquerylog = createLogger('nfquery')
 
-    def parse(self):
+
+    def parseAndTest(self):
         self.parser = argparse.ArgumentParser(description="Process arguments")
         self.parser.add_argument('--conf', type=str, required=True, help='nfquery configuration file')
         self.parser.add_argument('--debug', action='store_true', help='enable debug mode')
@@ -147,8 +145,8 @@ class nfquery:
         sched.start()
         for index in range(len(self.config_file.sources)):
             self.nfquerylog.debug('Adding job to scheduler : %s', self.config_file.sources[index].parser)
-            sched.add_interval_job(self.q_generator.executeParsers, args=[self.config_file.sources[index].parser], minutes=self.config_file.sources[index].time_interval, start_date='2012-01-18 09:30') 
-
+            sched.add_interval_job(self.q_generator.executeParsers, args=[self.config_file.sources[index].parser], minutes=self.config_file.sources[index].time_interval, 
+                                   start_date='2012-01-18 09:30') 
 
 
     def startNetworkServer(self):
@@ -167,10 +165,11 @@ class nfquery:
 
     def start(self):
 
+
         # 1) Check if paths are correct 
         # 2) Test for database connection   
 
-        self.parse() 
+        self.parseAndTest() 
 
         # Start Database Connection
         self.database = db(self.config_file.database.db_host, self.config_file.database.db_user, self.config_file.database.db_password, self.config_file.database.db_name)
@@ -197,8 +196,9 @@ class nfquery:
 
 
 
-
 # ------------------------------------------------------------------------------------- #
+
+
 
 
 if __name__ == "__main__":
