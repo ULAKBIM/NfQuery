@@ -16,11 +16,10 @@ BOLD_SEQ = "\033[1m"
 def createLogger(name, level=None):
     # Start Logging Module
     logging.setLoggerClass(ColoredLogger)
-    if level is None:
-        return logging.getLogger(name)
-    else:
-        l = logging.getLogger(name)
-        return l.setLevel(level)
+    mylogger = logging.getLogger(name)
+    if not level is None:
+        mylogger.setLevel(level)
+    return mylogger
 
 
 def formatter_message(message, use_color = True):

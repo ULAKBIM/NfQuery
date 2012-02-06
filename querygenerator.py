@@ -14,7 +14,7 @@ from query import query
 from subscription import subscription
 from db import db
 from defaults import defaults
-from logger import ColoredLogger
+from logger import createLogger
 
     # --------------------------- JSON TEST -----------------------------------#
     #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__ #
@@ -36,7 +36,6 @@ class QueryGenerator:
     def __init__(self, sources):
         self.sources = sources
         # start logging
-        logging.setLoggerClass(ColoredLogger)
         self.qglogger = createLogger('QueryGenerator', defaults.loglevel)
         # get db connection and the cursor
         self.connection = db.get_database_connection()
