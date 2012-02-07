@@ -18,9 +18,18 @@ from config import Config, ConfigError
 from db import *
 from querygenerator import *
 from subscription import *
-from jsonrpcserver import ThreadingTCPRequestHandler
+#from jsonrpcserver import ThreadingTCPRequestHandler
 from logger  import createLogger
 from defaults import defaults
+
+
+######################################################
+# Special Imports For Twisted JSON_RPC  -> txjsonrpc
+from txjsonrpc.web import jsonrpc
+from twisted.web import server
+from twisted.internet import reactor
+from json_test.tw_json import Example
+######################################################
 
 SLEEP_TIME = 5
 
@@ -32,9 +41,6 @@ class rpc_func:
         pass
         # Assume we handled the https issue and pki
         # So client verified itself, we trust him now.
-
-        
-
 
 class nfquery:
     
@@ -65,7 +71,7 @@ class nfquery:
         self.parser.add_argument('--daemon', action='store_true', help='reconfigure sources')
         
 
-		# Parse command line arguments	
+        # Parse command line arguments    
         args = self.parser.parse_args()
 
         if args.debug:
@@ -177,10 +183,15 @@ class nfquery:
         self.server.register_function(rpc_func)
 
     def setupServer4(self):
-        from SecureJSONRPCServer import SecureJSONRPCServer
+        from others.jsonRPCTest.test4.SecureJSONRPCServer import SecureJSONRPCServer
         self.server = SecureJSONRPCServer((self.config_file.nfquery.host, self.config_file.nfquery.port), 
                                            certFile=self.config_file.nfquery.cert_file, keyFile=self.config_file.nfquery.key_file )
         self.server.register_function(rpc_func)
+
+    def setupServer5(self):
+        protocol = Example()
+        reactor.listenTCP(self.config_file.nfquery.port, server.Site(protocol))
+        #reactor.run()
 
     def startJSONRPCServer(self):
         '''
@@ -190,8 +201,8 @@ class nfquery:
         # TEST Servers
         #self.setupServer1()
         #self.setupServer2()
-        self.setupServer3()
-        #self.setupServer4()
+        #self.setupServer3()
+        self.setupServer4()
         
         # This will keep running the server until interrupting it with the keyboard Ctrl-C or something else.
         try:
@@ -199,6 +210,7 @@ class nfquery:
             jsonRPCServer.daemon = True
             jsonRPCServer.start()
             self.nfquerylog.info('listening for plugin connections...')
+
         except KeyboardInterrupt:
             self.nfquerylog.debug('keyboard Interrupt')
             self.stop()
@@ -294,16 +306,19 @@ class nfquery:
         self.database = db( self.config_file.database.db_host, self.config_file.database.db_user, 
                             self.config_file.database.db_password, self.config_file.database.db_name )
         self.connection = self.database.get_database_connection()
+        
         # Start Query Generator 
         self.q_generator = QueryGenerator(self.config_file.sources)
         self.q_generator.run()
+        
         # Start network server
         self.startJSONRPCServer()
+        
         # Start scheduler
         self.nfquerylog.info('Starting the scheduler')
         self.startScheduler()
 
-        logging.info('QueryServer started on port %s' % self.config_file.nfquery.port)
+        self.nfquerylog.info('QueryServer started on port %s' % self.config_file.nfquery.port)
 
         # get in to infinite loop
         self.request_stop = False
@@ -338,8 +353,8 @@ def go():
     
 
 if __name__ == "__main__":
-	# Just because we can't call __main__ from /usr/bin/nfquery,
-	# and setuptools need this to run the program correctly.
-	go()
+    # Just because we can't call __main__ from /usr/bin/nfquery,
+    # and setuptools need this to run the program correctly.
+    go()
 
 
