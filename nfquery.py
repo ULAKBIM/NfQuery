@@ -25,9 +25,12 @@ from defaults import defaults
 
 ######################################################
 # Special Imports For Twisted JSON_RPC  -> txjsonrpc
-from txjsonrpc.web import jsonrpc
 from twisted.web import server
-from twisted.internet import reactor
+from twisted.internet import ssl,reactor
+from twisted.internet.protocol import Factory
+from twisted.application import service,internet
+
+from txjsonrpc.web import jsonrpc
 from json_test.tw_json import Example
 ######################################################
 
@@ -54,11 +57,12 @@ class nfquery:
             self.pid_file = pid_file
 
         # Parse and Test configuration
-        try:
-            self.parseAndTest()
-        except Exception, e:
-            self.nfquerylog.error('%s', e)
-            sys.exit(1)
+        #try:
+        #    self.parseAndTest()
+        #except Exception, e:
+        #    print 'HERE'
+        #    self.nfquerylog.error('%s', e)
+        #    sys.exit(1)
         
 
     def parseAndTest(self):
@@ -159,12 +163,13 @@ class nfquery:
             Schedule other related jobs.
         '''
         self.sched = Scheduler()
-        self.sched.start()
         for index in range(len(self.config_file.sources)):
             self.nfquerylog.debug('Adding job to scheduler : %s', self.config_file.sources[index].parser)
+            #self.sched.add_interval_job(self.q_generator.executeParsers, args=[self.config_file.sources[index].parser], 
+            #                       minutes=self.config_file.sources[index].time_interval, start_date='2012-01-18 09:30') 
             self.sched.add_interval_job(self.q_generator.executeParsers, args=[self.config_file.sources[index].parser], 
-                                   minutes=self.config_file.sources[index].time_interval, start_date='2012-01-18 09:30') 
-
+                                   minutes=10, start_date='2012-01-18 09:30') 
+        self.sched.start()
     
     def setupServer1(self):
         from jsonrpcserver import ThreadingTCPRequestHandler
@@ -191,7 +196,6 @@ class nfquery:
     def setupServer5(self):
         protocol = Example()
         reactor.listenTCP(self.config_file.nfquery.port, server.Site(protocol))
-        #reactor.run()
 
     def startJSONRPCServer(self):
         '''
@@ -202,15 +206,14 @@ class nfquery:
         #self.setupServer1()
         #self.setupServer2()
         #self.setupServer3()
-        self.setupServer4()
+        self.setupServer5()
         
         # This will keep running the server until interrupting it with the keyboard Ctrl-C or something else.
         try:
-            jsonRPCServer = threading.Thread(target=self.server.serve_forever)
-            jsonRPCServer.daemon = True
-            jsonRPCServer.start()
+            #jsonRPCServer = threading.Thread(target=self.server.serve_forever)
+            #jsonRPCServer.daemon = True
+            #jsonRPCServer.start()
             self.nfquerylog.info('listening for plugin connections...')
-
         except KeyboardInterrupt:
             self.nfquerylog.debug('keyboard Interrupt')
             self.stop()
@@ -290,6 +293,7 @@ class nfquery:
         '''
             Starting all modules.
         ''' 
+        print 'starting'
         import signal
         # To handle os signals
         signal.signal(signal.SIGTERM, self.stop)
@@ -312,18 +316,19 @@ class nfquery:
         self.q_generator.run()
         
         # Start network server
-        self.startJSONRPCServer()
+        #self.startJSONRPCServer()
         
         # Start scheduler
-        self.nfquerylog.info('Starting the scheduler')
-        self.startScheduler()
+        #self.nfquerylog.info('Starting the scheduler')
+        #self.startScheduler()
 
+        self.nfquerylog.info('QueryServer started on port %s' % self.config_file.nfquery.port)
         self.nfquerylog.info('QueryServer started on port %s' % self.config_file.nfquery.port)
 
         # get in to infinite loop
-        self.request_stop = False
-        while not self.request_stop:
-            time.sleep(SLEEP_TIME)
+        #self.request_stop = False
+        #while not self.request_stop:
+        #    time.sleep(SLEEP_TIME)
 
                 
     def stop(self, signum=None, frame=None):
@@ -338,23 +343,25 @@ class nfquery:
 
 # ------------------------------------------------------------------------------------- #
 
-
-def go():
-    try:
-        QueryServer = nfquery()
-    except Exception, e:
-        logging.critical('PROBLEM! %s', e)
-        sys.exit(1)
-
-    try:
-        QueryServer.start()
-    except KeyboardInterrupt:
-        QueryServer.stop()
+def getExampleService():
     
+    r = Example()
+    exserver = server.Site(r)
+    return internet.SSLServer(7777, exserver, ssl.DefaultOpenSSLContextFactory('certs/nfquery.key', 'certs/nfquery.crt'))
 
-if __name__ == "__main__":
-    # Just because we can't call __main__ from /usr/bin/nfquery,
-    # and setuptools need this to run the program correctly.
-    go()
+# ------------------------------------------------------------------------------------- #
+
+#if __name__ == "__main__":
+#    try:
+#        QueryServer = nfquery()
+#        QueryServer.start()
+#    except Exception, e:
+#        logging.critical('PROBLEM! %s', e)
+#        sys.exit(1)
+#    application=service.Application('Example Application')
+#    service = getExampleService()
+#    service.setServiceParent(application) 
+#    os.system('echo \'OKEY\' >> /tmp/nfquery.log')
+
 
 
