@@ -86,6 +86,22 @@ class nfquery:
             # Enable Info Logging
             self.nfquerylog.setLevel(logging.INFO)
             defaults.loglevel = logging.INFO
+
+        # Check if we reconfigure sources
+        if args.reconfig:
+            self.nfquerylog.info("Reconfiguring sources")
+            defaults.reconfigure_flag = args.reconfig
+        else:
+            self.nfquerylog.info("'Not reconfiguring, daily routine ;)")
+
+        # Check if we run it as daemon
+        if args.daemon:
+            self.daemon_flag = True
+            self.nfquerylog.info("Running as daemon")
+        else:
+            self.daemon_flag = False
+            self.nfquerylog.info("Running as no daemon")
+
    
         #sys.stdout = self.nfquerylog
         if not os.path.isfile(args.conf):
@@ -140,22 +156,9 @@ class nfquery:
             self.nfquerylog.info('You should have all \'nfquery, database, sources\' options in the conf file')
             self.nfquerylog.info('Please add the required option and check the manual')
         
-        # Check if we reconfigure sources
-        if args.reconfig:
-            self.nfquerylog.info("Reconfiguring sources")
-            defaults.reconfigure_flag = args.reconfig
-        else:
-            self.nfquerylog.info("'Not reconfiguring, daily routine ;)")
 
 
-        # Check if we run it as daemon
-        if args.daemon:
-            self.daemon_flag = True
-            self.nfquerylog.info("Running as daemon")
-        else:
-            self.daemon_flag = False
-            self.nfquerylog.info("Running as no daemon")
-    
+            
 
     def startScheduler(self):
         '''
