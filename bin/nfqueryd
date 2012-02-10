@@ -1,0 +1,53 @@
+#!/usr/local/bin/python
+
+import argparse
+import os, sys
+
+from nfquery.defaults import defaults
+
+
+# 1) Check if paths are correct
+# 2) Test for database connection
+parser = argparse.ArgumentParser(description="Process command line arguments")
+parser.add_argument('--conf', type=str, required=True, help='nfquery configuration file')
+parser.add_argument('--debug', action='store_true', help='enable debug mode')
+parser.add_argument('--reconfig', action='store_true', help='reconfigure sources')
+parser.add_argument('--daemon', action='store_true', help='run as daemon')
+
+# Parse command line arguments
+args = parser.parse_args()
+
+if not os.path.isfile(args.conf):
+    print ('Configuration file not fund: {}'.format( args.conf))
+    parser.print_help()
+    sys.exit(1)
+
+# Set logging Flag
+if args.debug:
+    defaults.loglevel = logging.DEBUG
+else:
+    defaults.loglevel = logging.INFO
+
+# Check if we reconfigure sources
+if args.reconfig:
+    print "Reconfiguring sources"
+    defaults.reconfig_flag = args.reconfig
+else:
+    print "'Not reconfiguring, daily routine ;)"
+
+# Check if we run it as daemon
+if args.daemon:
+    daemon_flag = True
+    print "Running as daemon"
+else:
+    daemon_flag = False
+    print "Running as no daemon"
+
+
+
+
+
+
+
+
+
