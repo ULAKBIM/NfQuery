@@ -9,7 +9,7 @@ import hashlib
 # nfquery import
 from db import db
 from defaults import defaults
-from logger import ColoredLogger
+from logger import createLogger
 
 
 # ------------------------------------------------------------ ##
@@ -65,9 +65,7 @@ class query():
     
     def __init__(self, source_name, output_type, output, update_time=None):
         '''Start logging and assign default values'''
-        logging.setLoggerClass(ColoredLogger)        
-        self.qlogger = logging.getLogger('Query')
-        self.qlogger.setLevel(defaults.loglevel)
+        self.qlogger = createLogger('Query')
         self.source_name = source_name
         self.output_type = output_type
         self.output = output

@@ -13,12 +13,17 @@ RESET_SEQ = "\033[0m"
 COLOR_SEQ = "\033[1;%dm"
 BOLD_SEQ = "\033[1m"
 
-def createLogger(name, level=None):
+def createLogger(name, level=None, console=True):
     # Start Logging Module
     logging.setLoggerClass(ColoredLogger)
     mylogger = logging.getLogger(name)
+    mylogger.to_console = console
     if not level is None:
         mylogger.setLevel(level)
+    else:
+        from defaults import defaults
+        print defaults.loglevel
+        mylogger.setLevel(defaults.loglevel)
     return mylogger
 
 
@@ -57,20 +62,16 @@ class ColoredLogger(logging.Logger):
     #FORMAT = "[$BOLD%(name)-s$RESET][%(levelname)-s]  %(message)s (%line : (lineno)d)"
     FORMAT = "%(asctime)s [$BOLD%(name)-s$RESET][%(levelname)-s] %(message)s %(lineno)d)"
     COLOR_FORMAT = formatter_message(FORMAT, True)
+    to_console = True
     
     def __init__(self, name):
         # By default level is set to INFO
         logging.Logger.__init__(self, name, logging.INFO)
         logging.basicConfig(filename='/tmp/nfquery.log')
-    
         color_formatter = ColoredFormatter(self.COLOR_FORMAT)
-    
-        console = logging.StreamHandler()
-        console.setFormatter(color_formatter)
-     
-        self.addHandler(console)
-        return
-
-
-
+        if self.to_console: 
+            # Console Logging 
+            console = logging.StreamHandler()
+            console.setFormatter(color_formatter)
+            self.addHandler(console)
 

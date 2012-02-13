@@ -2,7 +2,7 @@
 
 
 from db import db
-from logger import ColoredLogger
+from logger import createLogger
 from defaults import defaults
 
 import logging
@@ -27,9 +27,7 @@ class subscription():
     #    return self
 
     def initiateLogger(self, logger_name):
-        logging.setLoggerClass(ColoredLogger)
-        self.slogger = logging.getLogger('SubscriptionGenerator')
-        self.slogger.setLevel(defaults.loglevel)
+        self.slogger = createLogger('SubscriptionGenerator')
         self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
 
     def createSubscriptionTypes(self):
