@@ -59,20 +59,22 @@ if __name__ == "__main__":
 
     # making parameter assignments manually for now.
 
+    #source_name = 'Amada'
+    #source_link = 'http://amada.abuse.ch/blocklist.php?download=ipblocklist'
+    #source_file = '/usr/local/nfquery/sources/amada/amadaSource.txt'
+    #output_type  = 1 
+    #output_file = '/usr/local/nfquery/sources/amada/amadaOutput.txt'
+    #
+    #fetch_source(source_link, source_file)
+    #parse_source_and_create_output(source_name, source_file, output_type, output_file)
+    
     source_name = 'Amada'
     source_link = 'http://amada.abuse.ch/blocklist.php?download=ipblocklist'
-    source_file = '/usr/local/nfquery/sources/amada/amadaSource.txt'
+    source_file = '/home/serdar/workspace/test/sources/amada/amadaSource.txt'
     output_type  = 1 
-    output_file = '/usr/local/nfquery/sources/amada/amadaOutput.txt'
+    output_file = '/home/serdar/workspace/test/sources/amada/amadaOutput.txt'
     
-    #fetch_source(source_link, source_file)
+    fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)
-    
-    
-    
-    
-    
-    
-    
-    
+
     
