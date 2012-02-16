@@ -42,20 +42,21 @@ class QueryGenerator:
         self.cursor = self.connection.cursor()
         
 
-    def run(self):
-        # Check for reconfiguration
-        if (defaults.reconfigure_flag):
-            self.reconfigureSources()
-            # reconfigure subscription types 
-            subs = subscription()
-            subs.createSubscriptionTypes()
-            sys.exit()
-        else:
+    def run(self, reconfigure_flag=None):
+        if not reconfigure_flag:
             self.checkParsers()
             self.executeParsers()
             self.subscription = subscription()
             self.createSubscriptions()
-   
+        # Check for reconfiguration
+        elif reconfigure_flag == 'sources':
+            self.reconfigureSources()
+        elif reconfigure_flag == 'plugins':
+            self.reconfigurePlugins()
+        else:
+            self.qglogger.error('Unknown option for reconfigure function, quitting.')
+            sys.exit(1)
+               
  
     def reconfigureSources(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -154,9 +155,16 @@ class QueryGenerator:
                 print 'conf checksum ' + conf_checksum.hexdigest()
                 print 'dbchecksum ' + dbchecksum
                 sys.exit()
+        # reconfigure subscription types 
+        subs = subscription()
+        subs.createSubscriptionTypes()
         #close the cursor and give the database connection.
         self.cursor.close()
         db.sync_database_connection()
+
+    
+    def reconfigurePlugins:
+        pass 
        
 
     def checkParsers(self):
