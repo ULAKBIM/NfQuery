@@ -56,6 +56,7 @@ class NfQueryServer:
         # Prepare Config File Sections
         ConfigSections = {
                            'nfquery'  : ['path','sources_path','host','port','ipv6', 'cert_file', 'key_file', 'logfile'], 
+                           'plugins'  : ['organization', 'adm_name', 'adm_mail', 'adm_tel', 'adm_publickey', 'prefix_list', 'plugin_ip'],
                            'database' : ['db_host','db_name','db_user','db_password'], 
                            'sources'  : ['sourcename','sourcelink','sourcefile','listtype','outputtype','outputfile','parser','time_interval']
                          }
@@ -165,14 +166,14 @@ class NfQueryServer:
             reactor.stop()
 
 
-    def reconfigure():
+    def reconfigure(self, this):
         # Start Database Connection
         self.database = db( self.config.database.db_host, self.config.database.db_user, 
                             self.config.database.db_password, self.config.database.db_name )
         self.connection = self.database.get_database_connection()
         # Start QueryGenerator Reconfigure
         self.q_generator = QueryGenerator(self.config.sources)
-        self.q_generator.reconfigure()
+        self.q_generator.reconfigureSources()
 
 
     def run(self):
