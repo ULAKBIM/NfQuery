@@ -33,30 +33,54 @@ from logger import createLogger
 __all__ = ['QueryGenerator']
 
 class QueryGenerator:
-    def __init__(self, sources):
+    def __init__(self, store, sources=None, plugins=None):
+        self.store = store
         self.sources = sources
-        # start logging
+        self.plugins = plugins
         self.qglogger = createLogger('QueryGenerator', defaults.loglevel)
-        # get db connection and the cursor
-        self.connection = db.get_database_connection()
-        self.cursor = self.connection.cursor()
-        
+         
 
-    def run(self, reconfigure_flag=None):
-        if not reconfigure_flag:
-            self.checkParsers()
-            self.executeParsers()
-            self.subscription = subscription()
-            self.createSubscriptions()
-        # Check for reconfiguration
-        elif reconfigure_flag == 'sources':
-            self.reconfigureSources()
-        elif reconfigure_flag == 'plugins':
-            self.reconfigurePlugins()
-        else:
-            self.qglogger.error('Unknown option for reconfigure function, quitting.')
-            sys.exit(1)
-               
+    def run(self):
+        self.checkParsers()
+        self.executeParsers()
+        self.subscription = subscription()
+        self.createSubscriptions()
+
+
+    def reconfigurePlugins(self):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.qglogger.info('Reconfiguring plugins')
+
+        #    plugins : {
+        #    organization    : 'ULAKBIM'
+        #    adm_name        : 'Serdar Yigit'
+        #    adm_mail        : 'serdar@ulakbim.gov.tr'
+        #    adm_tel         : '312-2989394'
+        #    adm_publickey   : '/usr/local/etc/nfquery/plugins/ulakbim_public.key'
+        #    prefix_list     : '193.140.94.0/24'
+        #    plugin_ip       : '193.140.94.200'
+        #    }
+
+        from models import Plugin, PrefixList
+        for i in range(len(self.plugins)):
+            plugin = Plugin()
+            prefix_list = PrefixList()
+            prefix_list.prefix_list   = unicode(self.plugins[i].prefix_list)
+            self.store.add(prefix_list)
+            self.store.commit()
+            #plugin.prefix_id = self.store.execute('select last_insert_id()')
+            plugin.organization       = unicode(self.plugins[i].organization)
+            plugin.adm_name           = unicode(self.plugins[i].adm_name)
+            plugin.adm_mail           = unicode(self.plugins[i].adm_mail)
+            plugin.adm_tel            = unicode(self.plugins[i].adm_tel)
+            plugin.adm_publickey_file = unicode(self.plugins[i].adm_publickey_file)
+            plugin.plugin_ip          = unicode(self.plugins[i].plugin_ip)
+            plugin.prefix_id = prefix_list.prefix_id
+            self.store.add(plugin)
+            print plugin.plugin_id
+            print prefix_list.prefix_id
+        #self.store.commit()
+
  
     def reconfigureSources(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -70,7 +94,7 @@ class QueryGenerator:
             self.connection.rollback()
             self.qglogger.info('Reconfiguration is not completed')
             self.qglogger.error("Error  %s" % (e.args[0]))
-            sys.exit()    
+            sys.exit()
 
         # If we have something in the database
         if registered_sources is not None:
@@ -162,10 +186,6 @@ class QueryGenerator:
         self.cursor.close()
         db.sync_database_connection()
 
-    
-    def reconfigurePlugins:
-        pass 
-       
 
     def checkParsers(self):
         '''

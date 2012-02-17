@@ -18,6 +18,7 @@ from config import Config, ConfigError
 
 # package imports
 from db import *
+from db2 import db2
 from querygenerator import *
 from subscription import *
 from logger  import createLogger
@@ -55,11 +56,11 @@ class NfQueryServer:
 
         # Prepare Config File Sections
         ConfigSections = {
-                           'nfquery'  : ['path','sources_path','host','port','ipv6', 'cert_file', 'key_file', 'logfile'], 
-                           'plugins'  : ['organization', 'adm_name', 'adm_mail', 'adm_tel', 'adm_publickey', 'prefix_list', 'plugin_ip'],
-                           'database' : ['db_host','db_name','db_user','db_password'], 
-                           'sources'  : ['sourcename','sourcelink','sourcefile','listtype','outputtype','outputfile','parser','time_interval']
-                         }
+            'nfquery'  : ['path','sources_path','host','port','ipv6', 'cert_file', 'key_file', 'logfile'], 
+            'plugins'  : ['organization', 'adm_name', 'adm_mail', 'adm_tel', 'adm_publickey_file', 'prefix_list', 'plugin_ip'],
+            'database' : ['db_host','db_name','db_user','db_password'], 
+            'sources'  : ['sourcename','sourcelink','sourcefile','listtype','outputtype','outputfile','parser','time_interval']
+        }
 
         # Check Config File Sections
         sections = self.config.keys()
@@ -91,8 +92,8 @@ class NfQueryServer:
             self.nfquerylog.info('One of the main configuration options does not exists')
             self.nfquerylog.info('You should have all \'nfquery, database, sources\' options in the conf file')
             self.nfquerylog.info('Please add the required option and check the manual')
-    
-    
+
+
     def startScheduler(self):
         '''
             Schedule parsers to be called according to time interval parameter of in conf file.
@@ -136,19 +137,24 @@ class NfQueryServer:
         ''' 
         
         # Start Database Connection
-        self.database = db( self.config.database.db_host, self.config.database.db_user, 
-                            self.config.database.db_password, self.config.database.db_name )
-        self.connection = self.database.get_database_connection()
-        
+        #self.database = db( self.config.database.db_host, self.config.database.db_user, 
+        #                    self.config.database.db_password, self.config.database.db_name )
+        #self.connection = self.database.get_database_connection()
+       
+        from db2 import db2
+        self.db = db2( self.config.database.db_host, self.config.database.db_user,
+                       self.config.database.db_password, self.config.database.db_name )
+        self.store = self.db.get_store()
+ 
         # Start Query Generator 
-        self.q_generator = QueryGenerator(self.config.sources)
+        self.q_generator = QueryGenerator(self.config.sources, self.store)
         self.q_generator.run()
         
         # Start network server
-        self.startJSONRPCServer()
+        #self.startJSONRPCServer()
         
         # Start scheduler
-        self.startScheduler()
+        #self.startScheduler()
 
         self.nfquerylog.info('QueryServer started on port %s' % self.config.nfquery.port)
        
@@ -166,15 +172,26 @@ class NfQueryServer:
             reactor.stop()
 
 
-    def reconfigure(self, this):
+    def reconfigure(self, flag):
         # Start Database Connection
-        self.database = db( self.config.database.db_host, self.config.database.db_user, 
-                            self.config.database.db_password, self.config.database.db_name )
-        self.connection = self.database.get_database_connection()
-        # Start QueryGenerator Reconfigure
-        self.q_generator = QueryGenerator(self.config.sources)
-        self.q_generator.reconfigureSources()
+        #self.database = db( self.config.database.db_host, self.config.database.db_user, 
+        #                    self.config.database.db_password, self.config.database.db_name )
+        #self.connection = self.database.get_database_connection()
 
+        self.db = db2( self.config.database.db_host, self.config.database.db_user,
+                       self.config.database.db_password, self.config.database.db_name )
+        self.store = self.db.get_store()
+
+        if flag == 'sources':
+            self.q_generator = QueryGenerator(self.store, sources=self.config.sources)
+            self.q_generator.reconfigureSources()
+        elif flag == 'plugins':
+            self.q_generator = QueryGenerator(self.store, plugins=self.config.plugins)
+            self.q_generator.reconfigurePlugins()
+        else:
+            self.nfquerylog.error('Unknown option for reconfigure function, quitting.')
+            sys.exit(1)
+ 
 
     def run(self):
         reactor.callWhenRunning(self.start)
