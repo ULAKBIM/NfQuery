@@ -2,17 +2,27 @@
 
 import argparse
 import os, sys
+import logging 
 
 from nfquery.defaults import defaults
+# We may create a directory lib under nfquery and 
+# this kind of utils could be moved to nfquery/lib 
+#from nfquery.lib.daemon import Daemon
+from nfquery.daemon import Daemon
+from nfquery.nfquery import NfQueryServer
 
 
 # 1) Check if paths are correct
 # 2) Test for database connection
 parser = argparse.ArgumentParser(description="Process command line arguments")
-parser.add_argument('--conf', type=str, required=True, help='nfquery configuration file')
-parser.add_argument('--debug', action='store_true', help='enable debug mode')
-parser.add_argument('--reconfig', action='store_true', help='reconfigure sources')
-parser.add_argument('--daemon', action='store_true', help='run as daemon')
+parser.add_argument('--conf', default='/etc/nfquery.conf', type=str, help='nfquery configuration file')
+parser.add_argument('--console', action='store_true', help='don\'t detach and display all output to stdout/stderr')
+parser.add_argument('--verbose', action='store_true', help='verbose mode')
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('--start', action='store_true', help='start the daemon')
+group.add_argument('--stop', action='store_true', help='stop the daemon')
+group.add_argument('--restart', action='store_true', help='restart the daemon')
+group.add_argument('--reconfig', nargs=1, choices=('sources','plugins'), help='reconfigure sources or plugins and exit')
 
 # Parse command line arguments
 args = parser.parse_args()
@@ -23,31 +33,27 @@ if not os.path.isfile(args.conf):
     sys.exit(1)
 
 # Set logging Flag
-if args.debug:
-    defaults.loglevel = logging.DEBUG
-else:
-    defaults.loglevel = logging.INFO
+log_level=logging.INFO
+if args.verbose:
+    log_level = logging.DEBUG
 
-# Check if we reconfigure sources
 if args.reconfig:
-    print "Reconfiguring sources"
-    defaults.reconfig_flag = args.reconfig
+    # Do not daemonize, reconfigure and exit
+    app = NfQueryServer(loglevel=log_level, configfile=args.conf)
+    app.reconfigure(args.reconfig[0])
+
+if args.console:
+    # Do not daemonize, print all output to console
+    app = NfQueryServer(configfile=args.conf, loglevel=log_level)
+    app.run()
 else:
-    print "'Not reconfiguring, daily routine ;)"
-
-# Check if we run it as daemon
-if args.daemon:
-    daemon_flag = True
-    print "Running as daemon"
-else:
-    daemon_flag = False
-    print "Running as no daemon"
-
-
-
-
-
-
-
-
+    #daemon = Daemon(configfile=args.conf, loglevel=log_level)
+    daemon = Daemon(configfile=args.conf, loglevel=log_level, stdin='/tmp/nfqueryd.log', stdout='/tmp/nfqueryd.log', stderr='/tmp/nfqueryd.log')
+    if args.start:
+        daemon.start()
+    elif args.restart:
+        daemon.restart()
+    elif args.stop:
+        daemon.stop()
+        
 
