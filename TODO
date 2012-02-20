@@ -135,3 +135,8 @@
 
 
     * Bazi kodlar icin link vermek ve mail atmak lazim, mesela coloredlogger classi ve daemonizing icin.
+
+    * coverage diye bir modul var code consistency icin guzel, html outputu var, yukledim deneyelim.
+
+	* database creation sirasinda utf8 destegi icin kullanilmasi gereken ifade : 
+	  CREATE DATABASE mydb   DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
