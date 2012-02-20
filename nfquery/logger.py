@@ -22,7 +22,7 @@ def createLogger(name, level=None, console=True):
         mylogger.setLevel(level)
     else:
         from defaults import defaults
-        print defaults.loglevel
+        #print defaults.loglevel
         mylogger.setLevel(defaults.loglevel)
     return mylogger
 

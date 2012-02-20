@@ -101,7 +101,8 @@ class NfQueryServer:
         '''
         self.sched = Scheduler()
         for index in range(len(self.config.sources)):
-            self.nfquerylog.debug('Adding job to scheduler : %s, time interval is = %d', self.config.sources[index].parser, self.config.sources[index].time_interval)
+            self.nfquerylog.debug('Adding job to scheduler : %s, time interval is = %d', self.config.sources[index].parser, 
+                                   self.config.sources[index].time_interval)
             self.sched.add_interval_job(self.q_generator.executeParsers, args=[self.config.sources[index].parser], 
                                    minutes=self.config.sources[index].time_interval, start_date='2012-01-18 09:30')
             #self.sched.add_interval_job(self.q_generator.executeParsers, args=[self.config.sources[index].parser], 
