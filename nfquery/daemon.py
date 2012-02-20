@@ -21,7 +21,6 @@ class Daemon:
         self.umask = umask
         self.args = []
         self.kwargs = {}
-        print 'daemon init'
     
     def daemonize(self):
         """
