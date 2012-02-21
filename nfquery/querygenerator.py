@@ -92,14 +92,6 @@ class QueryGenerator:
             self.qglogger.debug(prefix_list.prefix_id)
         self.store.commit()
 
-    #def reconfigureSources3(self):
-    #    from models import Plugin, PrefixList, Source, Parser, List
-    #    for index in range(len(self.sources)):
-    #        lists = self.store.find(List.list_id, List.list_type == unicode(self.sources[index].listtype))
-    #        #list_id = self.store.find(List.list_id, List.list_type == unicode(self.sources[index].listtype)).one()
-    #        for i in lists:
-    #            print i
-    #    sys.exit()
 
     def reconfigureSources(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -114,12 +106,16 @@ class QueryGenerator:
                 sources_list.append(self.sources[index].sourcename)
             for source in dbsources:
                 if not source.source_name in(sources_list):
-                    flag = query_yes_no('Do you approve delete operation', default="no")
+                    self.qglogger.warning('I will delete the source : %s', source.source_name)
+                    self.qglogger.warning('Do you approve : %s', source.source_name)
+                    #flag = query_yes_no('Do you approve delete operation', default="no")
+                    flag = query_yes_no('', default="no")
                     if flag is True:
                         source_name = source.source_name
+                        list_id = source.list_id
+                        parser_id = source.parser_id
                         self.store.find(Source, Source.source_name == '%s' % source.source_name).remove()
-                        self.store.find(List, List.list_id == source.list_id).remove()
-                        self.store.find(Parser, Parser.parser_id == source.parser_id).remove()
+                        self.store.find(Parser, Parser.parser_id == parser_id).remove()
                         self.store.commit()
                         self.qglogger.info('Source %s is deleted' % source_name)
                     else:
@@ -128,12 +124,10 @@ class QueryGenerator:
         for index in range(len(self.sources)):
             # Check the list type
             list_id = self.store.find(List.list_id, List.list_type == unicode(self.sources[index].listtype)).one()
-            print list_id
-            print unicode(self.sources[index].listtype)
             if list_id is None:
                 self.qglogger.warning('List type couldn\'t be found in the database, please check your configuration.')
                 self.qglogger.warning('Assigning default list type value.')
-                #list_id = 1
+                list_id = 1 #means default unknown list type
             # Calculate the checksum
             conf_checksum = hashlib.md5()   
             conf_checksum.update(self.sources[index].sourcename + str(self.sources[index].listtype) + 
@@ -198,118 +192,6 @@ class QueryGenerator:
         #sys.exit() 
 
  
-    def reconfigureSources_old(self):
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.qglogger.info('Reconfiguring sources')
-        # Delete old sources
-        try:
-            statement = 'SELECT source_name,parser_id FROM source'
-            self.cursor.execute(statement)
-            registered_sources = self.cursor.fetchall()
-        except Exception, e:
-            self.connection.rollback()
-            self.qglogger.info('Reconfiguration is not completed')
-            self.qglogger.error("Error  %s" % (e.args[0]))
-            sys.exit()
-
-        # If we have something in the database
-        if registered_sources is not None:
-            # Convert the sources dictionary in configuration file to sources list
-            sources_list = []
-            for i in range(len(self.sources)):
-                sources_list.append(self.sources[index].sourcename)
-            # Check if db records exists in source list of configuration file
-            for source in registered_sources:
-                if not(source[0] in(sources_list)):
-                    statement1 = 'DELETE FROM source WHERE source_name="%s"' % source[0]
-                    statement2 = 'DELETE FROM parser WHERE parser_id=%d' % source[1]
-                    try:
-                        self.cursor.execute(statement1)
-                        self.cursor.execute(statement2)
-                        self.qglogger.info('Source is deleted : %s' % source[0])
-                    except Exception, e:
-                        self.connection.rollback()
-                        self.qglogger.info('Reconfiguration is not completed')
-                        self.qglogger.error("Error  %s" % (e.args[0]))
-                        sys.exit()
-    
-        for i in range(len(self.sources)):
-            # Calculate the checksum
-            conf_checksum = hashlib.md5()   
-            # However the parser_name column belongs to the parser table, we'll use it in calculation of the checksum of the source,
-            # and the checksum will be stored in source table.
-            conf_checksum.update( self.sources[index].sourcename     + 
-                                  str(self.sources[index].listtype)  + 
-                                  self.sources[index].sourcelink     + 
-                                  self.sources[index].sourcefile     +
-                                  self.sources[index].parser          +
-                                  str(self.sources[index].time_interval)
-            )
-            statement = 'SELECT source_checksum FROM source WHERE source_name="%s"' % (self.sources[index].sourcename)
-            self.cursor.execute(statement)
-            dbchecksum = self.cursor.fetchone()
-            if not dbchecksum:
-                # If can't find a checksum, add this new source
-                self.qglogger.info('Adding new source %s' % self.sources[index].sourcename)
-                try:
-                    statement = 'INSERT INTO parser (parser_script, time_interval) VALUES("%s", %d)' % (self.sources[index].parser, self.sources[index].time_interval)
-                    self.cursor.execute(statement)
-                    parser_id = self.cursor.lastrowid
-                    statement = 'SELECT list_id FROM list WHERE list_type="%s"' % (self.sources[index].listtype)
-                    self.cursor.execute(statement)
-                    list_id = self.cursor.fetchone()
-                    if list_id is None:
-                        self.qglogger.error('List type can not be found in the database, please check your configuration.')
-                        self.qglogger.error('Passing to source entry for reconfiguraiton')
-                        continue
-                    statement = 'INSERT INTO source (source_name, source_link, list_id, parser_id, source_checksum) VALUES("%s", \'%s\', %d, %d, "%s")' % (
-                                self.sources[index].sourcename, self.sources[index].sourcelink, list_id[0], parser_id, conf_checksum.hexdigest() )
-                    self.cursor.execute(statement)
-                    self.qglogger.info('New Source added successfully : "%s"' % self.sources[index].sourcename)
-                except Exception, e:
-                    self.connection.rollback()
-                    self.qglogger.error("Error %s" % e)
-                    sys.exit()
-            elif str(conf_checksum.hexdigest()) != str(dbchecksum[0]):
-                # Update the source information
-                self.qglogger.info('Updating the source %s' % self.sources[index].sourcename)
-                try:
-                    statement = 'SELECT list_id FROM list WHERE list_type="%s"' % (self.sources[index].listtype)
-                    self.cursor.execute(statement)
-                    list_id = self.cursor.fetchone()
-                    if list_id is None:
-                        self.qglogger.error('List type can not be found in the database, please check your configuration.')
-                        self.qglogger.error('Passing to source entry for reconfiguraiton')
-                        continue
-                    # Update source table
-                    statement = 'UPDATE source SET source_link="%s", list_id=%d, source_checksum="%s" WHERE source_name="%s" ' % (
-                                self.sources[index].sourcelink, self.sources[index].listtype, conf_checksum.hexdigest(), self.sources[index].sourcename
-                                )
-                    self.cursor.execute(statement)
-                    # Update parser table
-                    statement = 'UPDATE parser SET parser_script="%s", time_interval=%d WHERE parser_id=(SELECT parser_id FROM source WHERE source_name="%s")' % (
-                                 self.sources[index].parser, self.sources[index].time_interval, self.sources[index].sourcename )
-                    self.cursor.execute(statement)
-                    self.qglogger.info('Source updated successfully : "%s"' % self.sources[index].sourcename)
-                except Exception, e:
-                    self.connection.rollback()
-                    self.qglogger.error("Error  %s" % (e.args[0]))
-                    sys.exit()
-            elif str(conf_checksum.hexdigest()) == str(dbchecksum[0]):
-                self.qglogger.info('No need to reconfigure source :  %s' % self.sources[index].sourcename)
-            else:
-                self.qglogger.info('CHECK CODE')
-                print 'conf checksum ' + conf_checksum.hexdigest()
-                print 'dbchecksum ' + dbchecksum
-                sys.exit()
-        # reconfigure subscription types 
-        subs = subscription()
-        subs.createSubscriptionTypes()
-        #close the cursor and give the database connection.
-        self.cursor.close()
-        db.sync_database_connection()
-
-
     def checkParsers(self):
         '''
             Check if the parser exists in the given path.
