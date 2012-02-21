@@ -63,21 +63,22 @@ class NfQueryServer:
         }
 
         # Check Config File Sections
+        #print self.config
         sections = self.config.keys()
         if(set(ConfigSections.keys()).issubset(set(sections))):
             self.nfquerylog.debug('Main configuration options are OK')
             for section,option in self.config.iteritems():
+                #print section,option
+                #print dir(option)
                 # Check if the section has a loop like 'sources' option.
-                if hasattr(option, 'keys') and hasattr(option, '__getitem__'):
+                if hasattr(option, 'keys') and hasattr(option, '__getitem__') and (option):
                     self.nfquerylog.debug('This section is a mapping')
                     if (set(ConfigSections[section]).issubset(set(option.keys()))):
                         self.nfquerylog.debug(str(ConfigSections[section]) + 'exists')
                     else:
-                        #self.nfquerylog.error(str(ConfigSections[section]) + ' option does not exists in the configuration file.')
-                        #self.nfquerylog.error('Please add the required option to conf file and check the manual')
                         raise ConfigError(str(ConfigSections[section]) + ' option does not exists in the configuration file.' + 
                                           'Please add the required option to conf file and check the manual' )
-                elif hasattr(option, '__iter__'):
+                elif hasattr(option, '__iter__') and (option):
                     self.nfquerylog.debug('This section is a sequence')
                     if (set(ConfigSections[section]).issubset(set(option[0].keys()))):
                         self.nfquerylog.debug(str(ConfigSections[section]) + 'exists')
@@ -90,7 +91,7 @@ class NfQueryServer:
                     sys.exit(1)
         else:
             self.nfquerylog.info('One of the main configuration options does not exists')
-            self.nfquerylog.info('You should have all \'nfquery, database, sources\' options in the conf file')
+            self.nfquerylog.info('You should have all \'nfquery, database, plugin, sources\' options in the configuration file')
             self.nfquerylog.info('Please add the required option and check the manual')
 
 
