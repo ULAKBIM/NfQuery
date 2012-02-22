@@ -17,8 +17,6 @@ from datetime import date
 from config import Config, ConfigError
 
 # package imports
-from db import *
-from db2 import db2
 from querygenerator import *
 from subscription import *
 from logger  import createLogger
@@ -94,6 +92,16 @@ class NfQueryServer:
             self.nfquerylog.info('You should have all \'nfquery, database, plugin, sources\' options in the configuration file')
             self.nfquerylog.info('Please add the required option and check the manual')
 
+    
+    def get_store(self):
+        if not self.store:
+            db = 'mysql://' + self.config.database.db_user  + ':' + self.config.db_password + '@' + self.config.db_host + '/' + self.config.db_name
+            #print db
+            database = create_database(db)
+            self.store = Store(database)
+        print self.store
+        return self.store
+
 
     def startScheduler(self):
         '''
@@ -138,18 +146,11 @@ class NfQueryServer:
             Starting all modules.
         ''' 
         
-        # Start Database Connection
-        #self.database = db( self.config.database.db_host, self.config.database.db_user, 
-        #                    self.config.database.db_password, self.config.database.db_name )
-        #self.connection = self.database.get_database_connection()
-       
-        from db2 import db2
-        self.db = db2( self.config.database.db_host, self.config.database.db_user,
-                       self.config.database.db_password, self.config.database.db_name )
-        self.store = self.db.get_store()
- 
-        # Start Query Generator 
-        self.q_generator = QueryGenerator(self.config.sources, self.store)
+        # Start database connection 
+        self.store = self.get_store()
+
+        # Start QueryGenerator 
+        self.q_generator = QueryGenerator(self.store, sources=self.config.sources, plugins=self.config.plugins)
         self.q_generator.run()
         
         # Start network server
@@ -166,12 +167,10 @@ class NfQueryServer:
                 
     def stop(self, signum=None, frame=None):
         # close database
-        #self.server.shutdown()
-        self.database.close_database_connection()
-        self.nfquerylog.info('QueryServer is stopped')
         # Stop reactor
         if reactor.running:
             reactor.stop()
+        self.nfquerylog.info('QueryServer is stopped')
 
 
     def reconfigure(self, flag):

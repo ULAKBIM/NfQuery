@@ -9,7 +9,7 @@ class Domain(object):
     domain_name = Unicode()
 
 
-class Ip(object):
+class IP(object):
 
     __storm_table__ = 'ip'
 
@@ -28,7 +28,7 @@ class Port(object):
 
 class Parser(object):
    
-     __storm_table__ = 'parser'
+    __storm_table__ = 'parser'
 
     parser_id = Int(primary=True)
     parser_script = Unicode()
@@ -89,7 +89,7 @@ class SubscriptionPackets(object):
     subs_packet_id = Int(primary=True)
     subscription_id = Int()
     query_id = Int()
-    tags() = Unicode()
+    tags = Unicode()
 
     subscription = Reference(subscription_id, Subscription.subscription_id)
     query = Reference(query_id, Query.query_id)
@@ -119,7 +119,7 @@ class QueryPort(object):
     port = Reference(port_id, Port.port_id)
 
 
-class QueryIp(object):
+class QueryIP(object):
     
     __storm_table__ = 'query_ip'
    
@@ -128,7 +128,7 @@ class QueryIp(object):
     query_id = Int() 
 
     query = Reference(query_id, Query.query_id)
-    ip = Reference(ip_id, Ip.ip_id)
+    ip = Reference(ip_id, IP.ip_id)
 
 
 class PrefixList(object):
