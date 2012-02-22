@@ -11,33 +11,19 @@ import subprocess
 import time
 
 # nfquery imports
+import subscription
 from query import query
-from subscription import subscription
-from db import db
 from defaults import defaults
 from logger import createLogger
 from utils import query_yes_no
 from models import Plugin, PrefixList, Source, Parser, List
 
 
-    # --------------------------- JSON TEST -----------------------------------#
-    #q=Query(1, "amada", "FAKE-AV", "27.03.1990", ip="193.140.94.94").__dict__ #
-    #queryfile = open('outputs/test.jason', mode='w')                          #
-    #queryfile.writelines(simplejson.dumps(q, indent=4)+"\n")                  #
-    #queryfile.write(simplejson.dumps(q, indent=4))                            #
-    #queryfile.write(simplejson.dumps(q, indent=4))                            #
-    #queryfile.close()                                                         #
-    #                                                                          #
-    #anotherfile=open('test.jason', mode='r')                                  #
-    #                                                                          #
-    #loaded = simplejson.load(anotherfile)                                     #
-    #print loaded                                                              #
-    # --------------------------- JSON TEST -----------------------------------#
-    
 __all__ = ['QueryGenerator']
 
 class QueryGenerator:
     def __init__(self, store, sources=None, plugins=None):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.store = store
         self.sources = sources
         self.plugins = plugins
@@ -45,33 +31,59 @@ class QueryGenerator:
          
 
     def run(self):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.checkParsers()
         self.executeParsers()
-        self.subscription = subscription()
-        self.createSubscriptions()
+        subscription.createSubscriptions()
+
+
+    def checkParsers(self):
+        '''
+            Check if the parser exists in the given path.
+        '''
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        for index in range(len(self.sources)):
+            if os.path.exists(self.sources[index].parser):
+                self.qglogger.info('Parser "%s" Exists, OK!' % self.sources[index].parser)
+            else:
+                self.qglogger.warning('Parser %s doesn\'t exist\nPlease check the nfquery.conf file' % self.sources[index].parser)
+
+    
+    def executeParsers(self, parser=None):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        if parser is None:
+            self.qglogger.debug('running all parsers')
+            for index in range(len(self.sources)):
+                try:
+                    print 'parser = %s ' % self.sources[index].parser
+                    returncode = subprocess.call(['python', self.sources[index].parser])
+                    if returncode == 0:
+                        self.createQuery(self.sources[index].parser)
+                    else:
+                        self.qglogger.warning('Parser returned with error')
+                except Exception, e:
+                    self.qglogger.error('got exception: %r, exiting' % (e))
+                    continue
+                    #sys.exit() ??
+        else:
+            self.qglogger.debug('running parser %s' % parser)
+            for index in range(len(self.sources)):
+                if self.sources[index].parser == parser:
+                    try:
+                        returncode = subprocess.call(['python', self.sources[index].parser])
+                        if returncode == 0:
+                            self.createQuery(self.sources[index].parser)
+                        else:
+                            self.qglogger.warning('Parser returned with error')
+                    except Exception, e:
+                        self.qglogger.error('got exception: %r, exiting' % (e))
+                        continue
+                        #sys.exit() ??
 
 
     def reconfigurePlugins(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qglogger.info('Reconfiguring plugins')
-
-        #    plugins : {
-        #    organization    : 'ULAKBIM'
-        #    adm_name        : 'Serdar Yigit'
-        #    adm_mail        : 'serdar@ulakbim.gov.tr'
-        #    adm_tel         : '312-2989394'
-        #    adm_publickey   : '/usr/local/etc/nfquery/plugins/ulakbim_public.key'
-        #    prefix_list     : '193.140.94.0/24'
-        #    plugin_ip       : '193.140.94.200'
-        #    }
-
-        from models import Plugin, PrefixList, Source, Parser, List
-       
-        plgin = self.store.find(Plugin, Plugin.plugin_id == 10)
-        if plgin.one():
-            for p in plgin:
-                print dir(p)
-        sys.exit()
 
         for i in range(len(self.plugins)):
             plugin = Plugin()
@@ -106,9 +118,7 @@ class QueryGenerator:
                 sources_list.append(self.sources[index].sourcename)
             for source in dbsources:
                 if not source.source_name in(sources_list):
-                    self.qglogger.warning('I will delete the source : %s', source.source_name)
-                    self.qglogger.warning('Do you approve : %s', source.source_name)
-                    #flag = query_yes_no('Do you approve delete operation', default="no")
+                    self.qglogger.warning('I will delete the source, Do you approve the deletion of source : %s', source.source_name)
                     flag = query_yes_no('', default="no")
                     if flag is True:
                         source_name = source.source_name
@@ -161,24 +171,20 @@ class QueryGenerator:
             elif str(conf_checksum.hexdigest()) != str(dbchecksum):
                 # Update source information
                 self.qglogger.info('Updating the source %s' % self.sources[index].sourcename)
-                try:
-                    # Update existing source
-                    source = self.store.find(Source, Source.source_name == '%s' % unicode(self.sources[index].sourcename) ).one()
-                    source.source_link = unicode(self.sources[index].sourcelink)
-                    source.list_id = list_id
-                    source.source_checksum = unicode(conf_checksum.hexdigest())
-                    self.store.add(source)
-                    # Update existing parser
-                    parser = self.store.find(Parser,Parser.parser_id == source.parser_id).one()
-                    parser.parser_script = unicode(self.sources[index].parser)
-                    parser.time_interval = self.sources[index].time_interval
-                    self.store.add(parser)
-                    # Commit changes
-                    self.store.commit()
-                    self.qglogger.info('Source updated successfully : "%s"' % self.sources[index].sourcename)
-                except Exception, e:
-                    self.qglogger.error("Error  %s" % (e.args[0]))
-                    sys.exit()
+                # Update existing source
+                source = self.store.find(Source, Source.source_name == '%s' % unicode(self.sources[index].sourcename) ).one()
+                source.source_link = unicode(self.sources[index].sourcelink)
+                source.list_id = list_id
+                source.source_checksum = unicode(conf_checksum.hexdigest())
+                self.store.add(source)
+                # Update existing parser
+                parser = self.store.find(Parser,Parser.parser_id == source.parser_id).one()
+                parser.parser_script = unicode(self.sources[index].parser)
+                parser.time_interval = self.sources[index].time_interval
+                self.store.add(parser)
+                # Commit changes
+                self.store.commit()
+                self.qglogger.info('Source updated successfully : "%s"' % self.sources[index].sourcename)
             elif str(conf_checksum.hexdigest()) == str(dbchecksum):
                 self.qglogger.info('No need to reconfigure the source : %s' % self.sources[index].sourcename)
             else:
@@ -187,55 +193,10 @@ class QueryGenerator:
                 print 'dbchecksum ' + dbchecksum
                 sys.exit()
         # reconfigure subscription types 
-        #subs = subscription()
-        #subs.createSubscriptionTypes()
-        #sys.exit() 
+        subscription.createSubscriptionTypes()
+        sys.exit()
 
  
-    def checkParsers(self):
-        '''
-            Check if the parser exists in the given path.
-        '''
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        for index in range(len(self.sources)):
-            if os.path.exists(self.sources[index].parser):
-                self.qglogger.info('Parser "%s" Exists, OK!' % self.sources[index].parser)
-            else:
-                self.qglogger.warning('Parser %s doesn\'t exist\nPlease check the nfquery.conf file' % self.sources[index].parser)
-
-    
-    def executeParsers(self, parser=None):
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        if parser is None:
-            self.qglogger.debug('running all parsers')
-            for index in range(len(self.sources)):
-                try:
-                    print 'parser = %s ' % self.sources[index].parser
-                    returncode = subprocess.call(['python', self.sources[index].parser])
-                    if returncode == 0:
-                        self.createQuery(self.sources[index].parser)
-                    else:
-                        self.qglogger.warning('Parser returned with error')
-                except Exception, e:
-                    self.qglogger.error('got exception: %r, exiting' % (e))
-                    continue
-                    #sys.exit() ??
-        else:
-            self.qglogger.debug('running parser %s' % parser)
-            for index in range(len(self.sources)):
-                if self.sources[index].parser == parser:
-                    try:
-                        returncode = subprocess.call(['python', self.sources[index].parser])
-                        if returncode == 0:
-                            self.createQuery(self.sources[index].parser)
-                        else:
-                            self.qglogger.warning('Parser returned with error')
-                    except Exception, e:
-                        self.qglogger.error('got exception: %r, exiting' % (e))
-                        continue
-                        #sys.exit() ??
-
-
     def createQuery(self, parsername=None):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if parsername is None:

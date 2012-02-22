@@ -4,9 +4,34 @@ import sys
 """
     Utils that are used very frequently.
 
+    * dottedQuadToNum
+    * numToDottedQuad
     * query_yes_or_no
 """
 
+
+def dottedQuadToNum(ip):                                        
+    """
+        convert decimal dotted quad string to long integer
+    """
+    
+    hexn = ''.join(["%02X" % long(i) for i in ip.split('.')])   
+    return long(hexn, 16)                                       
+                                                                
+# IP address manipulation functions                             
+def numToDottedQuad(n):                                         
+    """
+        convert long int to dotted quad string
+    """
+                                                                
+    d = 256 * 256 * 256                                         
+    q = []                                                      
+    while d > 0:                                                
+        m,n = divmod(n,d)                                       
+        q.append(str(m))                                        
+        d = d/256                                               
+                                                                
+    return '.'.join(q)                                          
 
 
 def query_yes_no(question, default="yes"):
