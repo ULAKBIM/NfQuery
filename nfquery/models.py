@@ -50,7 +50,7 @@ class Source(object):
     source_id = Int(primary=True)
     source_name = Unicode()
     source_link = Unicode()
-    source_checksum = Unicode()
+    checksum = Unicode()
     list_id = Int()
     parser_id = Int()
 
@@ -66,7 +66,7 @@ class Query(object):
     source_id = Int()
     update_time = Unicode()
     query_type = Int()
-    hash_value = Unicode()
+    checksum = Unicode()
     creation_time = Unicode()
 
     source =  Reference(source_id, Source.source_id)
@@ -151,6 +151,7 @@ class Plugin(object):
     adm_publickey_file = Unicode()
     prefix_id = Int()
     plugin_ip = Unicode()
+    checksum = Unicode()
  
     prefix = Reference(prefix_id, PrefixList.prefix_id) 
 

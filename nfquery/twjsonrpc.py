@@ -7,7 +7,6 @@ from twisted.internet import reactor, ssl
 from twisted.application import service,internet
 import sys
 
-from db import db
 
 class Example(jsonrpc.JSONRPC):
     """
@@ -40,8 +39,8 @@ class Example(jsonrpc.JSONRPC):
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip):
         print "Registration information : %s,%s,%s,%s,%s,%s,%s" % (organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip)
         print 'here'
-        conn = db.get_database_connection()
-        cursor = conn.cursor()
+        from db import db
+        store = db.get_store
         statement = 'select * from plugin'
         cursor.execute(statement)
         a = cursor.fetchall()
