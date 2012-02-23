@@ -51,7 +51,7 @@ if __name__ == "__main__":
     output_type = 1 # Ip list
     output_file = '/usr/local/nfquery/sources/malc0de/malc0deOutput.txt'
 
-    fetch_source(source_link, source_file)
+    #fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
     

@@ -7,14 +7,14 @@ import logging
 import hashlib
 
 # nfquery import
-#from db import db
+import nfquery
 from db2 import db2
 from defaults import defaults
 from logger import createLogger
-from models import Source, Query, IP
+from models import Source, Query, IP, QueryIP
 from utils import dottedQuadToNum
 
-class query():
+class query:
     '''
         Query class for storing etracted information FROM sources.
         
@@ -54,25 +54,22 @@ class query():
         m = hashlib.md5()                      # get the hash of output to check if the query is updated. 
         m.update(self.output)
         self.hash_value = m.hexdigest()
-        #print self.hash_value
         
         
-    def insert_query(self):
+    def insert_query(self, store):
+        '''
+           Inserts query information to database. 
+           To tables :  
+                     1) query, query_ip and ip
+                     2) query, query_domain and domain                      
+                     3) query, query_port and port
+        '''
         self.qlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        '''
-            Inserts query information to database. 
-            To tables :  
-                      1) query, query_ip and ip
-                      2) query, query_domain and domain                      
-                      3) query, query_port and port
-        '''
-        store = db2.get_store() 
-        source_id = store.find(Source.source_id, Source.source_name=='%s' % unicode(self.source_name)).one()
+        source_id = store.find(Source.source_id, Source.source_name== unicode(self.source_name)).one()
         if source_id is None:
             self.qlogger.error('%s is not found in the database' % self.source_name)
             self.qlogger.error('Please reconfigure your sources, or check the parser')
-            return 1
-        query_id = store.find(Query.query_id, Query.source_id == '%d' % source_id).one()
+        query_id = store.find(Query.query_id, Query.source_id == source_id).one()
         if query_id is None:
             '''
                 Adding new query
@@ -86,10 +83,9 @@ class query():
             store.flush()
             self.qlogger.debug('New query is added')
             self.insert_query_ip(store, query.query_id)
-            store.commit()
             self.qlogger.info('New query is inserted succesfully')
         else:
-            hash_value = store.find(Query.hash_value, Query.source_id == '%d' % (source_id)).one()
+            hash_value = store.find(Query.hash_value, Query.source_id == source_id).one()
             if hash_value == self.hash_value:
                 '''
                     Don't update this query
@@ -99,20 +95,18 @@ class query():
                 '''
                     Update query
                 '''
-                query = store.find(Query, Query.query_id == '%d' % (query_id)).one()
+                query = store.find(Query, Query.query_id == query_id).one()
                 query.query_type = self.output_type
                 query.hash_value = unicode(self.hash_value)
                 query.update_time = unicode(self.update_time)
                 self.insert_query_ip(store, query.query_id)
-                store.commit()
                 self.qlogger.debug('Query is updated.')
             elif hash_value is None:
                 ''' 
                    Fatal Error
                 '''
                 self.qlogger.error('Fatal Error : hash_value is None')
-                return 1
-        return 0
+        store.commit()
 
         
     def insert_query_ip(self, store, query_id):
@@ -124,31 +118,32 @@ class query():
             if ip is not ' ' and ip is not '':
                 ip_int = dottedQuadToNum(ip)
                 # Check if we already have this ip.
-                ip_id = store.find(IP.ip_id, IP.ip_int == '%d' % (ip_int)).one()
+                ip_id = store.find(IP.ip_id, IP.ip_int == ip_int).one()
                 if ip_id is None:
                     # Insert new ip and query-ip relation.
-                    ip = IP()
-                    ip.ip = unicode(ip)
-                    ip.ip_int = ip_int
-                    store.add(ip)
+                    ip_obj = IP()
+                    ip_obj.ip = unicode(ip)
+                    ip_obj.ip_int = ip_int
+                    store.add(ip_obj)
                     store.flush()
                     self.qlogger.debug('New ip is added')
                     relation = QueryIP()
                     relation.query_id = query_id
-                    relation.ip_id = ip.ip_id
+                    relation.ip_id = ip_obj.ip_id
                     store.add(relation)
                     store.flush()
                     self.qlogger.debug('New query-ip relation is added')
                 else:
+                    self.qlogger.debug('We already have this ip')
                     # Check if we already have this ip-query relation
-                    qp_id = store.find(QueryIP.qp_id, (QueryIP.query_id == '%d' % (query_id)) & (QueryIP.ip_id == '%d' % (ip_id)))
+                    qp_id = store.find(QueryIP.qp_id, (QueryIP.query_id == query_id) & (QueryIP.ip_id == ip_id))
                     if qp_id is not None:
                         self.qlogger.debug('We already have this query-ip relation')
                     else:
                         # Create query-ip relation
                         relation = QueryIP()
                         relation.query_id = query_id
-                        relation.ip_id = ip.ip_id
+                        relation.ip_id = ip_id
                         self.qlogger.debug('New query-ip relation is added')
  
 
