@@ -74,7 +74,7 @@ if __name__ == "__main__":
     output_type  = 1 
     output_file = '/home/serdar/workspace/test/sources/amada/amadaOutput.txt'
     
-    fetch_source(source_link, source_file)
+    #fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)
 
     

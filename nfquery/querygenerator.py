@@ -16,25 +16,25 @@ from query import query
 from defaults import defaults
 from logger import createLogger
 from utils import query_yes_no
-from models import Plugin, PrefixList, Source, Parser, List
+from models import *
 
 
 __all__ = ['QueryGenerator']
 
 class QueryGenerator:
     def __init__(self, store, sources=None, plugins=None):
+        self.qglogger = createLogger('QueryGenerator', defaults.loglevel)
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.store = store
         self.sources = sources
         self.plugins = plugins
-        self.qglogger = createLogger('QueryGenerator', defaults.loglevel)
          
 
     def run(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.checkParsers()
         self.executeParsers()
-        subscription.createSubscriptions()
+        self.createSubscriptions()
 
 
     def checkParsers(self):
@@ -55,7 +55,6 @@ class QueryGenerator:
             self.qglogger.debug('running all parsers')
             for index in range(len(self.sources)):
                 try:
-                    print 'parser = %s ' % self.sources[index].parser
                     returncode = subprocess.call(['python', self.sources[index].parser])
                     if returncode == 0:
                         self.createQuery(self.sources[index].parser)
@@ -64,7 +63,6 @@ class QueryGenerator:
                 except Exception, e:
                     self.qglogger.error('got exception: %r, exiting' % (e))
                     continue
-                    #sys.exit() ??
         else:
             self.qglogger.debug('running parser %s' % parser)
             for index in range(len(self.sources)):
@@ -78,7 +76,7 @@ class QueryGenerator:
                     except Exception, e:
                         self.qglogger.error('got exception: %r, exiting' % (e))
                         continue
-                        #sys.exit() ??
+        self.qglogger.debug('end of executeParsers')
 
 
     def reconfigurePlugins(self):
@@ -112,7 +110,7 @@ class QueryGenerator:
         dbsources = self.store.find(Source)
         
         # Maintain the table for delete operations
-        if dbsources.count > 0:
+        if dbsources.count() > 0:
             sources_list = []
             for index in range(len(self.sources)):
                 sources_list.append(self.sources[index].sourcename)
@@ -124,20 +122,25 @@ class QueryGenerator:
                         source_name = source.source_name
                         list_id = source.list_id
                         parser_id = source.parser_id
-                        self.store.find(Source, Source.source_name == '%s' % source.source_name).remove()
                         self.store.find(Parser, Parser.parser_id == parser_id).remove()
+                        self.store.find(Source, Source.source_name == '%s' % source.source_name).remove()
                         self.store.commit()
                         self.qglogger.info('Source %s is deleted' % source_name)
                     else:
                         self.qglogger.info('Not deleted anything.')
                         
         for index in range(len(self.sources)):
-            # Check the list type
+            # Check output type
+            if (not (4>self.sources[index].outputtype>0)):
+                self.qglogger.error('output_type must be between 1-3, please look at the definition.\n')
+
+            # Check list type
             list_id = self.store.find(List.list_id, List.list_type == unicode(self.sources[index].listtype)).one()
             if list_id is None:
                 self.qglogger.warning('List type couldn\'t be found in the database, please check your configuration.')
                 self.qglogger.warning('Assigning default list type value.')
                 list_id = 1 #means default unknown list type
+
             # Calculate the checksum
             conf_checksum = hashlib.md5()   
             conf_checksum.update(self.sources[index].sourcename + str(self.sources[index].listtype) + 
@@ -189,11 +192,11 @@ class QueryGenerator:
                 self.qglogger.info('No need to reconfigure the source : %s' % self.sources[index].sourcename)
             else:
                 self.qglogger.error('CHECK CODE')
-                print 'conf checksum ' + conf_checksum.hexdigest()
-                print 'dbchecksum ' + dbchecksum
+                self.qglogger.warning('conf checksum ' + conf_checksum.hexdigest())
+                self.qglogger.warning('dbchecksum ' + dbchecksum)
                 sys.exit()
         # reconfigure subscription types 
-        subscription.createSubscriptionTypes()
+        subscription.createSubscriptionTypes(self.store)
         sys.exit()
 
  
@@ -204,7 +207,7 @@ class QueryGenerator:
                 try:
                     outputfile = open(self.sources[index].outputfile, 'r')
                     data = json.load(outputfile)
-                    #print data['source_name'], data['update_time'], data['ip_list']
+                    #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['ip_list']))
                     outputfile.close()
                 except Exception, e:
                     self.qglogger.warning('got exception: %r' % (e))
@@ -213,7 +216,7 @@ class QueryGenerator:
                 # Check values with db and conf file.
                 # source_name, listtype, output and update time check should be done here!!!!
                 myquery = query(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
-                result = myquery.insert_query()
+                myquery.insert_query(self.store)
         else:
             for index in range(len(self.sources)):
                 if parsername == self.sources[index].parser:
@@ -227,10 +230,9 @@ class QueryGenerator:
                         continue
                     # Check values with db and conf file.
                     # source_name, outputtype, output and update time check should be done here!!!!
-                    #if (not (4>output_type>0)):
-                    #    self.qlogger.error('output_type must be between 1-3, please look at the definition.\n')
                     myquery = query(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
-                    result = myquery.insert_query()
+                    myquery.insert_query(self.store)
+        self.qglogger.debug('end of createQuery')
 
             
     def createSubscriptions(self):
@@ -238,152 +240,77 @@ class QueryGenerator:
         self.qglogger.info('Generating Subscriptions...')
         self.createSourceSubscriptions()
         self.createListSubscriptions()
-   
+        self.qglogger.debug('end of createSubscriptions')
+
 
     def createSourceSubscriptions(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        try:
-            # Check if source_name is not given, so we work for all sources.
-            statement = """SELECT subscription_name FROM subscription WHERE subscription_type=1"""
-            self.cursor.execute(statement)
-            source_name_list = self.cursor.fetchall()
-            if source_name_list is None:
-                self.qglogger.error("Source is not registered to database. Run reconfig or check sources.")
-                sys.exit()
-            self.qglogger.debug(source_name_list)
-            for source_name in source_name_list:
-                statement = """SELECT query_id FROM query WHERE source_id IN(SELECT source_id FROM source WHERE source_name='%s')""" % source_name[0]
-                self.cursor.execute(statement)
-                query_id_list = self.cursor.fetchall()
-                if query_id_list is None:
-                    self.qglogger.debug("We don't have any query for this source.")
-                    self.qglogger.error("%s subscription creation is failed." % (source_name) )   # We exit, but may be we can wait for the parser to be executed.
-                    sys.exit()
-                statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % source_name
-                self.cursor.execute(statement)
-                subscription_id = self.cursor.fetchone()
-                statement = """SELECT subs_packet_id FROM subscription_packets WHERE subscription_id=%d""" % subscription_id
-                self.cursor.execute(statement)
-                subs_packet_id = self.cursor.fetchone()
-                if subs_packet_id is None:
-                    for qid in query_id_list:
-                        ########### eger subs_packet_id varsa burada update yapilacak, yoksa eklenecek 
-                        statement = ( """INSERT INTO subscription_packets(subscription_id, query_id)""" + 
-                                      """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
-                        self.cursor.execute(statement)
-                        self.qglogger.debug(statement)
-                else:
-                    statement = ("""SELECT query_id FROM subscription_packets WHERE subscription_id=%d""" % subscription_id[0])
-                    self.cursor.execute(statement)
-                    query_ids = self.cursor.fetchall()
-                    for qid in query_id_list:
-                        if not (qid in query_ids):
-                            statement = ( """INSERT INTO subscription_packets(subscription_id, query_id)""" +
-                                      """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
-                            self.cursor.execute(statement)
-                            self.qglogger.debug(statement)
-        except MySQLdb.IntegrityError, message:
-            errorcode = message[0] # get MySQL error code
-            if errorcode == 1062:
-                self.qglogger.debug('Duplicate Entry Warning / No Problem.')
-                self.qglogger.info('Duplicate Entry Warning / No Problem.')
+        # Check if source_name is not given, means we work for all sources.
+        source_name_list = self.store.find(Subscription.subscription_name, Subscription.subscription_type == 1)
+        if source_name_list is None:
+            self.qglogger.error("Source is not registered to database. Run 'reconfig sources' or check sources.")
+            sys.exit()
+        self.qglogger.debug(source_name_list)
+        for source_name in source_name_list:
+            source_id = self.store.find(Source.source_id, Source.source_name == '%s' % unicode(source_name)).one()
+            query_id_list = self.store.find(Query.query_id, Query.source_id == source_id)
+            if query_id_list is None:
+                self.qglogger.warning("We don't have any query for this source.")
+                self.qglogger.warning("%s subscription creation is failed." % (source_name) )
+                continue 
+            subscription_id = self.store.find(Subscription.subscription_id, Subscription.subscription_name == '%s' % unicode(source_name)).one()
+            subs_packet_id = self.store.find(SubscriptionPackets.subs_packet_id, SubscriptionPackets.subscription_id == subscription_id).one()
+            if subs_packet_id is None:
+                for qid in query_id_list:
+                    spacket = SubscriptionPackets()
+                    spacket.subscription_id = subscription_id
+                    spacket.query_id = qid
+                    self.store.add(spacket)
             else:
-                self.qglogger.error("'Error %s" % (repr(e)))
-                sys.exit()
-        except Exception, e:
-            self.qglogger.error("Error %s" % (repr(e)))
-            sys.exit ()
-            return 0
-        db.sync_database_connection()
-
+                query_ids = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
+                for qid in query_id_list:
+                    if not (qid in query_ids):
+                        spacket = SubscriptionPackets(subscription_id, qid)
+                        self.store.add(spacket)
+        self.store.commit()
+        self.qglogger.debug('end of createSourceSubscriptions')
 
 
     def createListSubscriptions(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        try:
-            # Check if source_name is not given, so we work for all sources.
-            statement = """SELECT subscription_name FROM subscription WHERE subscription_type=2"""
-            self.cursor.execute(statement)
-            list_type_list = self.cursor.fetchall()
-            if list_type_list is None:
-                self.qglogger.error("List type is not registered to database. Run reconfig or check sources.")
-                sys.exit()
-            self.qglogger.debug(list_type_list)
-            for list_type in list_type_list:
-                statement = """SELECT query_id FROM query WHERE source_id IN (SELECT source_id FROM source where list_id IN(SELECT list_id FROM list WHERE list_type='%s'))""" % list_type[0]
-                self.cursor.execute(statement)
-                query_id_list = self.cursor.fetchall()
-                if query_id_list is None:
-                    self.qglogger.debug("We don't have any query for this list type.")
-                    self.qglogger.error("%s subscription is failed." % (list_type[0]) ) 
-                else:
-                    statement = """SELECT subscription_id FROM subscription WHERE subscription_name='%s'""" % list_type[0]
-                    self.cursor.execute(statement)
-                    subscription_id = self.cursor.fetchone()
-                    statement = """SELECT subs_packet_id FROM subscription_packets WHERE subscription_id=%d""" % subscription_id
-                    self.cursor.execute(statement)
-                    subs_packet_id = self.cursor.fetchone()
-                if subs_packet_id is None:
+        list_type_list = self.store.find(Subscription.subscription_name, Subscription.subscription_type == 2)
+        if list_type_list is None:
+            self.qglogger.error("List type is not registered to subscriptions. Run reconfig or check sources.")
+            sys.exit()
+        self.qglogger.debug(list_type_list)
+        for list_type in list_type_list:
+            list_id = self.store.find(List.list_id, List.list_type == '%s' % unicode(list_type)).one()
+            source_id = self.store.find(Source.source_id, Source.list_id == list_id)
+            if source_id.count() < 1:
+                continue
+            query_id_list = self.store.find(Query.query_id, In(Query.source_id, list(source_id)))
+            if query_id_list.count() > 1:
+                subscription_id = self.store.find(Subscription.subscription_id, Subscription.subscription_name == '%s' % unicode(list_type)).one()
+                subs_packet_id = self.store.find(SubscriptionPackets.subs_packet_id, SubscriptionPackets.subscription_id == subscription_id)
+                if subs_packet_id.count() < 1 :
                     for qid in query_id_list:
-                        ########### eger subs_packet_id varsa burada update yapilacak, yoksa eklenecek 
-                        statement = ( """INSERT INTO subscription_packets(subscription_id, query_id)""" +
-                                      """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
-                        self.cursor.execute(statement)
-                        self.qglogger.debug(statement)
+                        spacket = SubscriptionPackets()
+                        spacket.subscription_id = subscription_id
+                        spacket.query_id = qid
+                        self.store.add(spacket)
                 else:
-                    statement = ("""SELECT query_id FROM subscription_packets WHERE subscription_id=%d""" % subscription_id[0])
-                    self.cursor.execute(statement)
-                    query_ids = self.cursor.fetchall()
+                    query_ids = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
                     for qid in query_id_list:
                         if not (qid in query_ids):
-                            statement = ( """INSERT INTO subscription_packets(subscription_id, query_id)""" +
-                                      """VALUES(%d, %d)""" % (subscription_id[0], qid[0]) )
-                            self.cursor.execute(statement)
-                            self.qglogger.debug(statement)
-        except MySQLdb.IntegrityError, message:
-            errorcode = message[0] # get MySQL error code
-            if errorcode == 1062:
-                self.qglogger.debug('Duplicate Entry Warning / No Problem.')
-                self.qglogger.info('Duplicate Entry Warning / No Problem.')
+                            spacket = SubscriptionPackets()
+                            spacket.subscription_id = subscription_id
+                            spacket.query_id = qid
+                            self.store.add(spacket)
             else:
-                self.qglogger.error("'Error %s" % (repr(e)))
-                sys.exit()
-        except Exception, e:
-            self.qglogger.error("Error %s" % (repr(e)))
-            sys.exit ()
-            return 0
-        db.sync_database_connection()
-
-
-#-------------------------------------------------------------------------------------------------------------------------------#
-
-#    def generateSubscriptions(self, subscription_type=None, subscription_name=None):
-#        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-#        if subscription_type is not None:
-#            # means all sources and lists subscriptions
-#            try:
-#                statement = """ SELECT subscription_id FROM subscription WHERE subscription_type=%d""" % subscription_type
-#                
-#        elif not(subscription_name is None):
-#            # means for a specific subscription
-#            try:
-#                statement = """ SELECT subscription_id FROM subscription WHERE subscription_type=%d"""
-#        try:
-#            statement = """SELECT subscription_name FROM subscription WHERE subscription_type=2"""
-
-## place this function in elsewhere
-#def create_query(source_name, output_type, output, creation_time):
-#    '''
-#      Get query information from parser and insert the query to database.
-#    '''
-#    myquery = query(source_name, output_type, output, creation_time)
-#    result = myquery.insert_query()
-#    if result>0:
-#        sys.exit(1)
-#    #myquery.print_content()
-
-
-
+                self.qglogger.debug("We don't have any query for this list type.")
+                self.qglogger.debug("%s subscription is not created." % (list_type) ) 
+        self.store.commit()
+        self.qglogger.debug('end of createListSubscriptions')
 
 
 

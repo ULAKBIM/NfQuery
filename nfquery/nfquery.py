@@ -8,10 +8,8 @@ import resource
 import threading
 import multiprocessing
 import atexit
-import SocketServer
-import MySQLdb
 
-
+from storm.locals import *
 from apscheduler.scheduler import Scheduler
 from datetime import date
 from config import Config, ConfigError
@@ -41,6 +39,7 @@ class NfQueryServer:
         # start logging
         defaults.loglevel = loglevel
         self.nfquerylog = createLogger('nfquery', loglevel)
+        self.store = None
         
         # Parse Config File
         try:
@@ -61,7 +60,7 @@ class NfQueryServer:
         }
 
         # Check Config File Sections
-        #print self.config
+        #self.nfquerylog.debug(self.config)
         sections = self.config.keys()
         if(set(ConfigSections.keys()).issubset(set(sections))):
             self.nfquerylog.debug('Main configuration options are OK')
@@ -91,22 +90,23 @@ class NfQueryServer:
             self.nfquerylog.info('One of the main configuration options does not exists')
             self.nfquerylog.info('You should have all \'nfquery, database, plugin, sources\' options in the configuration file')
             self.nfquerylog.info('Please add the required option and check the manual')
+        
 
-    
     def get_store(self):
+        '''
+            Create and return a database connection if not exists yet.
+        '''
         if not self.store:
-            db = 'mysql://' + self.config.database.db_user  + ':' + self.config.db_password + '@' + self.config.db_host + '/' + self.config.db_name
+            db = 'mysql://' + self.config.database.db_user  + ':' + self.config.database.db_password + '@' + self.config.database.db_host + '/' + self.config.database.db_name
             #print db
             database = create_database(db)
             self.store = Store(database)
-        print self.store
         return self.store
 
 
     def startScheduler(self):
         '''
             Schedule parsers to be called according to time interval parameter of in conf file.
-            Schedule other related jobs.
         '''
         self.sched = Scheduler()
         for index in range(len(self.config.sources)):
@@ -154,7 +154,7 @@ class NfQueryServer:
         self.q_generator.run()
         
         # Start network server
-        #self.startJSONRPCServer()
+        self.startJSONRPCServer()
         
         # Start scheduler
         #self.startScheduler()
@@ -164,7 +164,7 @@ class NfQueryServer:
         # Shutdown handler
         atexit.register(self.stop)
 
-                
+
     def stop(self, signum=None, frame=None):
         # close database
         # Stop reactor
@@ -179,9 +179,7 @@ class NfQueryServer:
         #                    self.config.database.db_password, self.config.database.db_name )
         #self.connection = self.database.get_database_connection()
 
-        self.db = db2( self.config.database.db_host, self.config.database.db_user,
-                       self.config.database.db_password, self.config.database.db_name )
-        self.store = self.db.get_store()
+        self.store = self.get_store()
 
         if flag == 'sources':
             self.q_generator = QueryGenerator(self.store, sources=self.config.sources)
