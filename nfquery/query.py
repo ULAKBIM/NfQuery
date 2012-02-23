@@ -53,7 +53,7 @@ class query:
         self.update_time = update_time         # if first, it's creation_time
         m = hashlib.md5()                      # get the hash of output to check if the query is updated. 
         m.update(self.output)
-        self.hash_value = m.hexdigest()
+        self.checksum = m.hexdigest()
         
         
     def insert_query(self, store):
@@ -77,7 +77,7 @@ class query:
             query = Query()
             query.source_id = source_id
             query.query_type = self.output_type
-            query.hash_value = unicode(self.hash_value)
+            query.checksum = unicode(self.checksum)
             query.creation_time = unicode(self.update_time)
             store.add(query)
             store.flush()
@@ -85,27 +85,27 @@ class query:
             self.insert_query_ip(store, query.query_id)
             self.qlogger.info('New query is inserted succesfully')
         else:
-            hash_value = store.find(Query.hash_value, Query.source_id == source_id).one()
-            if hash_value == self.hash_value:
+            checksum = store.find(Query.checksum, Query.source_id == source_id).one()
+            if checksum == self.checksum:
                 '''
                     Don't update this query
                 '''
                 self.qlogger.debug('Query is not updated.')
-            elif hash_value != self.hash_value:
+            elif checksum != self.checksum:
                 '''
                     Update query
                 '''
                 query = store.find(Query, Query.query_id == query_id).one()
                 query.query_type = self.output_type
-                query.hash_value = unicode(self.hash_value)
+                query.checksum = unicode(self.checksum)
                 query.update_time = unicode(self.update_time)
                 self.insert_query_ip(store, query.query_id)
                 self.qlogger.debug('Query is updated.')
-            elif hash_value is None:
+            elif checksum is None:
                 ''' 
                    Fatal Error
                 '''
-                self.qlogger.error('Fatal Error : hash_value is None')
+                self.qlogger.error('Fatal Error : checksum is None')
         store.commit()
 
         
