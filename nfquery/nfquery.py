@@ -9,12 +9,12 @@ import threading
 import multiprocessing
 import atexit
 
-from storm.locals import *
 from apscheduler.scheduler import Scheduler
 from datetime import date
 from config import Config, ConfigError
 
 # package imports
+import db
 from querygenerator import *
 from subscription import *
 from logger  import createLogger
@@ -92,18 +92,6 @@ class NfQueryServer:
             self.nfquerylog.info('Please add the required option and check the manual')
         
 
-    def get_store(self):
-        '''
-            Create and return a database connection if not exists yet.
-        '''
-        if not self.store:
-            db = 'mysql://' + self.config.database.db_user  + ':' + self.config.database.db_password + '@' + self.config.database.db_host + '/' + self.config.database.db_name
-            #print db
-            database = create_database(db)
-            self.store = Store(database)
-        return self.store
-
-
     def startScheduler(self):
         '''
             Schedule parsers to be called according to time interval parameter of in conf file.
@@ -147,10 +135,12 @@ class NfQueryServer:
         ''' 
         
         # Start database connection 
-        self.store = self.get_store()
+        #self.store = self.get_store()
+        self.store = db.get_store(self.config.database)
 
         # Start QueryGenerator 
-        self.q_generator = QueryGenerator(self.store, sources=self.config.sources, plugins=self.config.plugins)
+        #self.q_generator = QueryGenerator(self.store, sources=self.config.sources, plugins=self.config.plugins)
+        self.q_generator = QueryGenerator(sources=self.config.sources, plugins=self.config.plugins)
         self.q_generator.run()
         
         # Start network server
@@ -171,6 +161,7 @@ class NfQueryServer:
         if reactor.running:
             reactor.stop()
         self.nfquerylog.info('QueryServer is stopped')
+        sys.exit()
 
 
     def reconfigure(self, flag):

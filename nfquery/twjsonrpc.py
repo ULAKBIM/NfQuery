@@ -7,12 +7,13 @@ from twisted.internet import reactor, ssl
 from twisted.application import service,internet
 import sys
 
+import db
+from models import Plugin 
 
 class Example(jsonrpc.JSONRPC):
     """
     An example object to be published.
     """
-
 
     def jsonrpc_echo(self, x):
         """
@@ -38,14 +39,12 @@ class Example(jsonrpc.JSONRPC):
 
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip):
         print "Registration information : %s,%s,%s,%s,%s,%s,%s" % (organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip)
-        print 'here'
-        from db import db
-        store = db.get_store
-        statement = 'select * from plugin'
-        cursor.execute(statement)
-        a = cursor.fetchall()
-        print a
-        return a
+        store = db.get_store()
+        plugin_list = store.find(Plugin)
+        name_list = []
+        for plugin in plugin_list:
+            print name_list.append(plugin.organization)
+        return name_list
 
         
         
