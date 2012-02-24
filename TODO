@@ -140,3 +140,8 @@
 
 	* database creation sirasinda utf8 destegi icin kullanilmasi gereken ifade : 
 	  CREATE DATABASE mydb   DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+
+    * Database connection pooling mevzusu;
+        - An itibariyle 1 yil icerisinde en fazla 10 kullanicisi olan bir sistem olacagindan, su an, application wide sadece bir database connection 
+        kullaniyoruz, scheduled tasklar icinde easy hack bir yontem bulacaz. 
+        - Ileride concurrent connection sayisi artacak olursa bir connection pooling mekanizmasi kullanabiliriz.

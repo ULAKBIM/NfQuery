@@ -2,6 +2,7 @@
 
 
 import nfquery
+import db
 from logger import createLogger
 from defaults import defaults
 from models import Source, Subscription, List
@@ -10,7 +11,7 @@ import logging
 import sys
  
 
-def createSubscriptionTypes(store):
+def createSubscriptionTypes():
     slogger = createLogger('SubscriptionGenerator')
     slogger.debug('In %s' % sys._getframe().f_code.co_name)
     #store = get_store()
@@ -28,6 +29,8 @@ def createSubscriptionTypes(store):
 		!!!!!! SUBSCRIPTION_TAGS NE OLACAK !!!!!!!!
 
     '''
+
+    store = db.get_store()
 
     # 1) Source Name
     subscription_type=1

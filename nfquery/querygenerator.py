@@ -11,6 +11,7 @@ import subprocess
 import time
 
 # nfquery imports
+import db
 import subscription
 from query import query
 from defaults import defaults
@@ -22,10 +23,11 @@ from models import *
 __all__ = ['QueryGenerator']
 
 class QueryGenerator:
-    def __init__(self, store, sources=None, plugins=None):
+    #def __init__(self, store, sources=None, plugins=None):
+    def __init__(self, sources=None, plugins=None):
         self.qglogger = createLogger('QueryGenerator', defaults.loglevel)
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.store = store
+        self.store = db.get_store()
         self.sources = sources
         self.plugins = plugins
          
@@ -251,7 +253,7 @@ class QueryGenerator:
                 self.qglogger.warning('source_checksum ' + source_checksum)
                 sys.exit()
         # reconfigure subscription types 
-        subscription.createSubscriptionTypes(self.store)
+        subscription.createSubscriptionTypes()
         sys.exit()
 
  
@@ -363,9 +365,8 @@ class QueryGenerator:
                             self.store.add(spacket)
             else:
                 self.qglogger.debug("We don't have any query for this list type.")
-                self.qglogger.debug("%s subscription is not created." % (list_type) ) 
+                self.qglogger.debug("%s subscription is not created." % (list_type))
         self.store.commit()
         self.qglogger.debug('end of createListSubscriptions')
-
 
 
