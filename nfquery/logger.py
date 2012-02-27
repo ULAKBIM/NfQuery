@@ -13,17 +13,14 @@ RESET_SEQ = "\033[0m"
 COLOR_SEQ = "\033[1;%dm"
 BOLD_SEQ = "\033[1m"
 
-def createLogger(name, level=None, console=True):
+LOGLEVEL = 0
+
+def createLogger(name, console=True):
     # Start Logging Module
     logging.setLoggerClass(ColoredLogger)
     mylogger = logging.getLogger(name)
     mylogger.to_console = console
-    if not level is None:
-        mylogger.setLevel(level)
-    else:
-        from defaults import defaults
-        #print defaults.loglevel
-        mylogger.setLevel(defaults.loglevel)
+    mylogger.setLevel(LOGLEVEL)
     return mylogger
 
 

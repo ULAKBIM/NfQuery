@@ -2,41 +2,38 @@
 
 import simplejson as json
 import logging
-import multiprocessing
 import sys
 import os.path
 import hashlib
-import MySQLdb
 import subprocess
 import time
 
 # nfquery imports
 import db
-import subscription
-from query import query
-from defaults import defaults
-from logger import createLogger
-from utils import query_yes_no
+import logger
 from models import *
-
+from query import Query
+from utils import query_yes_no
+from subscription import SubscriptionGenerator
 
 __all__ = ['QueryGenerator']
 
 class QueryGenerator:
+
     #def __init__(self, store, sources=None, plugins=None):
-    def __init__(self, sources=None, plugins=None):
-        self.qglogger = createLogger('QueryGenerator', defaults.loglevel)
+    def __init__(self, s_generator, sources=None, plugins=None):
+        self.qglogger = logger.createLogger('QueryGenerator')
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.store = db.get_store()
         self.sources = sources
         self.plugins = plugins
-         
+        self.s_generator = s_generator
 
-    def run(self):
+    def start(self):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.checkParsers()
         self.executeParsers()
-        subscription.createSubscriptions()
+        self.s_generator.createSubscriptions()
 
 
     def checkParsers(self):
@@ -252,7 +249,7 @@ class QueryGenerator:
                 self.qglogger.warning('source_checksum ' + source_checksum)
                 sys.exit()
         # reconfigure subscription types 
-        subscription.createSubscriptionTypes()
+        self.s_generator.createSubscriptionTypes()
         sys.exit()
 
  
@@ -271,7 +268,7 @@ class QueryGenerator:
                     continue
                 # Check values with db and conf file.
                 # source_name, listtype, output and update time check should be done here!!!!
-                myquery = query(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
+                myquery = Query(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
                 myquery.insert_query(self.store)
         else:
             for index in range(len(self.sources)):
@@ -286,7 +283,7 @@ class QueryGenerator:
                         continue
                     # Check values with db and conf file.
                     # source_name, outputtype, output and update time check should be done here!!!!
-                    myquery = query(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
+                    myquery = Query(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
                     myquery.insert_query(self.store)
         self.qglogger.debug('end of createQuery')
 

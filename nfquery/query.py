@@ -9,7 +9,6 @@ import hashlib
 # nfquery import
 import nfquery
 from db2 import db2
-from defaults import defaults
 from logger import createLogger
 from models import Source, Query, IP, QueryIP
 from utils import dottedQuadToNum
