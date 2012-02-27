@@ -8,7 +8,6 @@ import resource
 import threading
 import multiprocessing
 import atexit
-
 from apscheduler.scheduler import Scheduler
 from datetime import date
 from config import Config, ConfigError
@@ -16,8 +15,7 @@ from config import Config, ConfigError
 # package imports
 import db
 import logger
-from querygenerator import QueryGenerator
-from subscriptiongenerator import SubscriptionGenerator
+from querymanager import QueryManager
 
 
 ######################################################
@@ -94,7 +92,7 @@ class QueryServer:
         '''
             Start Json RPC Server, bind to socket and listen for incoming connections from plugins.
         '''
-        rpc_protocol = RPCServer(self.q_generator)
+        rpc_protocol = RPCServer(self.queryManager)
         rpcserver = server.Site(rpc_protocol)
         # test for SSLv23
         #reactor.listenSSL(self.config.nfquery.port, rpcserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))
@@ -110,7 +108,7 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
             Schedule parsers to be called according to time interval parameter indicated in conf file.
         '''
         for index in range(len(self.config.sources)):
-            routine = task.LoopingCall(self.q_generator.executeParsers, self.config.sources[index].parser) # call the parser
+            routine = task.LoopingCall(self.queryManager.executeParsers, self.config.sources[index].parser) # call the parser
             routine.start(int(self.config.sources[index].time_interval) * 60) # call according to time interval     # in seconds
         self.qslogger.info('Started the scheduler')
 
@@ -122,10 +120,9 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
         # Start Database Connection 
         self.store = db.get_store(self.config.database)
 
-        # Start QueryGenerator , SubscriptionGenerator
-        self.s_generator = SubscriptionGenerator()
-        self.q_generator = QueryGenerator(self.s_generator, sources=self.config.sources, plugins=self.config.plugins)
-        self.q_generator.start()
+        # Start QueryManager
+        self.queryManager = QueryManager(sources=self.config.sources, plugins=self.config.plugins)
+        self.queryManager.start()
 
         # Start JSONRPCServer
         self.startJSONRPCServer()
@@ -150,15 +147,13 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
         # Start Database Connection
         self.store = db.get_store(self.config.database)
 
-        self.s_generator = SubscriptionGenerator()
         if flag == 'sources':
             #self.q_generator = QueryGenerator(self.store, sources=self.config.sources)
-            self.q_generator = QueryGenerator(self.s_generator, sources=self.config.sources)
-            self.q_generator.reconfigureSources()
+            self.queryManager = QueryManager(sources=self.config.sources)
+            self.queryManager.reconfigureSources()
         elif flag == 'plugins':
-            #self.q_generator = QueryGenerator(self.store, plugins=self.config.plugins)
-            self.q_generator = QueryGenerator(self.s_generator, plugins=self.config.plugins)
-            self.q_generator.reconfigurePlugins()
+            self.queryManager = QueryManager(plugins=self.config.plugins)
+            self.queryManager.reconfigurePlugins()
 
 
     def run(self):

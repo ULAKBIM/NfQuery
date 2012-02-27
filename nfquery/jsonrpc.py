@@ -22,7 +22,7 @@ class RPCServer(jsonrpc.JSONRPC):
     def __init__(self, queryManager):
         self.rpclogger = createLogger('rpc')
         self.rpclogger.info('RPCServer is started')
-        self.queryServer = queryManager
+        self.queryManager = queryManager
 
     def jsonrpc_echo(self, x):
         """
@@ -47,7 +47,7 @@ class RPCServer(jsonrpc.JSONRPC):
 
     
     def jsonrpc_get_subscriptions(self):
-        return self.queryManager.getSubscriptionPackets()
+        return self.queryManager.getSubscriptions()
 
 
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):

@@ -4,6 +4,7 @@ from storm.locals import In
 import logging
 import sys
 
+# nfquery imports 
 import db
 import logger
 from models import Source, List, Query, Subscription, SubscriptionPackets
@@ -140,7 +141,7 @@ class SubscriptionGenerator:
         self.store.commit()
     
     
-    def fetchSubscriptionPackets(self):
+    def getSubscriptionPackets(self):
         subscription_list = self.store.find(Subscription.subscription_name)
         return list(subscription_list)
     
