@@ -1,6 +1,7 @@
 #!/usr/local/bin/python
 
 import os
+import sys
 import time
 import logging
 import resource
@@ -16,7 +17,7 @@ from config import Config, ConfigError
 import db
 import logger
 from querygenerator import QueryGenerator
-from subscription import SubscriptionGenerator
+from subscriptiongenerator import SubscriptionGenerator
 
 
 ######################################################
@@ -36,17 +37,17 @@ class QueryServer:
     def __init__(self, configfile, loglevel=None):
         # start logging
         logger.LOGLEVEL = loglevel
-        self.nfquerylog = createLogger('nfquery')
+        self.qslogger = logger.createLogger('queryserver')
         
         # Parse Config File
         try:
             self.config = Config(configfile)
         except ConfigError, e:
-            self.nfquerylog.info("Please check configuration file syntax")
-            self.nfquerylog.info("%s" % e)
+            self.qslogger.info("Please check configuration file syntax")
+            self.qslogger.info("%s" % e)
             sys.exit(1)
    
-        self.nfquerylog.debug('Parsing configuration file options')
+        self.qslogger.debug('Parsing configuration file options')
 
         # Prepare Config File Sections
         ConfigSections = {
@@ -57,36 +58,36 @@ class QueryServer:
         }
 
         # Check Config File Sections
-        #self.nfquerylog.debug(self.config)
+        #self.qslogger.debug(self.config)
         sections = self.config.keys()
         if(set(ConfigSections.keys()).issubset(set(sections))):
-            self.nfquerylog.debug('Main configuration options are OK')
+            self.qslogger.debug('Main configuration options are OK')
             for section,option in self.config.iteritems():
                 #print section,option
                 #print dir(option)
                 # Check if the section has a loop like 'sources' option.
                 if hasattr(option, 'keys') and hasattr(option, '__getitem__') and (option):
-                    self.nfquerylog.debug('This section is a mapping')
+                    self.qslogger.debug('This section is a mapping')
                     if (set(ConfigSections[section]).issubset(set(option.keys()))):
-                        self.nfquerylog.debug(str(ConfigSections[section]) + 'exists')
+                        self.qslogger.debug(str(ConfigSections[section]) + 'exists')
                     else:
                         raise ConfigError(str(ConfigSections[section]) + ' option does not exists in the configuration file.' + 
                                           'Please add the required option to conf file and check the manual' )
                 elif hasattr(option, '__iter__') and (option):
-                    self.nfquerylog.debug('This section is a sequence')
+                    self.qslogger.debug('This section is a sequence')
                     if (set(ConfigSections[section]).issubset(set(option[0].keys()))):
-                        self.nfquerylog.debug(str(ConfigSections[section]) + 'exists')
+                        self.qslogger.debug(str(ConfigSections[section]) + 'exists')
                     else:
-                        self.nfquerylog.info(str(ConfigSections[section]) + ' option does not exists in the configuration file.')
-                        self.nfquerylog.info('Please add the required option to conf file and check the manual')
+                        self.qslogger.info(str(ConfigSections[section]) + ' option does not exists in the configuration file.')
+                        self.qslogger.info('Please add the required option to conf file and check the manual')
                         sys.exit(1)
                 else:
-                    self.nfquerylog.info('Unknown configuration file option value, Check the code!')
+                    self.qslogger.info('Unknown configuration file option value, Check the code!')
                     sys.exit(1)
         else:
-            self.nfquerylog.info('One of the main configuration options does not exists')
-            self.nfquerylog.info('You should have all \'nfquery, database, plugin, sources\' options in the configuration file')
-            self.nfquerylog.info('Please add the required option and check the manual')
+            self.qslogger.info('One of the main configuration options does not exists')
+            self.qslogger.info('You should have all \'nfquery, database, plugin, sources\' options in the configuration file')
+            self.qslogger.info('Please add the required option and check the manual')
         
 
     def startJSONRPCServer(self):
@@ -101,7 +102,7 @@ class QueryServer:
         reactor.listenSSL(self.config.nfquery.port, rpcserver, 
                           
 ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
-        self.nfquerylog.info('listening for plugin connections...')
+        self.qslogger.info('listening for plugin connections...')
 
 
     def startScheduler(self):
@@ -111,7 +112,7 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
         for index in range(len(self.config.sources)):
             routine = task.LoopingCall(self.q_generator.executeParsers, self.config.sources[index].parser) # call the parser
             routine.start(int(self.config.sources[index].time_interval) * 60) # call according to time interval     # in seconds
-        self.nfquerylog.info('Started the scheduler')
+        self.qslogger.info('Started the scheduler')
 
 
     def start(self):
@@ -128,7 +129,7 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
 
         # Start JSONRPCServer
         self.startJSONRPCServer()
-        self.nfquerylog.info('QueryServer started on port %s' % self.config.nfquery.port)
+        self.qslogger.info('QueryServer started on port %s' % self.config.nfquery.port)
 
         # Start Scheduler
         self.startScheduler()
@@ -141,7 +142,7 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
         # Stop reactor
         if reactor.running:
             reactor.stop()
-        self.nfquerylog.info('QueryServer is stopped')
+        self.qslogger.info('QueryServer is stopped')
         sys.exit()
 
 
