@@ -1,19 +1,14 @@
 #!/usr/local/bin/python
 
 import sys
-import socket, struct
-#from MySQLdb import DatabaseError
-import logging
 import hashlib
 
-# nfquery import
-import nfquery
-from db2 import db2
-from logger import createLogger
-from models import Source, Query, IP, QueryIP
+# nfquery imports
+import logger
+from models import Source, Query as , IP, QueryIP
 from utils import dottedQuadToNum
 
-class query:
+class Query:
     '''
         Query class for storing etracted information FROM sources.
         
@@ -45,7 +40,7 @@ class query:
         '''
             Start logging and assign query values
         '''
-        self.qlogger = createLogger('Query')
+        self.qlogger = logger.createLogger('query')
         self.source_name = source_name
         self.output_type = output_type
         self.output = output
@@ -68,11 +63,13 @@ class query:
         if source_id is None:
             self.qlogger.error('%s is not found in the database' % self.source_name)
             self.qlogger.error('Please reconfigure your sources, or check the parser')
+        self.qlogger.debug('1')
         query_id = store.find(Query.query_id, Query.source_id == source_id).one()
         if query_id is None:
             '''
                 Adding new query
             '''
+            self.qlogger.debug('2')
             query = Query()
             query.source_id = source_id
             query.query_type = self.output_type
@@ -84,6 +81,7 @@ class query:
             self.insert_query_ip(store, query.query_id)
             self.qlogger.info('New query is inserted succesfully')
         else:
+            self.qlogger.debug('3')
             checksum = store.find(Query.checksum, Query.source_id == source_id).one()
             if checksum == self.checksum:
                 '''
@@ -146,7 +144,7 @@ class query:
                         self.qlogger.debug('New query-ip relation is added')
  
 
-    def insert_query_domain(self,cursor):
+    def insert_query_domain(self, store):
         '''
             Insert domain query to database.
         '''
@@ -167,7 +165,7 @@ class query:
         #    #INSERT INTO query_ip VALUES(query_id, ip_id)
 
 
-    def insert_query_port(self,cursor):
+    def insert_query_port(self, store):
         '''
             Insert port query to database.
         '''

@@ -1,12 +1,12 @@
 #!/usr/local/bin/python
 
+from storm.locals import In
 import logging
 import sys
 
 import db
 import logger
-from models import Source, Subscription, List
-
+from models import Source, List, Query, Subscription, SubscriptionPackets
 
 __all__ = ['SubscriptionGenerator']
  
@@ -14,7 +14,7 @@ __all__ = ['SubscriptionGenerator']
 class SubscriptionGenerator:
     
     def __init__(self):
-        self.slogger = logger.createLogger('SubscriptionGenerator')
+        self.slogger = logger.createLogger('subscriptiongenerator')
         self.store = db.get_store()
 
     def createSubscriptionTypes(self):
@@ -65,8 +65,8 @@ class SubscriptionGenerator:
     def createSubscriptions(self):
         self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.slogger.info('Generating Subscriptions...')
-        createSourceSubscriptionPackets()
-        createListSubscriptionPackets()
+        self.createSourceSubscriptionPackets()
+        self.createListSubscriptionPackets()
     
     
     
