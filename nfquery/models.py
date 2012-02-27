@@ -152,6 +152,7 @@ class Plugin(object):
     prefix_id = Int()
     plugin_ip = Unicode()
     checksum = Unicode()
+    registered = Bool()
  
     prefix = Reference(prefix_id, PrefixList.prefix_id) 
 

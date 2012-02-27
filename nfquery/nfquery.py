@@ -3,7 +3,6 @@
 import os
 import time
 import logging
-import argparse
 import resource
 import threading
 import multiprocessing
@@ -17,7 +16,7 @@ from config import Config, ConfigError
 import db
 from querygenerator import *
 from subscription import *
-from logger  import createLogger
+from logger import createLogger
 from defaults import defaults
 
 
@@ -28,8 +27,7 @@ from twisted.internet import ssl,reactor
 #from twisted.internet.protocol import Factory
 #from twisted.application import service,internet
 
-#from txjsonrpc.web import jsonrpc
-from twjsonrpc import Example
+from jsonrpc import RPCServer
 ######################################################
 
 
@@ -113,16 +111,15 @@ class NfQueryServer:
             Start Json RPC Server, bind to socket and listen for incoming connections from plugins.
         '''
         try:
-            r = Example()
-            exserver = server.Site(r)
+            rpc_protocol = RPCServer()
+            rpcserver = server.Site(rpc_protocol)
             #return internet.SSLServer(7777, exserver, ssl.DefaultOpenSSLContextFactory('certs/nfquery.key', 'certs/nfquery.crt'))
-            
             # without method parameter
             #reactor.listenSSL(7777, exserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file))
             # default one
             #reactor.listenSSL(7777, exserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))
             # test for tlsv1
-            reactor.listenSSL(self.config.nfquery.port, exserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
+            reactor.listenSSL(self.config.nfquery.port, rpcserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
             self.nfquerylog.info('listening for plugin connections...')
         except KeyboardInterrupt:
             self.nfquerylog.debug('keyboard Interrupt')
@@ -170,17 +167,16 @@ class NfQueryServer:
         #                    self.config.database.db_password, self.config.database.db_name )
         #self.connection = self.database.get_database_connection()
 
-        self.store = self.get_store()
+        self.store = db.get_store(self.config.database)
 
         if flag == 'sources':
-            self.q_generator = QueryGenerator(self.store, sources=self.config.sources)
+            #self.q_generator = QueryGenerator(self.store, sources=self.config.sources)
+            self.q_generator = QueryGenerator(sources=self.config.sources)
             self.q_generator.reconfigureSources()
         elif flag == 'plugins':
-            self.q_generator = QueryGenerator(self.store, plugins=self.config.plugins)
+            #self.q_generator = QueryGenerator(self.store, plugins=self.config.plugins)
+            self.q_generator = QueryGenerator(plugins=self.config.plugins)
             self.q_generator.reconfigurePlugins()
-        else:
-            self.nfquerylog.error('Unknown option for reconfigure function, quitting.')
-            sys.exit(1)
  
 
     def run(self):
