@@ -14,10 +14,9 @@ from config import Config, ConfigError
 
 # package imports
 import db
-from querygenerator import *
-from subscription import *
-from logger import createLogger
-from defaults import defaults
+import logger
+from querygenerator import QueryGenerator
+from subscription import SubscriptionGenerator
 
 
 ######################################################
@@ -32,13 +31,12 @@ from jsonrpc import RPCServer
 ######################################################
 
 
-class NfQueryServer:
+class QueryServer:
     
     def __init__(self, configfile, loglevel=None):
         # start logging
-        defaults.loglevel = loglevel
-        self.nfquerylog = createLogger('nfquery', loglevel)
-        self.store = None
+        logger.LOGLEVEL = loglevel
+        self.nfquerylog = createLogger('nfquery')
         
         # Parse Config File
         try:
@@ -101,7 +99,8 @@ class NfQueryServer:
         #reactor.listenSSL(self.config.nfquery.port, rpcserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))
         # test for tlsv1
         reactor.listenSSL(self.config.nfquery.port, rpcserver, 
-                          ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
+                          
+ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
         self.nfquerylog.info('listening for plugin connections...')
 
 
@@ -121,14 +120,19 @@ class NfQueryServer:
         ''' 
         # Start Database Connection 
         self.store = db.get_store(self.config.database)
-        # Start QueryGenerator 
-        self.q_generator = QueryGenerator(sources=self.config.sources, plugins=self.config.plugins)
-        self.q_generator.run()
+
+        # Start QueryGenerator , SubscriptionGenerator
+        self.s_generator = SubscriptionGenerator()
+        self.q_generator = QueryGenerator(self.s_generator, sources=self.config.sources, plugins=self.config.plugins)
+        self.q_generator.start()
+
         # Start JSONRPCServer
         self.startJSONRPCServer()
+        self.nfquerylog.info('QueryServer started on port %s' % self.config.nfquery.port)
+
         # Start Scheduler
         self.startScheduler()
-        self.nfquerylog.info('QueryServer started on port %s' % self.config.nfquery.port)
+
         # Shutdown handler
         atexit.register(self.stop)
 
@@ -145,13 +149,14 @@ class NfQueryServer:
         # Start Database Connection
         self.store = db.get_store(self.config.database)
 
+        self.s_generator = SubscriptionGenerator()
         if flag == 'sources':
             #self.q_generator = QueryGenerator(self.store, sources=self.config.sources)
-            self.q_generator = QueryGenerator(sources=self.config.sources)
+            self.q_generator = QueryGenerator(self.s_generator, sources=self.config.sources)
             self.q_generator.reconfigureSources()
         elif flag == 'plugins':
             #self.q_generator = QueryGenerator(self.store, plugins=self.config.plugins)
-            self.q_generator = QueryGenerator(plugins=self.config.plugins)
+            self.q_generator = QueryGenerator(self.s_generator, plugins=self.config.plugins)
             self.q_generator.reconfigurePlugins()
 
 

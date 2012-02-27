@@ -1,7 +1,7 @@
 import sys, os, time, atexit, pwd, grp, logging
 from signal import SIGTERM 
 
-from nfquery import NfQueryServer
+from queryserver import QueryServer
 
 class Daemon:
     """
@@ -152,6 +152,6 @@ class Daemon:
         self.start()
 
     def run(self):
-        app = NfQueryServer(configfile=self.config_file, loglevel=self.log_level)
+        app = QueryServer(configfile=self.config_file, loglevel=self.log_level)
         app.run()
         
