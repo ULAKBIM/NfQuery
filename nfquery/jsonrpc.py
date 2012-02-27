@@ -12,11 +12,17 @@ from twisted.application import service,internet
 
 import db
 from models import Plugin 
+from logger import createLogger
 
 class RPCServer(jsonrpc.JSONRPC):
     """
     An example object to be published.
     """
+
+    def __init__(self, queryManager):
+        self.rpclogger = createLogger('rpc')
+        self.rpclogger.info('RPCServer is started')
+        self.queryServer = queryManager
 
     def jsonrpc_echo(self, x):
         """
@@ -38,6 +44,10 @@ class RPCServer(jsonrpc.JSONRPC):
         Raise a Fault indicating that the procedure should not be used.
         """
         raise jsonrpc.Fault(123, "The fault procedure is faulty.")
+
+    
+    def jsonrpc_get_subscriptions(self):
+        return self.queryManager.getSubscriptionPackets()
 
 
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):
@@ -69,8 +79,9 @@ class RPCServer(jsonrpc.JSONRPC):
                 message =  'Your plugin is registered.'
                 message += 'Feel free to checkout query subscriptions.'
                 print message
-                time.sleep(30)
-                #return self.sendSubscriptionTypes()
+                return self.jsonrpc_get_subscriptions()
+                #return self.queryServer.fetchSubscriptions()
+                #return self.fetchSubscriptionTypes()
        
 
  

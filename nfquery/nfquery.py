@@ -24,6 +24,7 @@ from defaults import defaults
 # Special Imports For Twisted JSON_RPC  -> txjsonrpc
 from twisted.web import server
 from twisted.internet import ssl,reactor
+from twisted.internet import task
 #from twisted.internet.protocol import Factory
 #from twisted.application import service,internet
 
@@ -90,70 +91,49 @@ class NfQueryServer:
             self.nfquerylog.info('Please add the required option and check the manual')
         
 
-    def startScheduler(self):
-        '''
-            Schedule parsers to be called according to time interval parameter of in conf file.
-        '''
-        self.sched = Scheduler()
-        for index in range(len(self.config.sources)):
-            self.nfquerylog.debug('Adding job to scheduler : %s, time interval is = %d', self.config.sources[index].parser, 
-                                   self.config.sources[index].time_interval)
-            self.sched.add_interval_job(self.q_generator.executeParsers, args=[self.config.sources[index].parser], 
-                                   minutes=self.config.sources[index].time_interval, start_date='2012-01-18 09:30')
-            #self.sched.add_interval_job(self.q_generator.executeParsers, args=[self.config.sources[index].parser], 
-            #                       minutes=2, start_date='2012-01-18 09:30') 
-        self.sched.start()
-        self.nfquerylog.info('Started the scheduler')
-    
- 
     def startJSONRPCServer(self):
         '''
             Start Json RPC Server, bind to socket and listen for incoming connections from plugins.
         '''
-        try:
-            rpc_protocol = RPCServer()
-            rpcserver = server.Site(rpc_protocol)
-            #return internet.SSLServer(7777, exserver, ssl.DefaultOpenSSLContextFactory('certs/nfquery.key', 'certs/nfquery.crt'))
-            # without method parameter
-            #reactor.listenSSL(7777, exserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file))
-            # default one
-            #reactor.listenSSL(7777, exserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))
-            # test for tlsv1
-            reactor.listenSSL(self.config.nfquery.port, rpcserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
-            self.nfquerylog.info('listening for plugin connections...')
-        except KeyboardInterrupt:
-            self.nfquerylog.debug('keyboard Interrupt')
-            self.stop()
+        rpc_protocol = RPCServer(self.q_generator)
+        rpcserver = server.Site(rpc_protocol)
+        # test for SSLv23
+        #reactor.listenSSL(self.config.nfquery.port, rpcserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))
+        # test for tlsv1
+        reactor.listenSSL(self.config.nfquery.port, rpcserver, 
+                          ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
+        self.nfquerylog.info('listening for plugin connections...')
+
+
+    def startScheduler(self):
+        '''
+            Schedule parsers to be called according to time interval parameter indicated in conf file.
+        '''
+        for index in range(len(self.config.sources)):
+            routine = task.LoopingCall(self.q_generator.executeParsers, self.config.sources[index].parser) # call the parser
+            routine.start(int(self.config.sources[index].time_interval) * 60) # call according to time interval     # in seconds
+        self.nfquerylog.info('Started the scheduler')
 
 
     def start(self):
         '''
             Starting all modules.
         ''' 
-        
-        # Start database connection 
-        #self.store = self.get_store()
+        # Start Database Connection 
         self.store = db.get_store(self.config.database)
-
         # Start QueryGenerator 
-        #self.q_generator = QueryGenerator(self.store, sources=self.config.sources, plugins=self.config.plugins)
         self.q_generator = QueryGenerator(sources=self.config.sources, plugins=self.config.plugins)
         self.q_generator.run()
-        
-        # Start network server
+        # Start JSONRPCServer
         self.startJSONRPCServer()
-        
-        # Start scheduler
-        #self.startScheduler()
-
+        # Start Scheduler
+        self.startScheduler()
         self.nfquerylog.info('QueryServer started on port %s' % self.config.nfquery.port)
-       
         # Shutdown handler
         atexit.register(self.stop)
 
 
-    def stop(self, signum=None, frame=None):
-        # close database
+    def stop(self):
         # Stop reactor
         if reactor.running:
             reactor.stop()
@@ -163,10 +143,6 @@ class NfQueryServer:
 
     def reconfigure(self, flag):
         # Start Database Connection
-        #self.database = db( self.config.database.db_host, self.config.database.db_user, 
-        #                    self.config.database.db_password, self.config.database.db_name )
-        #self.connection = self.database.get_database_connection()
-
         self.store = db.get_store(self.config.database)
 
         if flag == 'sources':
@@ -177,9 +153,11 @@ class NfQueryServer:
             #self.q_generator = QueryGenerator(self.store, plugins=self.config.plugins)
             self.q_generator = QueryGenerator(plugins=self.config.plugins)
             self.q_generator.reconfigurePlugins()
- 
+
 
     def run(self):
         reactor.callWhenRunning(self.start)
         reactor.run()
+
+
 

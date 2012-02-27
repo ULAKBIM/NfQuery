@@ -36,7 +36,7 @@ class QueryGenerator:
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.checkParsers()
         self.executeParsers()
-        self.createSubscriptions()
+        subscription.createSubscriptions()
 
 
     def checkParsers(self):
@@ -78,7 +78,6 @@ class QueryGenerator:
                     except Exception, e:
                         self.qglogger.error('got exception: %r, exiting' % (e))
                         continue
-        self.qglogger.debug('end of executeParsers')
 
 
     def reconfigurePlugins(self):
@@ -292,81 +291,3 @@ class QueryGenerator:
         self.qglogger.debug('end of createQuery')
 
             
-    def createSubscriptions(self):
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.qglogger.info('Generating Subscriptions...')
-        self.createSourceSubscriptions()
-        self.createListSubscriptions()
-        self.qglogger.debug('end of createSubscriptions')
-
-
-    def createSourceSubscriptions(self):
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        # Check if source_name is not given, means we work for all sources.
-        source_name_list = self.store.find(Subscription.subscription_name, Subscription.subscription_type == 1)
-        if source_name_list is None:
-            self.qglogger.error("Source is not registered to database. Run 'reconfig sources' or check sources.")
-            sys.exit()
-        self.qglogger.debug(source_name_list)
-        for source_name in source_name_list:
-            source_id = self.store.find(Source.source_id, Source.source_name == '%s' % unicode(source_name)).one()
-            query_id_list = self.store.find(Query.query_id, Query.source_id == source_id)
-            if query_id_list is None:
-                self.qglogger.warning("We don't have any query for this source.")
-                self.qglogger.warning("%s subscription creation is failed." % (source_name) )
-                continue 
-            subscription_id = self.store.find(Subscription.subscription_id, Subscription.subscription_name == '%s' % unicode(source_name)).one()
-            subs_packet_id = self.store.find(SubscriptionPackets.subs_packet_id, SubscriptionPackets.subscription_id == subscription_id).one()
-            if subs_packet_id is None:
-                for qid in query_id_list:
-                    spacket = SubscriptionPackets()
-                    spacket.subscription_id = subscription_id
-                    spacket.query_id = qid
-                    self.store.add(spacket)
-            else:
-                query_ids = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
-                for qid in query_id_list:
-                    if not (qid in query_ids):
-                        spacket = SubscriptionPackets(subscription_id, qid)
-                        self.store.add(spacket)
-        self.store.commit()
-        self.qglogger.debug('end of createSourceSubscriptions')
-
-
-    def createListSubscriptions(self):
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        list_type_list = self.store.find(Subscription.subscription_name, Subscription.subscription_type == 2)
-        if list_type_list is None:
-            self.qglogger.error("List type is not registered to subscriptions. Run reconfig or check sources.")
-            sys.exit()
-        self.qglogger.debug(list_type_list)
-        for list_type in list_type_list:
-            list_id = self.store.find(List.list_id, List.list_type == '%s' % unicode(list_type)).one()
-            source_id = self.store.find(Source.source_id, Source.list_id == list_id)
-            if source_id.count() < 1:
-                continue
-            query_id_list = self.store.find(Query.query_id, In(Query.source_id, list(source_id)))
-            if query_id_list.count() > 1:
-                subscription_id = self.store.find(Subscription.subscription_id, Subscription.subscription_name == '%s' % unicode(list_type)).one()
-                subs_packet_id = self.store.find(SubscriptionPackets.subs_packet_id, SubscriptionPackets.subscription_id == subscription_id)
-                if subs_packet_id.count() < 1 :
-                    for qid in query_id_list:
-                        spacket = SubscriptionPackets()
-                        spacket.subscription_id = subscription_id
-                        spacket.query_id = qid
-                        self.store.add(spacket)
-                else:
-                    query_ids = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
-                    for qid in query_id_list:
-                        if not (qid in query_ids):
-                            spacket = SubscriptionPackets()
-                            spacket.subscription_id = subscription_id
-                            spacket.query_id = qid
-                            self.store.add(spacket)
-            else:
-                self.qglogger.debug("We don't have any query for this list type.")
-                self.qglogger.debug("%s subscription is not created." % (list_type))
-        self.store.commit()
-        self.qglogger.debug('end of createListSubscriptions')
-
-
