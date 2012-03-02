@@ -26,7 +26,7 @@ from twisted.internet import task
 #from twisted.internet.protocol import Factory
 #from twisted.application import service,internet
 
-from jsonrpc import RPCServer
+from jsonrpc import jsonRPCServer
 ######################################################
 
 
@@ -92,7 +92,7 @@ class QueryServer:
         '''
             Start Json RPC Server, bind to socket and listen for incoming connections from plugins.
         '''
-        rpc_protocol = RPCServer(self.queryManager)
+        rpc_protocol = jsonRPCServer(self.queryManager)
         rpcserver = server.Site(rpc_protocol)
         # test for SSLv23
         #reactor.listenSSL(self.config.nfquery.port, rpcserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))

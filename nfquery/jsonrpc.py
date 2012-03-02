@@ -14,7 +14,7 @@ import db
 from models import Plugin 
 from logger import createLogger
 
-class RPCServer(jsonrpc.JSONRPC):
+class jsonRPCServer(jsonrpc.JSONRPC):
     """
     An example object to be published.
     """
@@ -22,7 +22,8 @@ class RPCServer(jsonrpc.JSONRPC):
     def __init__(self, queryManager):
         self.rpclogger = createLogger('rpc')
         self.rpclogger.info('RPCServer is started')
-        self.queryManager = queryManager
+        self.queryGen = queryManager.queryGenerator
+        self.subsGen = queryManager.subscriptionGenerator
 
     def jsonrpc_echo(self, x):
         """
@@ -47,7 +48,15 @@ class RPCServer(jsonrpc.JSONRPC):
 
     
     def jsonrpc_get_subscriptions(self):
-        return self.queryManager.getSubscriptions()
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('returning subscriptions')
+        return list(self.subsGen.getSubscriptions())
+
+    
+    def jsonrpc_get_subscription(self, name):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('getting subscription information')
+        return self.subsGen.getSubscription(name)
 
 
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):
