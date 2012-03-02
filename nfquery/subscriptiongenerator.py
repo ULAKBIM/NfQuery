@@ -7,7 +7,7 @@ import sys
 # nfquery imports 
 import db
 import logger
-from models import Source, List, Query, Subscription, SubscriptionPackets
+from models import Source, List, Query, Subscription, SubscriptionPackets, QueryIP, IP
 
 __all__ = ['SubscriptionGenerator']
  
@@ -15,11 +15,11 @@ __all__ = ['SubscriptionGenerator']
 class SubscriptionGenerator:
     
     def __init__(self):
-        self.slogger = logger.createLogger('subscriptiongenerator')
+        self.sglogger = logger.createLogger('subscriptiongenerator')
         self.store = db.get_store()
 
     def createSubscriptionTypes(self):
-        self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.sglogger.debug('In %s' % sys._getframe().f_code.co_name)
         '''
             We have 2 different subscription types.
             
@@ -60,33 +60,33 @@ class SubscriptionGenerator:
                 self.store.add(subscription)
     
         self.store.commit()
-        self.slogger.debug('Subscription types are created')
+        self.sglogger.debug('Subscription types are created')
     
     
     def createSubscriptions(self):
-        self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.slogger.info('Generating Subscriptions...')
+        self.sglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.sglogger.info('Generating Subscriptions...')
         self.createSourceSubscriptionPackets()
         self.createListSubscriptionPackets()
     
     
     
     def createSourceSubscriptionPackets(self):
-        self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.sglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.store = db.get_store()
     
         # Check if source_name is not given, means we work for all sources.
         source_name_list = self.store.find(Subscription.subscription_name, Subscription.subscription_type == 1)
         if source_name_list is None:
-            self.slogger.error("Source is not registered to database. Run 'reconfig sources' or check sources.")
+            self.sglogger.error("Source is not registered to database. Run 'reconfig sources' or check sources.")
             sys.exit()
-        self.slogger.debug(source_name_list)
+        self.sglogger.debug(source_name_list)
         for source_name in source_name_list:
             source_id = self.store.find(Source.source_id, Source.source_name == '%s' % unicode(source_name)).one()
             query_id_list = self.store.find(Query.query_id, Query.source_id == source_id)
             if query_id_list is None:
-                self.slogger.warning("We don't have any query for this source.")
-                self.slogger.warning("%s subscription creation is failed." % (source_name) )
+                self.sglogger.warning("We don't have any query for this source.")
+                self.sglogger.warning("%s subscription creation is failed." % (source_name) )
                 continue
             subscription_id = self.store.find(Subscription.subscription_id, Subscription.subscription_name == '%s' % unicode(source_name)).one()
             subs_packet_id = self.store.find(SubscriptionPackets.subs_packet_id, SubscriptionPackets.subscription_id == subscription_id).one()
@@ -106,12 +106,12 @@ class SubscriptionGenerator:
     
     
     def createListSubscriptionPackets(self):
-        self.slogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.sglogger.debug('In %s' % sys._getframe().f_code.co_name)
         list_type_list = self.store.find(Subscription.subscription_name, Subscription.subscription_type == 2)
         if list_type_list is None:
-            self.slogger.error("List type is not registered to subscriptions. Run reconfig or check sources.")
+            self.sglogger.error("List type is not registered to subscriptions. Run reconfig or check sources.")
             sys.exit()
-        self.slogger.debug(list_type_list)
+        self.sglogger.debug(list_type_list)
         for list_type in list_type_list:
             list_id = self.store.find(List.list_id, List.list_type == '%s' % unicode(list_type)).one()
             source_id = self.store.find(Source.source_id, Source.list_id == list_id)
@@ -136,12 +136,65 @@ class SubscriptionGenerator:
                             spacket.query_id = qid
                             self.store.add(spacket)
             else:
-                self.slogger.debug("We don't have any query for this list type.")
-                self.slogger.debug("%s subscription is not created." % (list_type))
+                self.sglogger.debug("We don't have any query for this list type.")
+                self.sglogger.debug("%s subscription is not created." % (list_type))
         self.store.commit()
     
     
-    def getSubscriptionPackets(self):
+    def getSubscriptions(self):
+        self.sglogger.debug('In %s' % sys._getframe().f_code.co_name)
         subscription_list = self.store.find(Subscription.subscription_name)
         return list(subscription_list)
     
+
+    def getSubscription(self, name):
+        self.sglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        subscription_id = self.store.find(Subscription.subscription_id, Subscription.subscription_name == unicode(name)).one()
+        self.sglogger.debug('subscription_id = %d' % subscription_id)
+        if not(subscription_id is None):
+            self.sglogger.debug('Here1')
+            squery_id_list = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
+            if squery_id_list.count() > 0:
+                self.sglogger.debug('Here2')
+                self.sglogger.debug(squery_id_list)
+                query_id_list = self.store.find(Query.query_id, In(Query.query_id, list(squery_id_list)))
+                if query_id_list.count() > 0:
+                    self.sglogger.debug('Here3')
+                    self.sglogger.debug(query_id_list)
+                    ip_id_list = self.store.find(QueryIP.ip_id, In(QueryIP.query_id, list(query_id_list)))
+                    if ip_id_list.count() > 0:
+                        self.sglogger.debug('Here4')
+                        self.sglogger.debug(ip_id_list)
+                        ip_list = self.store.find(IP.ip, In(IP.ip_id, list(ip_id_list)))
+                        if ip_list.count() > 0:
+                            self.sglogger.debug('Here5')
+                            self.sglogger.debug(ip_list)
+                            return list(ip_list)
+        self.sglogger.debug('Noo')
+        return None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+

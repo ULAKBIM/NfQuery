@@ -4,12 +4,11 @@ import argparse
 import os, sys
 import logging 
 
-from nfquery.defaults import defaults
 # We may create a directory lib under nfquery and 
 # this kind of utils could be moved to nfquery/lib 
 #from nfquery.lib.daemon import Daemon
 from nfquery.daemon import Daemon
-from nfquery.nfquery import NfQueryServer
+from nfquery.queryserver import QueryServer
 
 
 # 1) Check if paths are correct
@@ -39,12 +38,12 @@ if args.verbose:
 
 if args.reconfig:
     # Do not daemonize, reconfigure and exit
-    app = NfQueryServer(loglevel=log_level, configfile=args.conf)
+    app = QueryServer(loglevel=log_level, configfile=args.conf)
     app.reconfigure(args.reconfig[0])
 
 if args.console:
     # Do not daemonize, print all output to console
-    app = NfQueryServer(configfile=args.conf, loglevel=log_level)
+    app = QueryServer(configfile=args.conf, loglevel=log_level)
     app.run()
 else:
     #daemon = Daemon(configfile=args.conf, loglevel=log_level)
