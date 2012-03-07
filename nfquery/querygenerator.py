@@ -13,7 +13,6 @@ import db
 import logger
 from models import *
 from utils import *
-from subscriptiongenerator import SubscriptionGenerator
 
 __all__ = ['QueryGenerator']
 
@@ -22,6 +21,7 @@ class QueryGenerator:
     def __init__(self, sources):
         self.qglogger = logger.createLogger('querygenerator')
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.qglogger.info('Starting Query Generator')
         self.store = db.get_store()
         self.sources = sources
 

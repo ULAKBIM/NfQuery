@@ -21,9 +21,9 @@ class jsonRPCServer(jsonrpc.JSONRPC):
 
     def __init__(self, queryManager):
         self.rpclogger = createLogger('rpc')
-        self.rpclogger.info('RPCServer is started')
-        self.queryGen = queryManager.queryGenerator
-        self.subsGen = queryManager.subscriptionGenerator
+        self.rpclogger.info('Starting JSONRPCServer')
+        #self.queryGen = queryManager.queryGenerator
+        self.queryManager = queryManager
 
     def jsonrpc_echo(self, x):
         """
@@ -50,16 +50,17 @@ class jsonRPCServer(jsonrpc.JSONRPC):
     def jsonrpc_get_subscriptions(self):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.rpclogger.debug('returning subscriptions')
-        return list(self.subsGen.getSubscriptions())
+        return list(self.queryManager.getAllSubscriptions())
 
     
     def jsonrpc_get_subscription(self, name):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.rpclogger.debug('getting subscription information')
-        return self.subsGen.getSubscription(name)
+        return self.queryManager.getSubscription(name)
 
 
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
         #print "Registration information : %s,%s,%s,%s,%s,%s,%s" % (organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip)
         self.store = db.get_store()
@@ -89,8 +90,6 @@ class jsonRPCServer(jsonrpc.JSONRPC):
                 message += 'Feel free to checkout query subscriptions.'
                 print message
                 return self.jsonrpc_get_subscriptions()
-                #return self.queryServer.fetchSubscriptions()
-                #return self.fetchSubscriptionTypes()
        
 
  
