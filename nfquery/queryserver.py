@@ -98,9 +98,9 @@ class QueryServer:
         #reactor.listenSSL(self.config.nfquery.port, rpcserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))
         # test for tlsv1
         reactor.listenSSL(self.config.nfquery.port, rpcserver, 
-                          
 ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
-        self.qslogger.info('listening for plugin connections...')
+        self.qslogger.info('Starting QueryServer')
+        self.qslogger.info('Listening for plugin connections on port : %s' % self.config.nfquery.port)
 
 
     def startScheduler(self):
@@ -109,8 +109,8 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
         '''
         for index in range(len(self.config.sources)):
             routine = task.LoopingCall(self.queryManager.executeParsers, self.config.sources[index].parser) # call the parser
-            routine.start(int(self.config.sources[index].time_interval) * 60) # call according to time interval     # in seconds
-        self.qslogger.info('Started the scheduler')
+            routine.start(int(self.config.sources[index].time_interval) * 60, now=False) # call according to time interval in seconds
+        self.qslogger.info('Starting the Scheduler')
 
 
     def start(self):
@@ -126,7 +126,6 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
 
         # Start JSONRPCServer
         self.startJSONRPCServer()
-        self.qslogger.info('QueryServer started on port %s' % self.config.nfquery.port)
 
         # Start Scheduler
         self.startScheduler()
@@ -136,7 +135,7 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
 
 
     def stop(self):
-        # Stop reactor
+        # Stop reactor and exit
         if reactor.running:
             reactor.stop()
         self.qslogger.info('QueryServer is stopped')
@@ -146,9 +145,8 @@ ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfque
     def reconfigure(self, flag):
         # Start Database Connection
         self.store = db.get_store(self.config.database)
-
+        # Start Query Manager
         if flag == 'sources':
-            #self.q_generator = QueryGenerator(self.store, sources=self.config.sources)
             self.queryManager = QueryManager(sources=self.config.sources)
             self.queryManager.reconfigureSources()
         elif flag == 'plugins':
