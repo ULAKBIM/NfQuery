@@ -95,10 +95,14 @@ class QueryServer:
         rpc_protocol = jsonRPCServer(self.queryManager)
         rpcserver = server.Site(rpc_protocol)
         # test for SSLv23
-        #reactor.listenSSL(self.config.nfquery.port, rpcserver, ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))
+        #reactor.listenSSL(self.config.nfquery.port, rpcserver, 
+        #ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, 
+        #self.config.nfquery.cert_file, sslmethod=ssl.SSL.SSLv23_METHOD))
         # test for tlsv1
         reactor.listenSSL(self.config.nfquery.port, rpcserver, 
-ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, sslmethod=ssl.SSL.TLSv1_METHOD))
+                          ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file, 
+                          sslmethod=ssl.SSL.TLSv1_METHOD)
+        )
         self.qslogger.info('Starting QueryServer')
         self.qslogger.info('Listening for plugin connections on port : %s' % self.config.nfquery.port)
 
