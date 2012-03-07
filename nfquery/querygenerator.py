@@ -11,7 +11,7 @@ import time
 # nfquery imports
 import db
 import logger
-from models import *
+from models import Query, QueryIP, IP, Source
 from utils import *
 
 __all__ = ['QueryGenerator']
@@ -156,3 +156,22 @@ class QueryGenerator:
                         self.qglogger.debug('New query-ip relation is added')
  
 
+    def createQueryFilter(self):
+        # 1) Fetch all queries,
+        # 2) Check what kind of fields the query have that will be  used as netflow filter arguments : 
+        #       a) - ip (src-dst), port(src-dst), protocol, packets, bytes, start_time, end_time, etc... = Expression Part
+        #       b) - time_interval = Execution 'nfdump -r /and/dir/nfcapd.200407110845' Part
+        #       c) - order by =  Top N Statistics Part -> This part will show what we will parse as query executin result and send to QueryServer
+        # 3) Create the expression with given parameters -> the most specific one
+        #       a) - Create more general filters from already created filter with removing some options or assigning them to any,
+        #            for example ;
+        #                         if IP and PORT given -> the most spec filter expr: 'src ip IP src port PORT'
+        #                         from this expr we'll create also : 'src ip IP src port ANY' and 'src ip ANY src port PORT'
+        # 4) Concatenate produced filters like expr, expr, expr
+        # 5) Once we have all the expr integrate them with other general parameters (time_interval, file, etc.)
+        # 6) Put this information to db appropriately.
+        # 7) ?
+
+
+    def createQueryFromStatistics(self):
+        pass

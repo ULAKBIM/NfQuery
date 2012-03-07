@@ -20,7 +20,7 @@ class jsonRPCServer(jsonrpc.JSONRPC):
     """
 
     def __init__(self, queryManager):
-        self.rpclogger = createLogger('rpc')
+        self.rpclogger = createLogger('RPC')
         self.rpclogger.info('Starting JSONRPCServer')
         #self.queryGen = queryManager.queryGenerator
         self.queryManager = queryManager
