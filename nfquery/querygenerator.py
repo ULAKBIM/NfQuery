@@ -33,15 +33,15 @@ class QueryGenerator:
                 try:
                     outputfile = open(self.sources[index].outputfile, 'r')
                     data = json.load(outputfile)
-                    #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['ip_list']))
+                    #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['output']))
                     outputfile.close()
                 except Exception, e:
                     self.qglogger.warning('got exception: %r' % (e))
                     self.qglogger.warning('could not load output of parser %s' % self.sources[index].parser)
                     continue
                 # Check values with db and conf file.
-                # source_name, listtype, output and update time check should be done here!!!!
-                self.insertQuery(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
+                # source_name, listtype, output and update time SYNTAX CHECK should be done here!!!!
+                self.insertQuery(data['source_name'], data['output_type'], data['output'], data['update_time'])
         else:
             for index in range(len(self.sources)):
                 if parsername == self.sources[index].parser:
@@ -54,11 +54,11 @@ class QueryGenerator:
                         self.qglogger.warning('could not create queries for parser %s' % parsername)
                         continue
                     # Check values with db and conf file.
-                    # source_name, outputtype, output and update time check should be done here!!!!
-                    self.insertQuery(data['source_name'], data['output_type'], data['ip_list'], data['update_time'])
+                    # source_name, outputtype, output and update time SYNTAX CHECK should be done here!!!!
+                    self.insertQuery(data['source_name'], data['output_type'], data['output'], data['update_time'])
 
             
-    def insertQuery(self, source_name, output_type, ip_list, update_time):
+    def insertQuery(self, source_name, output_type, output, update_time):
         '''
            Inserts query information to database. 
            To tables :  
@@ -74,7 +74,7 @@ class QueryGenerator:
         
         # get the hash of output to check if the query is updated.
         md5hash = hashlib.md5()                      
-        md5hash.update(ip_list)
+        md5hash.update(output)
         checksum = md5hash.hexdigest() 
 
         query_id = self.store.find(Query.query_id, Query.source_id == source_id).one()
@@ -89,8 +89,17 @@ class QueryGenerator:
             query.creation_time = unicode(update_time)
             self.store.add(query)
             self.store.flush()
-            self.qglogger.debug('New query is added')
-            self.insertQueryIP(query.query_id, ip_list)
+            if query.query_type == 1:                           # means output gives only ip information
+                self.insertIPQuery(query.query_id, output)
+            elif query.query_type == 2:                         # means output gives only port information
+                self.insertPortQuery(query.query_id, output)
+            elif query.query_type == 3:                         # means output gives only ip-port information
+                self.insertIPPortQuery(query.query_id, output)
+            else:
+                self.qglogger.error('Check output_type in configuration file.')
+                self.qglogger.error('New query is not inserted!')
+                self.store.rollback()
+                return
             self.qglogger.info('New query is inserted succesfully')
         else:
             dbchecksum = self.store.find(Query.checksum, Query.source_id == source_id).one()
@@ -104,10 +113,15 @@ class QueryGenerator:
                     Update query
                 '''
                 query = self.store.find(Query, Query.query_id == query_id).one()
+                if query.query_type != output_type:
+                    self.qglogger.error('Source output type is changed')
+                    self.qglogger.error('Query can not be updated!')
+                    self.store.rollback()
+                    return
                 query.query_type    = output_type
                 query.checksum      = unicode(checksum)
                 query.update_time   = unicode(update_time)
-                self.insertQueryIP(query.query_id, ip_list)
+                self.insertQueryIP(query.query_id, output)
                 self.qglogger.debug('Query is updated.')
             elif checksum is None:
                 ''' 
@@ -156,7 +170,7 @@ class QueryGenerator:
                         self.qglogger.debug('New query-ip relation is added')
  
 
-    def createQueryFilter(self):
+    def createQueryFilterExpressions(self):
         # 1) Fetch all queries,
         # 2) Check what kind of fields the query have that will be  used as netflow filter arguments : 
         #       a) - ip (src-dst), port(src-dst), protocol, packets, bytes, start_time, end_time, etc... = Expression Part
@@ -171,6 +185,26 @@ class QueryGenerator:
         # 5) Once we have all the expr integrate them with other general parameters (time_interval, file, etc.)
         # 6) Put this information to db appropriately.
         # 7) ?
+
+        expr = ''
+        query_list = self.store.find(Query)
+        if not query_list.is_empty():
+            for query in query_list:
+                '''
+                    'checksum', 'creation_time', 'query_id', 'query_type', 'source', 'source_id', 'update_time'
+                '''
+                if not query.ip_id == '':
+                    
+                if not query.query_type
+
+
+
+
+
+
+
+
+
 
 
     def createQueryFromStatistics(self):

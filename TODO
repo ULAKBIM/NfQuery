@@ -145,3 +145,9 @@
         - An itibariyle 1 yil icerisinde en fazla 10 kullanicisi olan bir sistem olacagindan, su an, application wide sadece bir database connection 
         kullaniyoruz, scheduled tasklar icinde easy hack bir yontem bulacaz. 
         - Ileride concurrent connection sayisi artacak olursa bir connection pooling mekanizmasi kullanabiliriz.
+
+
+    * Query Creation mekanizmasini tekrar elden gecirmemiz lazim, nfsen expression larini uretirken gelen ip, src mi dst mi olacak, ona gore query olusturacagimiz icin
+      bir karar mekanizmasi olusturmamiz lazim. Bulacagimiz cozumun honeypot scenariosunu implement etmemizi saglamamizi lazim (at least)
+
+
