@@ -23,3 +23,19 @@ def get_store(conf=None):
             database = create_database(db)
             __store = Store(database)
         return __store
+
+def insertListTypes(store):
+
+    import logger
+    from models import List
+
+    logger = logger.createLogger('ListCreator')
+    logger.debug('In %s' % sys._getframe().f_code.co_name)
+    list_types = ['Generic', 'Botnet', 'Malware', 'Spam', 'Phishing', 'DNSBL', 'Worm', 'Other']
+
+    for l_name in list_types:
+        l = List()
+        l.type = unicode(l_name)
+        store.add(l)
+    store.commit()
+    logger.info('List types inserted to database')

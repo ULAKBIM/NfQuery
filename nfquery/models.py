@@ -174,7 +174,7 @@ class Plugin(object):
     checksum = Unicode()
     registered = Bool()
  
-    prefix = Reference(prefix_id, PrefixList.id) 
+    prefix = Reference(prefix_id, Prefix.id) 
 
 
 

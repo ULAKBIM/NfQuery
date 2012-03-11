@@ -150,4 +150,4 @@
     * Query Creation mekanizmasini tekrar elden gecirmemiz lazim, nfsen expression larini uretirken gelen ip, src mi dst mi olacak, ona gore query olusturacagimiz icin
       bir karar mekanizmasi olusturmamiz lazim. Bulacagimiz cozumun honeypot scenariosunu implement etmemizi saglamamizi lazim (at least)
 
-
+    * Databasedeki  foreig key lerin 'on delete cascade' action ini kontrol eden mekanizma koyalim.

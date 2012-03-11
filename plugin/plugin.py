@@ -64,8 +64,9 @@ class Plugin:
 
     def chooseSubscription(self, value):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
-        if value is None:
-            self.plogger.warning('we don\'t have any subscriptions yet in QueryServer ;(\n')
+        # value is list, either empty or not
+        if (not value) or (value is None):
+            self.plogger.warning('we don\'t have any subscriptions in QueryServer yet ;(')
             raise Exception, "No Query for subscription error"
         else:
             for index in range(len(value)):
