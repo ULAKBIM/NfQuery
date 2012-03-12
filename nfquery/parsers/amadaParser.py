@@ -33,24 +33,25 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
     update_time = datetime.datetime.now()
     update_time = update_time.strftime("%Y-%m-%d %H:%M")
 
-    ip_list = ''
+    output = ''
 
     try:
         source = open(source_file, "r")
-        output = open(output_file, "w")
+        outputfile = open(output_file, "w")
     except Exception, e:
         print 'Exception'
         sys.exit(1)
 
     # parse the file line by line and create an ip list
     for line in source.readlines()[5:]:
-        ip_list += line.split(" ")[0] + ' '
+        output += line.split(" ")[0] + ' '
 
     # JSON Part
-    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'ip_list' : ip_list}
-    output.write(json.dumps(json_dict))
+    #json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'output' : output}
+    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'output' : output, 'protocol' : 'tcp'}
+    outputfile.write(json.dumps(json_dict))
 
-    output.close()
+    outputfile.close()
     source.close()
 
 
@@ -71,10 +72,10 @@ if __name__ == "__main__":
     source_name = 'Amada'
     source_link = 'http://amada.abuse.ch/blocklist.php?download=ipblocklist'
     source_file = '/home/serdar/workspace/test/sources/amada/amadaSource.txt'
-    output_type  = 1 
+    output_type  = 1
     output_file = '/home/serdar/workspace/test/sources/amada/amadaOutput.txt'
     
     #fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)
 
-    
+

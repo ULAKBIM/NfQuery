@@ -128,6 +128,21 @@ class QueryIPPort(object):
     ip_port = Reference(id, IPPort.id)
 
 
+class Filter(object):
+
+    __storm_table__ = 'filter'
+
+    id = Int(primary=True)
+    query_id = Int()
+    protocol_version = Unicode()
+    protocol = Unicode()
+    tos = Int()
+    packets = Int()
+    bytes = Int()
+
+    query = Reference(query_id, Query.id)
+
+
 class Subscription(object):
     
     __storm_table__ = 'subscription'
