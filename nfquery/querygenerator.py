@@ -28,43 +28,81 @@ class QueryGenerator:
  
     def createQuery(self, parsername=None):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        protocol_version = protocol = tos = packets = bytes_ = None
         if parsername is None:
-            for index in range(len(self.sources)):
-                try:
-                    outputfile = open(self.sources[index].outputfile, 'r')
-                    data = json.load(outputfile)
-                    #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['output']))
-                    outputfile.close()
-                except Exception, e:
-                    self.qglogger.warning('got exception: %r' % (e))
-                    self.qglogger.warning('could not load output of parser %s' % self.sources[index].parser)
-                    continue
-                # Check values with db and conf file.
-                # source_name, listtype, output and update time SYNTAX CHECK should be done here!!!!
-                self.insertQuery(data['source_name'], data['output_type'], data['output'], data['update_time'])
+            self.qglogger.warning('Parser name is none')
+            return
         else:
             for index in range(len(self.sources)):
                 if parsername == self.sources[index].parser:
-                    try:
-                        outputfile = open(self.sources[index].outputfile, 'r')
-                        data = json.load(outputfile)
-                        outputfile.close()
-                    except Exception, e:
-                        self.qglogger.warning('got exception: %r' % (e))
-                        self.qglogger.warning('could not create queries for parser %s' % parsername)
-                        continue
-                    # Check values with db and conf file.
-                    # source_name, outputtype, output and update time SYNTAX CHECK should be done here!!!!
-                    self.insertQuery(data['source_name'], data['output_type'], data['output'], data['update_time'])
+                    data = self.validateParserOutput(self.sources[index].outputfile)
+                    if data: 
+                        ### BURAYI ASAGIYA TASIYALIM, PARAMETRE SADECE data olsun, 
+                            if key == 'protocol_version':
+                                protocol_version = data[key]
+                            elif key == 'protocol':
+                                protocol = data[key]
+                            elif key == 'tos':
+                                tos = data[key]
+                            elif key == 'packets':
+                                packets = data[key]
+                            elif key == 'bytes':
+                                bytes_ = data[key]
+                        self.insertQuery( data['source_name'], data['output_type'], data['output'], data['update_time'],
+                                          protocol_version=protocol_version, protocol=protocol, tos=tos, packets=packets, 
+                                          bytes_=bytes_ )
+                        return
+                    else:
+                        self.qglogger.warning('Parser output validation returned bad.')
+                        return
+
+    def validateParserOutput(self, outputfile):
+        '''
+            Check parser output values and necessary keys.
+            Returns validated output.
+        '''
+        options = [ 'source_name', 'output_type', 'output', 'update_time' ] 
+        filters = [ 'protocol_version', 'protocol', 'tos', 'packets', 'bytes' ]
+        try:
+            outputfile = open(outputfile, 'r')
+            data = json.load(outputfile)
+            outputfile.close()
+            #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['output']))
+            if (set(options).issubset(set(data.keys()))):
+                source = self.store.find(Source, Source.name == unicode(data['source_name']))
+                if source.is_empty():
+                    self.qglogger.warning('Source name : %s is not found in the database' % data['source_name'])
+                    self.qglogger.warning('Please check your parser output %s' % outputfile)
+                    return
+                elif not(0 < data['output_type'] < 4):
+                    qglogger.warning('Output type value : %d is not correct' % data['output_type'])
+                    qglogger.warning('Please check your parser output %s' % outputfile)
+                    return
+                elif set(data.keys()).issubset(set(options + filters)):
+                    print data.keys()
+                    self.qglogger.debug('Output of parser is valid')
+                    return data
+                else:
+                    self.qglogger.warning('Unknown filter is found in parser output %s' % outputfile)
+                    return
+            self.qglogger.warning('Mandatory keys are not found in parser output %s' % outputfile)
+            return
+        except Exception, e:
+            self.qglogger.warning('got exception: %r' % (e))
+            self.qglogger.warning('Output is not loaded correctly, check parser output : %s' % outputfile)
+            return
 
             
-    def insertQuery(self, source_name, output_type, output, update_time):
+    def insertQuery(self, source_name, output_type, output, update_time, 
+                          protocol_version=None, protocol=None, tos=None, packets=None, bytes_=None):
         '''
            Inserts query information to database. 
            To tables :  
                      1) query, query_ip and ip
                      2) query, query_domain and domain                      
                      3) query, query_port and port
+                     and finally to :
+                     - filters   
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         source_id = self.store.find(Source.id, Source.name == unicode(source_name)).one()
@@ -73,10 +111,9 @@ class QueryGenerator:
             self.qglogger.error('Please reconfigure your sources, or check the parser')
             return 
         # get the hash of output to check if the query is updated.
-        md5hash = hashlib.md5()                      
-        md5hash.update(output)
-        checksum = md5hash.hexdigest() 
-
+        md5hash = hashlib.md5()
+        md5hash.update(output + protocol_version + protocol + str(tos) + str(packets) + str(bytes_))
+        checksum = md5hash.hexdigest()
         query_id = self.store.find(Query.id, Query.source_id == source_id).one()
         if query_id is None:
             '''
@@ -89,17 +126,21 @@ class QueryGenerator:
             query.creation_time = unicode(update_time)
             self.store.add(query)
             self.store.flush()
+            filters = Filter()
+            filters.query_id = query.id
+            filters.protocol_version = unicode(protocol_version)
+            filters.protocol = unicode(protocol)
+            filters.tos = tos
+            filters.packets = packets
+            filters.bytes = bytes_
+            self.store.add(filters)
+            self.store.flush()
             if query.type == 1:                           # means output gives only ip information
                 self.insertIPQuery(query.id, output)
             elif query.type == 2:                         # means output gives only port information
                 self.insertPortQuery(query.id, output)
             elif query.type == 3:                         # means output gives only ip-port information
                 self.insertIPPortQuery(query.id, output)
-            else:
-                self.qglogger.error('Check output_type in configuration file.')
-                self.qglogger.error('New query is not inserted!')
-                self.store.rollback()
-                return
             self.qglogger.info('New query is inserted succesfully')
         else:
             dbchecksum = self.store.find(Query.checksum, Query.source_id == source_id).one()
@@ -114,14 +155,27 @@ class QueryGenerator:
                 '''
                 query = self.store.find(Query, Query.id == query_id).one()
                 if query.type != output_type:
-                    self.qglogger.error('Source output type is changed')
+                    self.qglogger.error('Source output_type is changed')
                     self.qglogger.error('Query can not be updated!')
                     self.store.rollback()
                     return
-                query.type    = output_type
-                query.checksum      = unicode(checksum)
-                query.update_time   = unicode(update_time)
-                self.insertQueryIP(query.id, output)
+                query.type = output_type
+                query.checksum = unicode(checksum)
+                query.update_time = unicode(update_time)
+                filters = self.store.find(Filter, Filter.query_id == query.id)
+                filters.protocol_version = unicode(protocol_version)
+                filters.protocol = unicode(protocol)
+                filters.tos = tos
+                filters.packets = packets
+                filters.bytes = bytes_
+                self.store.add(filters)
+                self.store.flush()
+                if query.type == 1:                           # means output gives only ip information
+                    self.insertIPQuery(query.id, output)
+                elif query.type == 2:                         # means output gives only port information
+                    self.insertPortQuery(query.id, output)
+                elif query.type == 3:                         # means output gives only ip-port information
+                    self.insertIPPortQuery(query.id, output)
                 self.qglogger.debug('Query is updated.')
             elif checksum is None:
                 ''' 
@@ -237,5 +291,15 @@ class QueryGenerator:
 
 
 
+
+
+
+
+
+
     def createQueryFromStatistics(self):
         pass
+
+
+
+

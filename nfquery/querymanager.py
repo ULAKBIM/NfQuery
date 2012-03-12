@@ -149,7 +149,7 @@ class QueryManager:
                         self.store.commit()
                         self.qmlogger.warning('Source %s is deleted' % source_name)
                     else:
-                        self.qmlogger.info('Not deleted anything.')
+                        self.qmlogger.info('Not deleted any source.')
                         
         for index in range(len(self.sources)):
             # Check output type
