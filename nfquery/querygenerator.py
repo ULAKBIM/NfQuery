@@ -11,7 +11,8 @@ import time
 # nfquery imports
 import db
 import logger
-from models import Query, QueryIP, IP, Source
+from models import Query, QueryIP, IP, QueryPort, Port, QueryIPPort, IPPort, Filter, Source
+from storm.locals import *
 from utils import *
 
 __all__ = ['QueryGenerator']
@@ -37,24 +38,15 @@ class QueryGenerator:
                 if parsername == self.sources[index].parser:
                     data = self.validateParserOutput(self.sources[index].outputfile)
                     if data: 
-                        ### BURAYI ASAGIYA TASIYALIM, PARAMETRE SADECE data olsun, 
-                            if key == 'protocol_version':
-                                protocol_version = data[key]
-                            elif key == 'protocol':
-                                protocol = data[key]
-                            elif key == 'tos':
-                                tos = data[key]
-                            elif key == 'packets':
-                                packets = data[key]
-                            elif key == 'bytes':
-                                bytes_ = data[key]
-                        self.insertQuery( data['source_name'], data['output_type'], data['output'], data['update_time'],
-                                          protocol_version=protocol_version, protocol=protocol, tos=tos, packets=packets, 
-                                          bytes_=bytes_ )
+                        #self.insertQuery( data['source_name'], data['output_type'], data['output'], data['update_time'],
+                        #                  protocol_version=protocol_version, protocol=protocol, tos=tos, packets=packets, 
+                        #                  bytes_=bytes_ )
+                        self.insertQuery(data)
                         return
                     else:
                         self.qglogger.warning('Parser output validation returned bad.')
                         return
+
 
     def validateParserOutput(self, outputfile):
         '''
@@ -93,8 +85,9 @@ class QueryGenerator:
             return
 
             
-    def insertQuery(self, source_name, output_type, output, update_time, 
-                          protocol_version=None, protocol=None, tos=None, packets=None, bytes_=None):
+    def insertQuery(self, data ):
+    #def insertQuery(self, source_name, output_type, output, update_time, 
+    #                      protocol_version=None, protocol=None, tos=None, packets=None, bytes_=None):
         '''
            Inserts query information to database. 
            To tables :  
@@ -103,45 +96,78 @@ class QueryGenerator:
                      3) query, query_port and port
                      and finally to :
                      - filters   
+            Also, as parameter it gets data dictionary,
+                - data has mandatory 4 keys which are : output, output_type, update_time, source_name
+                - it may also have filters which are protocol, bytes, packets etc.
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        source_id = self.store.find(Source.id, Source.name == unicode(source_name)).one()
+        # get the hash of output to check if the query is updated.
+        protocol_version=protocol=tos=packets=bytes_=None
+        md5hash = hashlib.md5()
+        md5hash.update(data['output'])
+        for key in data.keys():
+            if key == 'protocol_version':
+                protocol_version = data[key]
+                md5hash.update(protocol_version)
+            elif key == 'protocol':
+                protocol = data[key]
+                md5hash.update(protocol)
+            elif key == 'tos':
+                tos = data[key]
+                md5hash.update(str(tos))
+            elif key == 'packets':
+                packets = data[key]
+                md5hash.update(str(packets))
+            elif key == 'bytes':
+                bytes_ = data[key]
+                md5hash.update(str(bytes_))
+        checksum = md5hash.hexdigest()
+        
+        source_id = self.store.find(Source.id, Source.name == unicode(data['source_name'])).one()
         if source_id is None:
-            self.qglogger.error('Source : %s is not found in the database' % source_name)
+            self.qglogger.error('Source : %s is not found in the database' % data['source_name'])
             self.qglogger.error('Please reconfigure your sources, or check the parser')
             return 
-        # get the hash of output to check if the query is updated.
-        md5hash = hashlib.md5()
-        md5hash.update(output + protocol_version + protocol + str(tos) + str(packets) + str(bytes_))
-        checksum = md5hash.hexdigest()
+               
         query_id = self.store.find(Query.id, Query.source_id == source_id).one()
         if query_id is None:
             '''
-                Adding new query
+                Add new query
             '''
             query = Query()
             query.source_id     = source_id
-            query.type          = output_type
+            query.type          = data['output_type']
             query.checksum      = unicode(checksum)
-            query.creation_time = unicode(update_time)
+            query.creation_time = unicode(data['update_time'])
             self.store.add(query)
             self.store.flush()
-            filters = Filter()
-            filters.query_id = query.id
-            filters.protocol_version = unicode(protocol_version)
-            filters.protocol = unicode(protocol)
-            filters.tos = tos
-            filters.packets = packets
-            filters.bytes = bytes_
-            self.store.add(filters)
-            self.store.flush()
-            if query.type == 1:                           # means output gives only ip information
-                self.insertIPQuery(query.id, output)
-            elif query.type == 2:                         # means output gives only port information
-                self.insertPortQuery(query.id, output)
-            elif query.type == 3:                         # means output gives only ip-port information
-                self.insertIPPortQuery(query.id, output)
-            self.qglogger.info('New query is inserted succesfully')
+
+            self.qglogger.debug(len(data.keys()))
+            if len(data.keys()) >= 4:
+                filters = Filter()
+                filters.query_id = query.id
+                if protocol_version:
+                    filters.protocol_version = unicode(protocol_version)
+                if protocol:
+                    filters.protocol = unicode(protocol)
+                if tos:
+                    filters.tos = tos
+                if packets:
+                    filters.packets = packets
+                if bytes_:
+                    filters.bytes = bytes_
+                self.store.add(filters)
+                self.store.flush()
+                self.qglogger.debug('Query filters added to database.')
+
+                # Now add output
+                if query.type == 1:                           # means output gives only ip information
+                    self.insertIPQuery(query.id, data['output'])
+                elif query.type == 2:                         # means output gives only port information
+                    self.insertPortQuery(query.id, data['output'])
+                elif query.type == 3:                         # means output gives only ip-port information
+                    self.insertIPPortQuery(query.id, data['output'])
+                self.qglogger.debug('New query is added')
         else:
             dbchecksum = self.store.find(Query.checksum, Query.source_id == source_id).one()
             if dbchecksum == checksum:
@@ -154,34 +180,55 @@ class QueryGenerator:
                     Update query
                 '''
                 query = self.store.find(Query, Query.id == query_id).one()
-                if query.type != output_type:
+                if query.type != data['output_type']:
                     self.qglogger.error('Source output_type is changed')
                     self.qglogger.error('Query can not be updated!')
                     self.store.rollback()
                     return
-                query.type = output_type
+                query.type = data['output_type']
                 query.checksum = unicode(checksum)
-                query.update_time = unicode(update_time)
-                filters = self.store.find(Filter, Filter.query_id == query.id)
-                filters.protocol_version = unicode(protocol_version)
-                filters.protocol = unicode(protocol)
-                filters.tos = tos
-                filters.packets = packets
-                filters.bytes = bytes_
-                self.store.add(filters)
-                self.store.flush()
+                query.update_time = unicode(data['update_time'])
+
+                self.qglogger.debug(len(data.keys()))
+                if len(data.keys()) >= 4:
+                    self.qglogger.debug('Q1')
+                    try:
+                        filters = self.store.find(Filter, Filter.query_id == query.id).one()
+                        print type(filters)
+                        print dir(filters)
+                        print filters.id
+                        if not filters:
+                            filters = Filter()
+                            filters.query_id = query.id
+                        self.qglogger.debug('Query filters updated1')
+                        filters.protocol_version = unicode(protocol_version)
+                        filters.protocol = unicode(protocol)
+                        filters.tos = tos
+                        filters.packets = packets
+                        self.qglogger.debug('Que1')
+                        filters.bytes = bytes_
+                        self.store.add(filters)
+                        self.store.flush()
+                        self.qglogger.debug('Query filters updated2')
+                    except Exception, e:
+                        self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                        self.store.rollback()
+                        return
+
+                # Now add output
                 if query.type == 1:                           # means output gives only ip information
-                    self.insertIPQuery(query.id, output)
+                    self.insertIPQuery(query.id, data['output'])
                 elif query.type == 2:                         # means output gives only port information
-                    self.insertPortQuery(query.id, output)
+                    self.insertPortQuery(query.id, data['output'])
                 elif query.type == 3:                         # means output gives only ip-port information
-                    self.insertIPPortQuery(query.id, output)
-                self.qglogger.debug('Query is updated.')
+                    self.insertIPPortQuery(query.id, data['output'])
+                self.qglogger.debug('Query is updated')
             elif checksum is None:
                 ''' 
                    Fatal Error
                 '''
                 self.qglogger.error('Fatal Error : checksum is None')
+                return
         self.store.commit()
 
         
@@ -189,6 +236,7 @@ class QueryGenerator:
         '''
             Insert ip query to database.
         '''
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         qid = query_id
         for ip in ip_list.split(' '):
             # Calculate the decimal type of ip and check if we already have it
@@ -197,72 +245,150 @@ class QueryGenerator:
                 # Check if we already have this ip.
                 ip_id = self.store.find(IP.id, IP.ip_int == ip_int).one()
                 if ip_id is None:
-                    # Insert new ip and query-ip relation.
-                    ip_obj = IP()
-                    ip_obj.ip = unicode(ip)
-                    ip_obj.ip_int = ip_int
-                    self.store.add(ip_obj)
-                    self.store.flush()
-                    self.qglogger.debug('New ip is added')
-                    relation = QueryIP()
-                    relation.query_id = qid
-                    relation.ip_id = ip_obj.id
-                    self.store.add(relation)
-                    self.store.flush()
-                    self.qglogger.debug('New query-ip relation is added')
+                    try:
+                        # Insert new ip and query-ip relation.
+                        ip_obj = IP()
+                        ip_obj.ip = unicode(ip)
+                        ip_obj.ip_int = ip_int
+                        self.store.add(ip_obj)
+                        self.store.flush()
+                        self.qglogger.debug('New ip is added')
+                        relation = QueryIP()
+                        relation.query_id = qid
+                        relation.ip_id = ip_obj.id
+                        self.store.add(relation)
+                        self.qglogger.debug('New query-ip relation is added')
+                    except Exception, e:
+                        self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                        self.store.rollback()
+                        return
                 else:
                     self.qglogger.debug('We already have this ip')
                     # Check if we already have this ip-query relation
-                    qp_id = self.store.find(QueryIP.id, (QueryIP.query_id == qid) & (QueryIP.ip_id == ip_id))
-                    if qp_id is not None:
+                    qp_id = self.store.find(QueryIP.id, (QueryIP.query_id == qid) & (QueryIP.ip_id == ip_id)).one()
+                    if qp_id:
                         self.qglogger.debug('We already have this query-ip relation')
                     else:
-                        # Create query-ip relation
-                        relation = QueryIP()
+                        try:
+                            # Create query-ip relation
+                            relation = QueryIP()
+                            relation.query_id = qid
+                            relation.ip_id = ip_id
+                            self.store.add(relation)
+                            self.qglogger.debug('New query-ip relation is added')
+                        except Exception, e:
+                            self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                            self.store.rollback()
+                            return
+
+
+    def insertPortQuery(self, query_id, port_list):
+        '''
+            Insert port query to database.
+        '''
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        qid = query_id
+        for port in port_list.split(' '):
+            # Check if port consists of digits
+            if port.isdigit():
+                # Check if we already have this port.
+                port_id = self.store.find(Port.id, Port.port == int(port)).one()
+                if port_id is None:
+                    try:
+                        # Insert new port and query-port relation.
+                        port_obj = Port()
+                        print port
+                        port_obj.port = int(port)
+                        self.store.add(port_obj)
+                        self.store.flush()
+                        self.qglogger.debug('New port is added')
+                        relation = QueryPort()
                         relation.query_id = qid
-                        relation.ip_id = ip_id
-                        self.qglogger.debug('New query-ip relation is added')
- 
-
-    #def insertPortQuery(self, query_id, port_list):
-    #    '''
-    #        Insert port query to database.
-    #    '''
-    #    qid = query_id
-    #    for port in port_list.split(' '):
-    #        # Check if port consists of digits
-    #        if port.isdigit():
-    #            # Check if we already have this port.
-    #            port_id = self.store.find(Port.id, Port.port == port).one()
-    #            if ip_id is None:
-    #                # Insert new port and query-port relation.
-    #                port_obj = Port()
-    #                port_obj.port = int(port)
-    #                self.store.add(port_obj)
-    #                self.store.flush()
-    #                self.qglogger.debug('New port is added')
-    #                relation = QueryPort()
-    #                relation.query_id = qid
-    #                relation.port_id = port_obj.id
-    #                self.store.add(relation)
-    #                self.store.flush()
-    #                self.qglogger.debug('New query-port relation is added')
-    #            else:
-    #                self.qglogger.debug('We already have this port')
-    #                # Check if we already have this port-query relation
-    #                qpo_id = self.store.find(QueryPort.id, (QueryPort.query_id == qid) & (QueryPort.port_id == port_id))
-    #                if qp_id is not None:
-    #                    self.qglogger.debug('We already have this query-port relation')
-    #                else:
-    #                    # Create query-port relation
-    #                    relation = QueryPort()
-    #                    relation.query_id = qid
-    #                    relation.port_id = port_id
-    #                    self.qglogger.debug('New query-port relation is added')
+                        relation.port_id = port_obj.id
+                        self.store.add(relation)
+                        self.store.flush()
+                        self.qglogger.debug('New query-port relation is added')
+                    except Exception, e:
+                        self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                        self.store.rollback()
+                        return
+                else:
+                    self.qglogger.debug('We already have this port')
+                    # Check if we already have this port-query relation
+                    qp_id = self.store.find(QueryPort.id, (QueryPort.query_id == qid) & (QueryPort.port_id == port_id))
+                    if qp_id is not None:
+                        self.qglogger.debug('We already have this query-port relation')
+                    else:
+                        try:
+                            # Create query-port relation
+                            relation = QueryPort()
+                            relation.query_id = qid
+                            relation.port_id = port_id
+                            self.qglogger.debug('New query-port relation is added')
+                            self.store.add(relation)
+                        except Exception, e:
+                            self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                            self.store.rollback()
+                            return
 
 
-    def createQueryFilterExpressions(self):
-        pass
+    def insertIPPortQuery(self, query_id, ip_port_list):
+        '''
+            Insert ip-port query to database.
+            example '193.140.11.11:11'
+        '''
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        qid = query_id
+        for ipport in ip_port_list.split(' '):
+            # Validate ip and port
+            ip, port = ipport.split('-')
+            if (is_valid_ipv4_address(ip) or is_valid_ipv4_address(ip)) and (port.isdigit()):
+                # Check if we already have this port.
+                port_id = self.store.find(Port.id, Port.port == int(port)).one()
+                if port_id is None:
+                    try:
+                        # Insert new port and query-port relation.
+                        port_obj = Port()
+                        print port
+                        port_obj.port = int(port)
+                        self.store.add(port_obj)
+                        self.store.flush()
+                        self.qglogger.debug('New port is added')
+                        relation = QueryPort()
+                        relation.query_id = qid
+                        relation.port_id = port_obj.id
+                        self.store.add(relation)
+                        self.store.flush()
+                        self.qglogger.debug('New query-port relation is added')
+                    except Exception, e:
+                        self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                        self.store.rollback()
+                        return
+                else:
+                    self.qglogger.debug('We already have this port')
+                    # Check if we already have this port-query relation
+                    qpo_id = self.store.find(QueryPort.id, (QueryPort.query_id == qid) & (QueryPort.port_id == port_id))
+                    if qp_id is not None:
+                        self.qglogger.debug('We already have this query-port relation')
+                    else:
+                        try:
+                            # Create query-port relation
+                            relation = QueryPort()
+                            relation.query_id = qid
+                            relation.port_id = port_id
+                            self.qglogger.debug('New query-port relation is added')
+                            self.store.add(relation)
+                        except Exception, e:
+                            self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                            self.store.rollback()
+                            return
+
+
+
+
+
+    def createQueryFilterExpressions(self, query_list=None):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # 1) Fetch all queries,
         # 2) Check what kind of fields the query have that will be  used as netflow filter arguments : 
         #       a) - ip (src-dst), port(src-dst), protocol, packets, bytes, start_time, end_time, etc... = Expression Part
@@ -278,23 +404,66 @@ class QueryGenerator:
         # 6) Put this information to db appropriately.
         # 7) ?
         
-        #expr = ''
-        #query_list = self.store.find(Query)
-        #if not query_list.is_empty():
-        #    for query in query_list:
+        ## ALL ## query_list = self.store.find(Query)
+        ## ALL ## if not query_list.is_empty():
+        ## ALL ##     for query in query_list:
         #        '''
         #            'checksum', 'creation_time', 'query_id', 'query_type', 'source', 'source_id', 'update_time'
         #        '''
-        #        if not query.ip_id == '':
-        #            
-        #        if not query.type
 
+        expr_dict = {}
+        for query in query_list:
+            # Create NfSen Query Filter Expressions
+            if query.type == 1:
+                expr = ''
+                # we've only ip information
+                ip_id_list = self.store.find(QueryIP.ip_id, QueryIP.query_id == query.id)
+                if not ip_id_list.is_empty():
+                    ip_list = self.store.find(IP.ip, In(IP.id, list(ip_id_list)))
+                    for i in range(ip_list.count()):
+                        expr +=  ' host ' + ip_list[i]
+                        if i+1 < ip_list.count():
+                                expr += ' or '
+                    expr_dict[str(query.id)] = expr
+                    #self.qglogger.debug('Returning IP list expression')
+                else:
+                    self.qglogger.warning('IP list is empty for this query, PROBLEM!')
 
+            elif query.type == 2:
+                expr = ''
+                # we've only port information
+                port_id_list = self.store.find(QueryPort.port_id, QueryPort.query_id == query.id)
+                if not port_id_list.is_empty():
+                    port_list = self.store.find(Port.port, In(Port.id, list(port_id_list)))
+                    for i in range(port_list.count()):
+                        expr +=  ' port ' + port_list[i]
+                        if i+1 < port_list.count():
+                                expr += ' or ' 
+                    #self.qglogger.debug('Returning Port list expression')
+                    expr_dict[str(query.id)] = expr
+                else:
+                    self.qglogger.warning('Port list is empty for this query, PROBLEM!')
 
+            elif query.type == 3:
+                exprlist = []
+                # we've ip-port tuple information
+                ip_port_id_list = self.store.find(QueryIPPort.ip_port_id, QueryIPPort.query_id == query.id)
+                if not ip_port_id_list.is_empty():
+                    ip_port_list = self.store.find(IPPort.ip_port, In(IPPort.id, list(ip_port_id_list)))
+                    for i in range(ip_port_list.count()):
+                        ip = ip_port_list[i].split(':')[0]
+                        port = ip_port_list[i].split(':')[1]
+                        exprlist.append(' src ip ' + ip + ' src port ' + port)
+                    #self.qglogger.debug('Returning IPPort list expression')
+                    expr_dict[str(query.id)] = exprlist
+                else:
+                    self.qglogger.warning('IPPort list is empty for this query, PROBLEM!')
 
-
-
-
+            #elif query.type == 4:
+            #    domain_id_list = self.store.find(QueryDomain.domain_id, QueryDomain.query_id == query.id)
+            #    if not domain_id_list.is_empty():
+            #        domain_list = self.store.find(Domain.domain, In(Domain.id, list(domain_id_list)))
+        return expr_dict
 
 
     def createQueryFromStatistics(self):

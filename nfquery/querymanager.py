@@ -399,19 +399,22 @@ class QueryManager:
             squery_id_list = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
             if not squery_id_list.is_empty():
                 self.qmlogger.debug('y2')
-                query_id_list = self.store.find(Query.id, In(Query.id, list(squery_id_list)))
-                if not query_id_list.is_empty():
+                #query_id_list = self.store.find(Query.id, In(Query.id, list(squery_id_list)))
+                query_list = self.store.find(Query, In(Query.id, list(squery_id_list)))
+                #if not query_id_list.is_empty():
+                if not query_list.is_empty():
                     self.qmlogger.debug('y3')
-                    ip_id_list = self.store.find(QueryIP.ip_id, In(QueryIP.query_id, list(query_id_list)))
-                    if not ip_id_list.is_empty():
-                        self.qmlogger.debug('y4')
-                        ip_list = self.store.find(IP.ip, In(IP.id, list(ip_id_list)))
-                        for i in ip_list:
-                            self.qmlogger.debug(i)
-                        if not ip_list.is_empty():
-                            self.qmlogger.debug('y5')
-                            return list(ip_list)
-                            self.qmlogger.debug('Returning subscription information : %s' % name)
+                    #ip_id_list = self.store.find(QueryIP.ip_id, In(QueryIP.query_id, list(query_id_list)))
+                    #if not ip_id_list.is_empty():
+                    #    self.qmlogger.debug('y4')
+                    #    ip_list = self.store.find(IP.ip, In(IP.id, list(ip_id_list)))
+                    #    for i in ip_list:
+                    #        self.qmlogger.debug(i)
+                    #    if not ip_list.is_empty():
+                    #        self.qmlogger.debug('y5')
+                    #        return list(ip_list)
+                    self.qmlogger.debug('Returning subscription information : %s' % name)
+                    return self.queryGenerator.createQueryFilterExpressions(query_list)
         self.qmlogger.warning('Couldn\'t get subscription information : %s ' % name)
         return None
 

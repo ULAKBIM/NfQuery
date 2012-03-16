@@ -31,11 +31,12 @@ def insertListTypes(store):
 
     logger = logger.createLogger('ListCreator')
     logger.debug('In %s' % sys._getframe().f_code.co_name)
-    list_types = ['Generic', 'Botnet', 'Malware', 'Spam', 'Phishing', 'DNSBL', 'Worm', 'Other']
+    list_types = ['Generic', 'Botnet', 'Malware', 'Spam', 'Phishing', 'DNSBL', 'Worm', 'Honeypot', 'Other']
 
     for l_name in list_types:
         l = List()
         l.type = unicode(l_name)
         store.add(l)
+        store.flush()
     store.commit()
     logger.info('List types inserted to database')
