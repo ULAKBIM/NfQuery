@@ -138,7 +138,8 @@ class QueryManager:
                 sources_list.append(self.sources[index].sourcename)
             for source in dbsources:
                 if not source.name in(sources_list):
-                    self.qmlogger.warning('I will delete the source, Do you approve the deletion of source : %s', source.name)
+                    self.qmlogger.warning('I will delete the source, Do you approve the deletion of source \'%s\' and queries generated from this source \'%s\'', 
+                                          source.name, source.name)
                     flag = query_yes_no('', default="no")
                     if flag is True:
                         source_name = source.name
@@ -388,7 +389,8 @@ class QueryManager:
                 self.qmlogger.warning("We don't have any query for this list type.")
                 self.qmlogger.warning("%s subscription is not created." % (list_type))
         self.store.commit()
-    
+ 
+   
     # Subscription Releasing and Handling Plugin Requests
     def getSubscription(self, name):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)

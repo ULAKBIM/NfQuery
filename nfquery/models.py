@@ -24,6 +24,7 @@ class IPPort(object):
 
     id = Int(primary=True)
     ip_port = Unicode()
+    format = Int()
 
 
 class Port(object):
