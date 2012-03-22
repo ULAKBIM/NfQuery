@@ -329,6 +329,55 @@ class QueryGenerator:
                             return
 
 
+    def validateIPPort(self, ip_port):
+        '''
+            Validate the ip:port output 
+            Determine the format
+            if output is correct,
+                returns format and seperated form of ip, port
+            else
+                none
+        '''
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        # Validate ip and port
+        if ip_port == '':
+            return
+
+        print ip_port
+        # Determine it's two sided output or not
+        seperator = '-'
+
+        if seperator in ip_port:
+            self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+            format_ = 2
+            # means output is in format2
+            left = ip_port.split(seperator)[0]
+            right = ip_port.split(seperator)[1]
+            ip1, port1 = left.split(':')
+            ip2, port2 = right.split(':')
+
+            # validate for ip and port syntax
+            if (
+                 (is_valid_ipv4_address(ip1) or is_valid_ipv6_address(ip1)) and port1.isdigit()) and (
+                 (is_valid_ipv4_address(ip2) or is_valid_ipv6_address(ip2)) and port2.isdigit()
+               ):
+                return [format_, ip1, port1, ip2, port2]
+            else:
+                self.qglogger.warning('Output is not valid')
+                self.qglogger.warning(ip_port)
+                return
+        else:
+            self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+            format_ = 1
+            ip1, port1 = ip_port.split(':')
+            if ( (is_valid_ipv4_address(ip1) or is_valid_ipv6_address(ip1)) and port1.isdigit()):
+                return [format_, ip1, port1]
+            else:
+                self.qglogger.warning('Output is not valid')
+                self.qglogger.warning(ip_port)
+                return
+
+
     def insertIPPortQuery(self, query_id, ip_port_list):
         '''
             Insert ip-port query to database.
@@ -339,69 +388,60 @@ class QueryGenerator:
         qid = query_id
         for ip_port in ip_port_list.split(' '):
 
-            # Validate ip and port
-            if ip_port == '':
-                return
-
-            # Determine it's two sided output or not
-            seperator = '-'
-
-            if seperator in ip_port:                    
-                # means output is in format2 
-                left = ip_port.split(seperator)[0]
-                right = ip_port.split(seperator)[1]
-                ip1, port1 = left.split(':')
-                ip2, port2 = right.split(':')
-
-                # validate for ip and port syntax
-                if (                                        
-                     (is_valid_ipv4_address(ip1) or is_valid_ipv4_address(ip1)) and port1.isdigit()) and (
-                     (is_valid_ipv4_address(ip2) or is_valid_ipv4_address(ip2)) and port2.isdigit()
-                   ):
-                    format_ = 2
-                    # Check if we already have this ip-port entry.
-                    ip_port_id = self.store.find(IPPort.id, IPPort.ip_port == unicode(ip_port)).one()
-                    if ip_port_id is None:
-                        try:
-                            # Insert new ip-port and query-ip-port relation.
-                            ip_port_obj = IPPort()
-                            #print ip_port
-                            ip_port_obj.ip_port = unicode(ip_port)
-                            ip_port_obj.format = format_
-                            self.store.add(ip_port_obj)
-                            self.store.flush()
-                            self.qglogger.debug('New ip-port entry is added')
-                            relation = QueryIPPort()
-                            relation.query_id = qid
-                            relation.ip_port_id = ip_port_obj.id
-                            self.store.add(relation)
-                            self.store.commit()
-                            self.qglogger.debug('New query-ip-port relation is added')
-                        except Exception, e:
-                            self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
-                            self.store.rollback()
-                            return
-                    else:
-                        self.qglogger.debug('We already have this ip-port')
-                        # Check if we already have this ip-port-query relation
-                        qip_id = self.store.find(QueryIPPort.id, (QueryIPPort.query_id == qid) & (QueryIPPort.ip_port_id == ip_port_id))
-                        if qip_id is not None:
-                            self.qglogger.debug('We already have this query-ip-port relation')
-                        else:
-                            try:
-                                # Create query-ip-port relation
-                                relation = QueryIPPort()
-                                relation.query_id = qid
-                                relation.ip_port_id = ip_port_id
-                                self.qglogger.debug('New query-ip-port relation is added')
-                                self.store.add(relation)
-                                self.store.commit()
-                            except Exception, e:
-                                self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
-                                self.store.rollback()
-                                return
+            result = self.validateIPPort(ip_port)
+            print result
+            if not result:
+                continue
+            elif len(result)<3:
+                format_ = result[0]
+                print format_
+                #ip = result[1]
+                #port = result[2]
+            elif len(result)>3:
+                format_ = result[0]
+                print format_
+            
+            # Check if we already have this ip-port entry.
+            ip_port_id = self.store.find(IPPort.id, IPPort.ip_port == unicode(ip_port)).one()
+            if ip_port_id is None:
+                try:
+                    # Insert new ip-port and query-ip-port relation.
+                    ip_port_obj = IPPort()
+                    #print ip_port
+                    ip_port_obj.ip_port = unicode(ip_port)
+                    ip_port_obj.format = format_
+                    self.store.add(ip_port_obj)
+                    self.store.flush()
+                    self.qglogger.debug('New ip-port entry is added')
+                    relation = QueryIPPort()
+                    relation.query_id = qid
+                    relation.ip_port_id = ip_port_obj.id
+                    self.store.add(relation)
+                    self.store.commit()
+                    self.qglogger.debug('New query-ip-port relation is added')
+                except Exception, e:
+                    self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                    self.store.rollback()
+                    return
             else:
-                format_ = 1
+                self.qglogger.debug('We already have this ip-port')
+                # Check if we already have this ip-port-query relation
+                qip_id = self.store.find(QueryIPPort.id, (QueryIPPort.query_id == qid) & (QueryIPPort.ip_port_id == ip_port_id))
+                if qip_id is not None:
+                    self.qglogger.debug('We already have this query-ip-port relation')
+                else:
+                    try:
+                        # Create query-ip-port relation
+                        relation = QueryIPPort()
+                        relation.query_id = qid
+                        relation.ip_port_id = ip_port_id
+                        self.qglogger.debug('New query-ip-port relation is added')
+                        self.store.add(relation)
+                        self.store.commit()
+                    except Exception, e:
+                        self.qglogger.warning('got exception: %s, %s' % (e.args, e.message))
+                        self.store.rollback()
+                        return
                 
 
     def createQueryFilterExpressions(self, query_list=None):
@@ -497,12 +537,11 @@ class QueryGenerator:
 
                             validation_expr1 = ' src ip ' + ip1 + ' src port ' + port1 + ' and ' + 'dst ip ' + ip2 + ' dst port ' + port2 + filters
 
-                            master_expr1 = ' src ip ' + ip2 + ' src port any and ' + 'dst ip any dst port ' + port1 + filters
+                            master_expr1 = ' src ip ' + ip1 + ' src port any and ' + 'dst ip any dst port ' + port2 + filters
 
-                            other_exprs = 'src ip ' + ip1 + ' src port any' + filters
+                            other_exprs = 'src ip ' + ip1 + ' src port any' + filters 
                                           'dst ip ' + ip1 + ' dst port any' + filters
                                           'additional filters permutations '
-
 
 
                             exprlist.append(' src ip ' + ip + ' src port ' + port)
