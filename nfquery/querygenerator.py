@@ -343,7 +343,6 @@ class QueryGenerator:
         if ip_port == '':
             return
 
-        print ip_port
         # Determine it's two sided output or not
         seperator = '-'
 
@@ -387,20 +386,22 @@ class QueryGenerator:
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         qid = query_id
         for ip_port in ip_port_list.split(' '):
-
+            self.qglogger.warning(ip_port)
             result = self.validateIPPort(ip_port)
-            print result
+            self.qglogger.warning(result)
             if not result:
                 continue
-            elif len(result)<3:
+            elif len(result) == 5:
                 format_ = result[0]
-                print format_
+                print 'format_ : ',format_
                 #ip = result[1]
                 #port = result[2]
-            elif len(result)>3:
+            elif len(result) == 3:
                 format_ = result[0]
-                print format_
+                print 'format_ : ',format_
+            print type(format_)
             
+            self.qglogger.debug('f')
             # Check if we already have this ip-port entry.
             ip_port_id = self.store.find(IPPort.id, IPPort.ip_port == unicode(ip_port)).one()
             if ip_port_id is None:
@@ -409,7 +410,7 @@ class QueryGenerator:
                     ip_port_obj = IPPort()
                     #print ip_port
                     ip_port_obj.ip_port = unicode(ip_port)
-                    ip_port_obj.format = format_
+                    ip_port_obj.format_ = format_
                     self.store.add(ip_port_obj)
                     self.store.flush()
                     self.qglogger.debug('New ip-port entry is added')
@@ -525,31 +526,42 @@ class QueryGenerator:
                 if not ip_port_id_list.is_empty():
                     ip_port_list = self.store.find(IPPort, In(IPPort.id, list(ip_port_id_list)))
                     for i in range(ip_port_list.count()):
+                        print dir(ip_port_list[i])
+                        print ip_port_list[i].format_
+                        print ip_port_list[i].ip_port
+
                         if ip_port_list[i].format_ == 1:
                             pass
                         elif ip_port_list[i].format_ == 2:
                             part1, part2 = ip_port_list[i].ip_port.split('-')
-                            ip1, port1 = part1(':')
-                            ip2, port2 = part2(':')
+                            ip1, port1 = part1.split(':')
+                            ip2, port2 = part2.split(':')
+
                             # We got tuples of both sides, now create expressions
 
                             # We assume that ip2 and port2 belongs to ATTACKED DOMAIN.
 
-                            validation_expr1 = ' src ip ' + ip1 + ' src port ' + port1 + ' and ' + 'dst ip ' + ip2 + ' dst port ' + port2 + filters
+                            validation_expr1 = ' src ip ' + ip1 + ' src port ' + port1 + ' and ' + 'dst ip ' + ip2 + ' dst port ' + port2# + filters
+                            validation_expr2 = ' src ip ' + ip2 + ' src port ' + port2 + ' and ' + 'dst ip ' + ip1 + ' dst port ' + port1# + filters
+                            print 'validation_expr1:', validation_expr1
+                            print 'validation_expr2:', validation_expr2
+                            
 
-                            master_expr1 = ' src ip ' + ip1 + ' src port any and ' + 'dst ip any dst port ' + port2 + filters
+                            master_expr1 = ' src ip ' + ip1 + ' src port any and ' + 'dst ip any dst port ' + port2# + filters
+                            master_expr2 = ' src ip ' + ip2 + ' src port any and ' + 'dst ip any dst port ' + port1# + filters
+                            print 'master_expr1:', master_expr1
+                            print 'master_expr2:', master_expr2
 
-                            other_exprs = 'src ip ' + ip1 + ' src port any' + filters 
-                                          'dst ip ' + ip1 + ' dst port any' + filters
-                                          'additional filters permutations '
+                            #other_exprs = 'src ip ' + ip1 + ' src port any' + filters 
+                            #              'dst ip ' + ip1 + ' dst port any' + filters
+                            #              'additional filters permutations '
+                            exprlist.append(validation_expr1)
+                            exprlist.append(validation_expr2)
+                            exprlist.append(master_expr1)
+                            exprlist.append(master_expr2)
 
-
-                            exprlist.append(' src ip ' + ip + ' src port ' + port)
                     #self.qglogger.debug('Returning IPPort list expression')
                     expr_dict[str(query.id)] = exprlist
-
-
-
                 else:
                     self.qglogger.warning('IPPort list is empty for this query, PROBLEM!')
 
