@@ -56,7 +56,14 @@ class Plugin:
             self.plogger.warning('Subscription info couldn\'t be gathered. Please try another subscription option : ')
         else:
             self.plogger.info('Here is the subscription information : ')
+            print dir(subscription)
             print subscription
+            
+            for key, value in subscription.iteritems():
+                print key
+                for i in value:
+                    print i 
+                    
         #self.start()
         #self.shutDown()
         #self.printValue(name)
