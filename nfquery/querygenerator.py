@@ -54,6 +54,7 @@ class QueryGenerator:
         filters = [ 'protocol_version', 'protocol', 'tos', 'packets', 'bytes' ]
         try:
             outputfile = open(outputfile, 'r')
+            while('OUTPUTFILE I READLINE OKUYACAN SONRA DA ONALRI LOAD EDECEN, HER OKUDUGUN BIR QUERY OLACAK')
             data = json.load(outputfile)
             outputfile.close()
             #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['output']))
@@ -381,7 +382,7 @@ class QueryGenerator:
         '''
             Insert ip-port query to database.
             example '193.140.11.11:11-192.168.7.5:123' --> (format1)
-            example '193.140.14.71:45'                 --> (format2)
+            example '193.140.14.71:45' --> (format2)
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         qid = query_id
@@ -446,6 +447,9 @@ class QueryGenerator:
                 
 
     def createQueryFilterExpressions(self, query_list=None):
+        '''
+           Create NfSen Query Filter Expressions
+        '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # 1) Fetch all queries,
         # 2) Check what kind of fields the query have, which will be used as netflow filter arguments : 
@@ -469,9 +473,8 @@ class QueryGenerator:
         #            'checksum', 'creation_time', 'query_id', 'query_type', 'source', 'source_id', 'update_time'
         #        '''
 
-        expr_dict = {}
+        query_packet = {}
         for query in query_list:
-            # Create NfSen Query Filter Expressions
             if query.type == 1:
                 expr = ''
                 # we've only ip information
@@ -482,7 +485,7 @@ class QueryGenerator:
                         expr +=  ' host ' + ip_list[i]
                         if i+1 < ip_list.count():
                                 expr += ' or '
-                    expr_dict[str(query.id)] = expr
+                    query_packet[str(query.id)] = expr
                     #self.qglogger.debug('Returning IP list expression')
                 else:
                     self.qglogger.warning('IP list is empty for this query, PROBLEM!')
@@ -498,13 +501,12 @@ class QueryGenerator:
                         if i+1 < port_list.count():
                                 expr += ' or ' 
                     #self.qglogger.debug('Returning Port list expression')
-                    expr_dict[str(query.id)] = expr
+                    query_packet[str(query.id)] = expr
                 else:
                     self.qglogger.warning('Port list is empty for this query, PROBLEM!')
 
             elif query.type == 3:
-
-                # If FORMAT1
+                #if FORMAT1
                     #Determine multidomain or not.
                     # if multidomain:
                         # Create ATTACKED DOMAIN query packet   
@@ -512,23 +514,21 @@ class QueryGenerator:
                         # Create MULTI DOMAIN query packet   
                     # if not multidomain but has an internal domain in one side:
                         # Create MALICIOUS DOMAIN query packet   
-                        # Create MULTI DOMAIN query packet   
-                    
-                    #????#
-                    # else 
-                        # split both side of the output and turn into FORMAT2
-                        # Create MULTI DOMAIN query packet for each part
-                    #????#
-
+                        # Create MULTI DOMAIN query packet
+                #????#
+                #else 
+                    # split both side of the output and turn into FORMAT2
+                    # Create MULTI DOMAIN query packet for each part
+                #????#
                 exprlist = []
                 # we've ip-port tuple information
                 ip_port_id_list = self.store.find(QueryIPPort.ip_port_id, QueryIPPort.query_id == query.id)
                 if not ip_port_id_list.is_empty():
                     ip_port_list = self.store.find(IPPort, In(IPPort.id, list(ip_port_id_list)))
                     for i in range(ip_port_list.count()):
-                        print dir(ip_port_list[i])
-                        print ip_port_list[i].format_
-                        print ip_port_list[i].ip_port
+                        #print dir(ip_port_list[i])
+                        #print ip_port_list[i].format_
+                        #print ip_port_list[i].ip_port
 
                         if ip_port_list[i].format_ == 1:
                             pass
@@ -537,31 +537,25 @@ class QueryGenerator:
                             ip1, port1 = part1.split(':')
                             ip2, port2 = part2.split(':')
 
-                            # We got tuples of both sides, now create expressions
-
-                            # We assume that ip2 and port2 belongs to ATTACKED DOMAIN.
-
-                            validation_expr1 = ' src ip ' + ip1 + ' src port ' + port1 + ' and ' + 'dst ip ' + ip2 + ' dst port ' + port2# + filters
-                            validation_expr2 = ' src ip ' + ip2 + ' src port ' + port2 + ' and ' + 'dst ip ' + ip1 + ' dst port ' + port1# + filters
-                            print 'validation_expr1:', validation_expr1
-                            print 'validation_expr2:', validation_expr2
+                            # We assume that ip2:port2 belongs to ATTACKED DOMAIN.
+                            v1 = '( src ip ' + ip1 + ' src port ' + port1 + ' and ' + 'dst ip ' + ip2 + ' dst port ' + port2 + ' )' 
+                            v2 = '( src ip ' + ip2 + ' src port ' + port2 + ' and ' + 'dst ip ' + ip1 + ' dst port ' + port1 + ' )'
+                            validation_query = v1 + ' or ' + v2
+                            print 'validation_query:', validation_query
                             
-
-                            master_expr1 = ' src ip ' + ip1 + ' src port any and ' + 'dst ip any dst port ' + port2# + filters
-                            master_expr2 = ' src ip ' + ip2 + ' src port any and ' + 'dst ip any dst port ' + port1# + filters
-                            print 'master_expr1:', master_expr1
-                            print 'master_expr2:', master_expr2
-
-                            #other_exprs = 'src ip ' + ip1 + ' src port any' + filters 
+                            m1 = '( src ip ' + ip1 + ' src port any and ' + 'dst ip any dst port ' + port2 + ' )'
+                            m2 = '( src ip ' + ip2 + ' src port any and ' + 'dst ip any dst port ' + port1 + ' )'
+                            master_query = m1 + ' or ' + m2
+                            print 'master_query:', master_query
+                            print '\n'
+                            #add_exprs = 'src ip ' + ip1 + ' src port any' + filters 
                             #              'dst ip ' + ip1 + ' dst port any' + filters
                             #              'additional filters permutations '
-                            exprlist.append(validation_expr1)
-                            exprlist.append(validation_expr2)
-                            exprlist.append(master_expr1)
-                            exprlist.append(master_expr2)
+                            exprlist.append(validation_query)
+                            exprlist.append(master_query)
 
                     #self.qglogger.debug('Returning IPPort list expression')
-                    expr_dict[str(query.id)] = exprlist
+                    query_packet[str(query.id)] = exprlist
                 else:
                     self.qglogger.warning('IPPort list is empty for this query, PROBLEM!')
 
@@ -569,7 +563,7 @@ class QueryGenerator:
             #    domain_id_list = self.store.find(QueryDomain.domain_id, QueryDomain.query_id == query.id)
             #    if not domain_id_list.is_empty():
             #        domain_list = self.store.find(Domain.domain, In(Domain.id, list(domain_id_list)))
-        return expr_dict
+        return query_packet
 
 
     def createQueryFromStatistics(self):

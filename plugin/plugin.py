@@ -13,7 +13,7 @@ class Plugin:
 
     def __init__(self):
         #logger.LOGLEVEL = logging.DEBUG
-        logger.LOGLEVEL = logging.INFO
+        logger.LOGLEVEL = logging.DEBUG
         self.plogger = logger.createLogger('Plugin')
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.proxy = Proxy('https://127.0.0.1:7777/')
@@ -56,13 +56,20 @@ class Plugin:
             self.plogger.warning('Subscription info couldn\'t be gathered. Please try another subscription option : ')
         else:
             self.plogger.info('Here is the subscription information : ')
-            print dir(subscription)
-            print subscription
+            #print dir(subscription)
+            #print subscription
             
             for key, value in subscription.iteritems():
-                print key
-                for i in value:
-                    print i 
+                #print key
+                #print value
+                #print type(value)
+                print 'Subscription ID : ', key 
+                if isinstance(value, list):
+                    for i in value:
+                        print i
+                elif isinstance(value, unicode):
+                    #for i in value.split()
+                    print value
                     
         #self.start()
         #self.shutDown()
