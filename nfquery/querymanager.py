@@ -36,7 +36,9 @@ class QueryManager:
         self.executeParsers()
         self.createSubscriptionPackets()
 
-    # Plugin Management
+    ###########################################################
+    ### Plugin Management                                   ###
+    ###########################################################
     def reconfigurePlugins(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qmlogger.info('Reconfiguring plugins')
@@ -120,7 +122,9 @@ class QueryManager:
         sys.exit()
 
 
-    # Source Management 
+    ###########################################################
+    ### Source Management                                   ###
+    ###########################################################
     def reconfigureSources(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qmlogger.info('Reconfiguring sources')
@@ -219,7 +223,9 @@ class QueryManager:
         sys.exit()
 
 
-   # Parser Management 
+    ###########################################################
+    ### Parser Management                                   ###
+    ###########################################################
     def checkParsers(self):
         '''
             Check if the parser exists in the given path.
@@ -261,7 +267,9 @@ class QueryManager:
                         continue
 
 
-    #  == Subscription Management ==
+    ###########################################################
+    ###  == Subscription Management ==                      ###
+    ###########################################################
     
     # Subscription Types Creation 
     def createSubscriptionTypes(self):
@@ -310,8 +318,9 @@ class QueryManager:
         self.store.commit()
         self.qmlogger.debug('Subscription types are created')
     
-    
-    # Subscription Packets Creation 
+    ###########################################################
+    ### Subscription Packets Creation                       ###
+    ###########################################################
     def createSubscriptionPackets(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qmlogger.info('Generating Subscriptions...')
@@ -326,7 +335,7 @@ class QueryManager:
         if source_name_list is None:
             self.qmlogger.error("Source is not registered to database. Run 'reconfig sources' or check sources.")
             #sys.exit()
-            return None
+            return
         for source_name in source_name_list:
             source_id = self.store.find(Source.id, Source.name == '%s' % unicode(source_name)).one()
             query_id_list = self.store.find(Query.id, Query.source_id == source_id)
@@ -359,7 +368,7 @@ class QueryManager:
         if list_type_list is None:
             self.qmlogger.error("List type is not registered to subscriptions. Run reconfig or check sources.")
             #sys.exit()
-            return None
+            return
         for list_type in list_type_list:
             list_id = self.store.find(List.id, List.type == '%s' % unicode(list_type)).one()
             source_id = self.store.find(Source.id, Source.list_id == list_id)
@@ -389,11 +398,14 @@ class QueryManager:
                 self.qmlogger.warning("We don't have any query for this list type.")
                 self.qmlogger.warning("%s subscription is not created." % (list_type))
         self.store.commit()
+
  
-   
-    # Subscription Releasing and Handling Plugin Requests
+    ###########################################################
+    ### Subscription Releasing and Plugin Request Handling  ###
+    ###########################################################
     def getSubscription(self, name):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.qmlogger.debug('Getting subscription %s' % name)
         subscription_id = self.store.find(Subscription.id, Subscription.name == unicode(name)).one()
         self.qmlogger.debug('subscription_id = %d' % subscription_id)
         if not (subscription_id is None):
@@ -401,30 +413,20 @@ class QueryManager:
             squery_id_list = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
             if not squery_id_list.is_empty():
                 self.qmlogger.debug('y2')
-                #query_id_list = self.store.find(Query.id, In(Query.id, list(squery_id_list)))
                 query_list = self.store.find(Query, In(Query.id, list(squery_id_list)))
-                #if not query_id_list.is_empty():
                 if not query_list.is_empty():
-                    self.qmlogger.debug('y3')
-                    #ip_id_list = self.store.find(QueryIP.ip_id, In(QueryIP.query_id, list(query_id_list)))
-                    #if not ip_id_list.is_empty():
-                    #    self.qmlogger.debug('y4')
-                    #    ip_list = self.store.find(IP.ip, In(IP.id, list(ip_id_list)))
-                    #    for i in ip_list:
-                    #        self.qmlogger.debug(i)
-                    #    if not ip_list.is_empty():
-                    #        self.qmlogger.debug('y5')
-                    #        return list(ip_list)
+                    self.qmlogger.debug('y2')
                     self.qmlogger.debug('Returning subscription information : %s' % name)
                     return self.queryGenerator.createQueryFilterExpressions(query_list)
         self.qmlogger.warning('Couldn\'t get subscription information : %s ' % name)
-        return None
+        return
 
 
     def getAllSubscriptions(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         subscription_list = self.store.find(Subscription.name)
-        print list(subscription_list)
+        self.qmlogger.debug('Returning subscription list')
+        #print list(subscription_list)
         return list(subscription_list)
 
 
