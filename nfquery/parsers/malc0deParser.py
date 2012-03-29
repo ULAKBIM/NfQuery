@@ -29,13 +29,19 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
         sys.exit(1)
 
     # parse the file line by line and create an ip list
+    expr_list = []
     for line in source.readlines()[4:]:
-        output += line.split("\n")[0] + ' '
+        ip = line.split("\n")[0]
+        expr_list.append({'src_ip' :  ip})
 
-    # JSON Part
-    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'output' : output, 'tos':123, 'packets':1450, 'protocol':'tcp', 'protocol_version':'ipv6', 'bytes':12345}
-    #json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'output' : output}
-    outputfile.write(json.dumps(json_dict))
+    # JSON
+    json_dict = {'source_name' : source_name,
+                 'update_time' : update_time,
+                 'mandatory_fields' : ['src_ip'],
+                 'expr_list' : expr_list
+                }
+    print json_dict
+    outputfile.write(json.dumps(json_dict, indent=4))
 
     outputfile.close()
     source.close()
