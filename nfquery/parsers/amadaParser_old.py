@@ -43,13 +43,20 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
         sys.exit(1)
 
     # parse the file line by line and create an ip list
-    for line in source.readlines()[5:]:
-        output += line.split(" ")[0] + ' '
 
-    # JSON Part
-    #json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'output' : output}
-    json_dict = {'source_name' : source_name, 'update_time' : update_time, 'output_type' : output_type, 'output' : output, 'protocol' : 'tcp'}
-    outputfile.write(json.dumps(json_dict))
+    expr_list = []
+    for line in source.readlines()[5:]:
+        ip = line.split(" ")[0]
+        expr_list.append({'src_ip' :  ip})
+
+    # JSON
+    json_dict = {'source_name' : source_name,
+                 '' : update_time,
+                 'mandatory_fields' : ['src_ip'],
+                 'expr_list' : expr_list
+                }
+    print json_dict
+    outputfile.write(json.dumps(json_dict, indent=4))
 
     outputfile.close()
     source.close()
@@ -65,7 +72,6 @@ if __name__ == "__main__":
     #source_file = '/usr/local/nfquery/sources/amada/amadaSource.txt'
     #output_type  = 1 
     #output_file = '/usr/local/nfquery/sources/amada/amadaOutput.txt'
-    #
     #fetch_source(source_link, source_file)
     #parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
@@ -77,5 +83,4 @@ if __name__ == "__main__":
     
     #fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)
-
 
