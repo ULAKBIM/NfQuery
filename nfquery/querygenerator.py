@@ -38,9 +38,11 @@ class QueryGenerator:
                 if parsername == self.sources[index].parser:
                     data = self.validateParserOutput(self.sources[index].outputfile)
                     if data: 
+                        print 'here'
                         self.insertQuery(data)
                         return
                     else:
+                        print 'else'
                         self.qglogger.warning('Parser output validation returned bad.')
                         return
 
@@ -50,39 +52,48 @@ class QueryGenerator:
             Check parser output values and necessary keys.
             Returns validated output.
         '''
-        options = [ 'source_name', 'output_type', 'output', 'update_time' ] 
-        filters = [ 'protocol_version', 'protocol', 'tos', 'packets', 'bytes' ]
+        options = [ 'source_name', 'date', 'processing', 'output' ] 
+        nfsen_filters = [ 'src_ip', 'src_port', 'dst_ip', 'dst_port', 'proto', 'protocol_version', 'packets', 'bytes', 'duration', 'tos', 'pps', 'bps', 'bpp', 'AS', 'scale' ]
         try:
             outputfile = open(outputfile, 'r')
-            while('OUTPUTFILE I READLINE OKUYACAN SONRA DA ONALRI LOAD EDECEN, HER OKUDUGUN BIR QUERY OLACAK')
-            data = json.load(outputfile)
+            for line in outputfile.readlines():
+                #print line
+                data = json.loads(line)
+                print data
+                
+                if set(options).issubset(set(data.keys())):
+                    self.qglogger.debug('option fields are ok')
+                    if set(nfsen_filters).issubset(options['output'].keys())
+
+
+
+                #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['output']))
+                if (set(options).issubset(set(data.keys()))):
+                    source = self.store.find(Source, Source.name == unicode(data['source_name']))
+                    if source.is_empty():
+                        self.qglogger.warning('Source name : %s is not found in the database' % data['source_name'])
+                        self.qglogger.warning('Please check your parser output %s' % outputfile)
+                        return
+                    #elif not(0 < data['processing'] < 4):
+                    #    qglogger.warning('Output type value : %d is not correct' % data['output_type'])
+                    #    qglogger.warning('Please check your parser output %s' % outputfile)
+                    #    return
+                    elif set(data.keys()).issubset(set(options + nfsen_filters)):
+                        print data.keys()
+                        self.qglogger.debug('Output of parser is valid')
+                        return data
+                    else:
+                        self.qglogger.warning('Unknown filter is found in parser output %s' % outputfile)
+                        return
+                self.qglogger.warning('Mandatory keys are not found in parser output %s' % outputfile)
+                return
             outputfile.close()
-            #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['output']))
-            if (set(options).issubset(set(data.keys()))):
-                source = self.store.find(Source, Source.name == unicode(data['source_name']))
-                if source.is_empty():
-                    self.qglogger.warning('Source name : %s is not found in the database' % data['source_name'])
-                    self.qglogger.warning('Please check your parser output %s' % outputfile)
-                    return
-                elif not(0 < data['output_type'] < 4):
-                    qglogger.warning('Output type value : %d is not correct' % data['output_type'])
-                    qglogger.warning('Please check your parser output %s' % outputfile)
-                    return
-                elif set(data.keys()).issubset(set(options + filters)):
-                    print data.keys()
-                    self.qglogger.debug('Output of parser is valid')
-                    return data
-                else:
-                    self.qglogger.warning('Unknown filter is found in parser output %s' % outputfile)
-                    return
-            self.qglogger.warning('Mandatory keys are not found in parser output %s' % outputfile)
-            return
         except Exception, e:
             self.qglogger.warning('got exception: %r' % (e))
             self.qglogger.warning('Output is not loaded correctly, check parser output : %s' % outputfile)
             return
 
-            
+
     def insertQuery(self, data ):
     #def insertQuery(self, source_name, output_type, output, update_time, 
     #                      protocol_version=None, protocol=None, tos=None, packets=None, bytes_=None):
