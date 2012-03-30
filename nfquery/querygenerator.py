@@ -11,7 +11,7 @@ import time
 # nfquery imports
 import db
 import logger
-from models import Query, QueryIP, IP, QueryPort, Port, QueryIPPort, IPPort, Filter, Source
+from models import *
 from storm.locals import *
 from utils import *
 
@@ -61,10 +61,9 @@ class QueryGenerator:
                 data = json.loads(line)
                 print data
                 
-                if set(options).issubset(set(data.keys())):
-                    self.qglogger.debug('option fields are ok')
-                    if set(nfsen_filters).issubset(options['output'].keys())
-
+                #if set(options).issubset(set(data.keys())):
+                #    self.qglogger.debug('option fields are ok')
+                #    if set(nfsen_filters).issubset(options['output'].keys())
 
 
                 #self.qglogger.debug('%s, %s, %s ' % (data['source_name'], data['update_time'], data['output']))
