@@ -130,9 +130,9 @@ class QueryManager:
         self.qmlogger.info('Reconfiguring sources')
 
         # Check lists, tihs will handled in db creation later.
-        list_obj = self.store.find(List)
-        if list_obj.is_empty():
-            db.insertListTypes(self.store)
+        threat = self.store.find(Threat)
+        if threat.is_empty():
+            db.insertThreatTypes(self.store)
 
         dbsources = self.store.find(Source)
         # Maintain the table for delete operations
@@ -147,7 +147,7 @@ class QueryManager:
                     flag = query_yes_no('', default="no")
                     if flag is True:
                         source_name = source.name
-                        list_id = source.list_id
+                        threat_id = source.threat_id
                         parser_id = source.parser_id
                         self.store.find(Source, Source.name == source.name).remove()
                         self.store.find(Parser, Parser.id == parser_id).remove()
@@ -162,15 +162,15 @@ class QueryManager:
                 self.qmlogger.error('output_type must be between 1-3, please look at the definition.\n')
 
             # Check list type
-            list_id = self.store.find(List.id, List.type == unicode(self.sources[index].listtype)).one()
-            if list_id is None:
-                self.qmlogger.warning('List type couldn\'t be found in the database, please check your configuration.')
+            threat_id = self.store.find(Threat.id, Threat.type == unicode(self.sources[index].threattype)).one()
+            if threat_id is None:
+                self.qmlogger.warning('Threat type couldn\'t be found in the database, please check your configuration.')
                 self.qmlogger.warning('Assigning default list type value.')
-                list_id = 1 #means default unknown list type
+                threat_id = 1 #means default unknown list type
 
             # Calculate the checksum
             conf_checksum = hashlib.md5()   
-            conf_checksum.update(self.sources[index].sourcename + str(self.sources[index].listtype) + 
+            conf_checksum.update(self.sources[index].sourcename + str(self.sources[index].threattype) + 
                                  self.sources[index].sourcelink + self.sources[index].sourcefile    +
                                  self.sources[index].parser     + str(self.sources[index].time_interval) )
             source_checksum = self.store.find(Source.checksum, Source.name == unicode(self.sources[index].sourcename)).one()
@@ -187,7 +187,7 @@ class QueryManager:
                 source = Source()
                 source.name = unicode(self.sources[index].sourcename)
                 source.link = unicode(self.sources[index].sourcelink)
-                source.list_id = list_id
+                source.threat_id = threat_id
                 source.parser_id = parser.id
                 source.checksum = unicode(conf_checksum.hexdigest())
                 self.store.add(source)
@@ -202,7 +202,7 @@ class QueryManager:
                 # Update existing source
                 source = self.store.find(Source, Source.name == '%s' % unicode(self.sources[index].sourcename) ).one()
                 source.link = unicode(self.sources[index].sourcelink)
-                source.list_id = list_id
+                source.threat_id = threat_id
                 source.checksum = unicode(conf_checksum.hexdigest())
                 self.store.add(source)
                 # Update existing parser
@@ -278,7 +278,7 @@ class QueryManager:
             We have 2 different subscription types.
             
             1) Source -> example : "Amada,Malc0de,DFN-Honeypot,ABC-NREN_Special_Source"
-            2) List Type -> example : "Botnet,Malware,Honeypot Output, Special Source Output"
+            2) Threat Type -> example : "Botnet,Malware,Honeypot Output, Special Source Output"
             
             These subscription types are inserted into subscription table
             according to the condition of "if that subscription type have queries" 
@@ -302,18 +302,18 @@ class QueryManager:
                 self.store.add(subscription)
                 self.qmlogger.debug('Subscription type %s added to db' % source_name)
     
-        # 2) List Type
+        # 2) Threat Type
         subscription_type=2
-        list_type_list = self.store.find(List.type)
-        list_type_list.group_by(List.type)
-        for list_type in list_type_list:
-            subscription = self.store.find(Subscription.id, Subscription.name == '%s' % (list_type))
+        threat_type_list = self.store.find(Threat.type)
+        threat_type_list.group_by(Threat.type)
+        for threat_type in threat_type_list:
+            subscription = self.store.find(Subscription.id, Subscription.name == '%s' % (threat_type))
             if subscription.is_empty():
                 subscription = Subscription()
                 subscription.type = subscription_type
-                subscription.name = list_type
+                subscription.name = threat_type
                 self.store.add(subscription)
-                self.qmlogger.debug('Subscription type %s added to db' % list_type)
+                self.qmlogger.debug('Subscription type %s added to db' % threat_type)
 
         self.store.commit()
         self.qmlogger.debug('Subscription types are created')
@@ -325,7 +325,7 @@ class QueryManager:
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qmlogger.info('Generating Subscriptions...')
         self.createSourceSubscriptionPackets()
-        self.createListSubscriptionPackets()
+        self.createThreatSubscriptionPackets()
     
     
     def createSourceSubscriptionPackets(self):
@@ -362,21 +362,21 @@ class QueryManager:
         self.store.commit()
     
     
-    def createListSubscriptionPackets(self):
+    def createThreatSubscriptionPackets(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        list_type_list = self.store.find(Subscription.name, Subscription.type == 2)
-        if list_type_list is None:
-            self.qmlogger.error("List type is not registered to subscriptions. Run reconfig or check sources.")
+        threat_type_list = self.store.find(Subscription.name, Subscription.type == 2)
+        if threat_type_list is None:
+            self.qmlogger.error("Threat type is not registered to subscriptions. Run reconfig or check sources.")
             #sys.exit()
             return
-        for list_type in list_type_list:
-            list_id = self.store.find(List.id, List.type == '%s' % unicode(list_type)).one()
-            source_id = self.store.find(Source.id, Source.list_id == list_id)
+        for threat_type in threat_type_list:
+            threat_id = self.store.find(Threat.id, Threat.type == '%s' % unicode(threat_type)).one()
+            source_id = self.store.find(Source.id, Source.threat_id == threat_id)
             if source_id.is_empty():
                 continue
             query_id_list = self.store.find(Query.id, In(Query.source_id, list(source_id)))
             if not query_id_list.is_empty():
-                subscription_id = self.store.find(Subscription.id, Subscription.name == '%s' % unicode(list_type)).one()
+                subscription_id = self.store.find(Subscription.id, Subscription.name == '%s' % unicode(threat_type)).one()
                 subs_packet_id = self.store.find(SubscriptionPackets.id, SubscriptionPackets.subscription_id == subscription_id)
                 if subs_packet_id.is_empty():
                     for qid in query_id_list:
@@ -384,7 +384,7 @@ class QueryManager:
                         spacket.subscription_id = subscription_id
                         spacket.query_id = qid
                         self.store.add(spacket)
-                    self.qmlogger.debug('List subscription packets are created')
+                    self.qmlogger.debug('Threat subscription packets are created')
                 else:
                     query_ids = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
                     for qid in query_id_list:
@@ -393,10 +393,10 @@ class QueryManager:
                             spacket.subscription_id = subscription_id
                             spacket.query_id = qid
                             self.store.add(spacket)
-                    self.qmlogger.debug('List subscription packets are added2')
+                    self.qmlogger.debug('Threat subscription packets are added2')
             else:
-                self.qmlogger.warning("We don't have any query for this list type.")
-                self.qmlogger.warning("%s subscription is not created." % (list_type))
+                self.qmlogger.warning("We don't have any query for this threat type.")
+                self.qmlogger.warning("%s subscription is not created." % (threat_type))
         self.store.commit()
 
  

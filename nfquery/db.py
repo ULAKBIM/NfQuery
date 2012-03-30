@@ -328,8 +328,8 @@ def get_store(conf=None):
             sys.exit(1)
         else:
             try:
-                #db = 'mysql://' + conf.db_user  + ':' + conf.db_password + '@' + conf.db_host + '/' + conf.db_name
-                db = "mysql://test@localhost/test"
+                db = 'mysql://' + conf.db_user  + ':' + conf.db_password + '@' + conf.db_host + '/' + conf.db_name
+                #db = "mysql://test@localhost/test"
                 database = create_database(db)
                 __store = Store(database)
                 # Check if table exists

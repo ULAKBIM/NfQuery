@@ -52,7 +52,7 @@ class QueryServer:
             'nfquery'  : ['path','sources_path','host','port','ipv6', 'cert_file', 'key_file', 'logfile'], 
             'plugins'  : ['organization', 'adm_name', 'adm_mail', 'adm_tel', 'adm_publickey_file', 'prefix_list', 'plugin_ip'],
             'database' : ['db_host','db_name','db_user','db_password'], 
-            'sources'  : ['sourcename','sourcelink','sourcefile','listtype','outputtype','outputfile','parser','time_interval']
+            'sources'  : ['sourcename','sourcelink','sourcefile','threattype','outputtype','outputfile','parser','time_interval']
         }
 
         # Check Config File Sections
@@ -122,13 +122,13 @@ class QueryServer:
         ''' 
         # Start Database Connection 
         self.store = db.get_store(self.config.database)
-        print 'quitting'
-        self.stop()
 
         # Start QueryManager
         self.queryManager = QueryManager(sources=self.config.sources, plugins=self.config.plugins)
         self.queryManager.start()
 
+        print 'quitting'
+        self.stop()
         # Start JSONRPCServer
         self.startJSONRPCServer()
 
