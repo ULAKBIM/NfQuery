@@ -122,6 +122,8 @@ class QueryServer:
         ''' 
         # Start Database Connection 
         self.store = db.get_store(self.config.database)
+        print 'quitting'
+        self.stop()
 
         # Start QueryManager
         self.queryManager = QueryManager(sources=self.config.sources, plugins=self.config.plugins)
@@ -133,7 +135,7 @@ class QueryServer:
         # Start Scheduler
         self.startScheduler()
 
-        # Shutdown handler
+        # Set shutdown handler
         atexit.register(self.stop)
 
 

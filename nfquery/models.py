@@ -44,20 +44,6 @@ class Threat(object):
     type = Unicode()
 
 
-class Query(object):
-    
-    __storm_table__ = 'query'
-    
-    id = Int(primary=True)
-    source_id = Int()
-    update_time = Unicode()
-    type = Int()
-    checksum = Unicode()
-    creation_time = Unicode()
-
-    source =  Reference(source_id, Source.id)
-
-
 class Source(object):
 
     __storm_table__ = 'source'
@@ -71,6 +57,20 @@ class Source(object):
 
     threat = Reference(threat_id, Threat.id)
     parser =  Reference(parser_id, Parser.id)
+
+
+class Query(object):
+    
+    __storm_table__ = 'query'
+    
+    id = Int(primary=True)
+    source_id = Int()
+    update_time = Unicode()
+    type = Int()
+    checksum = Unicode()
+    creation_time = Unicode()
+
+    source =  Reference(source_id, Source.id)
 
 
 class Subscription(object):
@@ -171,7 +171,7 @@ class DstPort(object):
     port = Reference(port_id, Port.id)
 
 
-class Proto(Object):
+class Proto(object):
     
     __storm_table__ = 'proto'
   
@@ -182,7 +182,7 @@ class Proto(Object):
     query = Reference(query_id, Query.id)
 
 
-class ProtocolVersion(Object):
+class ProtocolVersion(object):
     
     __storm_table__ = 'protocol_version'
   
@@ -193,7 +193,7 @@ class ProtocolVersion(Object):
     query = Reference(query_id, Query.id)
 
 
-class Packets(Object):
+class Packets(object):
     
     __storm_table__ = 'packets'
   
@@ -204,7 +204,7 @@ class Packets(Object):
     query = Reference(query_id, Query.id)
 
 
-class Bytes(Object):
+class Bytes(object):
     
     __storm_table__ = 'bytes'
   
@@ -216,7 +216,7 @@ class Bytes(Object):
 
 
 
-class Duration(Object):
+class Duration(object):
     
     __storm_table__ = 'duration'
   
@@ -227,7 +227,7 @@ class Duration(Object):
     query = Reference(query_id, Query.id)
 
 
-class Flags(Object):
+class Flags(object):
     
     __storm_table__ = ''
   
@@ -238,7 +238,7 @@ class Flags(Object):
     query = Reference(query_id, Query.id)
 
 
-class Tos(Object):
+class Tos(object):
     
     __storm_table__ = 'tos'
   
@@ -249,7 +249,7 @@ class Tos(Object):
     query = Reference(query_id, Query.id)
 
 
-class PPS(Object):
+class PPS(object):
     
     __storm_table__ = 'pps'
   
@@ -260,7 +260,7 @@ class PPS(Object):
     query = Reference(query_id, Query.id)
 
 
-class BPS(Object):
+class BPS(object):
     
     __storm_table__ = 'bps'
   
@@ -271,7 +271,7 @@ class BPS(Object):
     query = Reference(query_id, Query.id)
 
 
-class BPP(Object):
+class BPP(object):
     
     __storm_table__ = 'bpp'
   
@@ -282,7 +282,7 @@ class BPP(Object):
     query = Reference(query_id, Query.id)
 
 
-class ASN(Object):
+class ASN(object):
     
     __storm_table__ = 'ASN'
   
@@ -292,7 +292,7 @@ class ASN(Object):
     
     query = Reference(query_id, Query.id)
 
-class Scale(Object):
+class Scale(object):
     
     __storm_table__ = 'scale'
   
