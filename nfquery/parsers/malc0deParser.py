@@ -40,7 +40,7 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
                  'mandatory_fields' : ['src_ip'],
                  'expr_list' : expr_list
                 }
-    print json_dict
+    #print json_dict
     outputfile.write(json.dumps(json_dict, indent=4))
 
     outputfile.close()
