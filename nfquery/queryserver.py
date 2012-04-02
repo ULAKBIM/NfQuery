@@ -52,7 +52,7 @@ class QueryServer:
             'nfquery'  : ['path','sources_path','host','port','ipv6', 'cert_file', 'key_file', 'logfile'], 
             'plugins'  : ['organization', 'adm_name', 'adm_mail', 'adm_tel', 'adm_publickey_file', 'prefix_list', 'plugin_ip'],
             'database' : ['db_host','db_name','db_user','db_password'], 
-            'sources'  : ['sourcename','sourcelink','sourcefile','threattype','outputtype','outputfile','parser','time_interval']
+            'sources'  : ['source_name','source_link','source_file','threat_type','output_file','parser','time_interval']
         }
 
         # Check Config File Sections
@@ -65,14 +65,12 @@ class QueryServer:
                 #print dir(option)
                 # Check if the section has a loop like 'sources' option.
                 if hasattr(option, 'keys') and hasattr(option, '__getitem__') and (option):
-                    self.qslogger.debug('This section is a mapping')
                     if (set(ConfigSections[section]).issubset(set(option.keys()))):
                         self.qslogger.debug(str(ConfigSections[section]) + 'exists')
                     else:
                         raise ConfigError(str(ConfigSections[section]) + ' option does not exists in the configuration file.' + 
                                           'Please add the required option to conf file and check the manual' )
                 elif hasattr(option, '__iter__') and (option):
-                    self.qslogger.debug('This section is a sequence')
                     if (set(ConfigSections[section]).issubset(set(option[0].keys()))):
                         self.qslogger.debug(str(ConfigSections[section]) + 'exists')
                     else:
@@ -80,7 +78,7 @@ class QueryServer:
                         self.qslogger.info('Please add the required option to conf file and check the manual')
                         sys.exit(1)
                 else:
-                    self.qslogger.info('Unknown configuration file option value, Check the code!')
+                    self.qslogger.info('Unknown configuration file option, Check the code!')
                     sys.exit(1)
         else:
             self.qslogger.info('One of the main configuration options does not exists')
@@ -97,11 +95,10 @@ class QueryServer:
         # sslmethod=ssl.SSL.SSLv23_METHOD and other coukld be implemented here.
         
         # For TLSV1
-        reactor.listenSSL(self.config.nfquery.port, rpcserver,
-                          ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file,
-                          sslmethod=ssl.SSL.TLSv1_METHOD
-                          )
-        )
+        reactor.listenSSL( self.config.nfquery.port, rpcserver,
+                           ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file,
+                           sslmethod=ssl.SSL.TLSv1_METHOD) 
+                         )
         self.qslogger.info('Starting QueryServer')
         self.qslogger.info('Listening for plugin connections on port : %s' % self.config.nfquery.port)
 
@@ -127,8 +124,9 @@ class QueryServer:
         self.queryManager = QueryManager(sources=self.config.sources, plugins=self.config.plugins)
         self.queryManager.start()
 
-        print 'quitting'
-        self.stop()
+        #print 'quitting'
+        #self.stop()
+        #sys.exit()
         # Start JSONRPCServer
         self.startJSONRPCServer()
 

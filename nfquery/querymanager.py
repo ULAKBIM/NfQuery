@@ -139,7 +139,7 @@ class QueryManager:
         if not dbsources.is_empty():
             sources_list = []
             for index in range(len(self.sources)):
-                sources_list.append(self.sources[index].sourcename)
+                sources_list.append(self.sources[index].source_name)
             for source in dbsources:
                 if not source.name in(sources_list):
                     self.qmlogger.warning('I will delete the source, Do you approve the deletion of source \'%s\' and queries generated from this source \'%s\'', 
@@ -157,12 +157,8 @@ class QueryManager:
                         self.qmlogger.info('Not deleted any source.')
                         
         for index in range(len(self.sources)):
-            # Check output type
-            if (not (4>self.sources[index].outputtype>0)):
-                self.qmlogger.error('output_type must be between 1-3, please look at the definition.\n')
-
             # Check list type
-            threat_id = self.store.find(Threat.id, Threat.type == unicode(self.sources[index].threattype)).one()
+            threat_id = self.store.find(Threat.id, Threat.type == unicode(self.sources[index].threat_type)).one()
             if threat_id is None:
                 self.qmlogger.warning('Threat type couldn\'t be found in the database, please check your configuration.')
                 self.qmlogger.warning('Assigning default list type value.')
@@ -170,13 +166,13 @@ class QueryManager:
 
             # Calculate the checksum
             conf_checksum = hashlib.md5()   
-            conf_checksum.update(self.sources[index].sourcename + str(self.sources[index].threattype) + 
-                                 self.sources[index].sourcelink + self.sources[index].sourcefile    +
+            conf_checksum.update(self.sources[index].source_name + str(self.sources[index].threat_type) + 
+                                 self.sources[index].source_link + self.sources[index].source_file    +
                                  self.sources[index].parser     + str(self.sources[index].time_interval) )
-            source_checksum = self.store.find(Source.checksum, Source.name == unicode(self.sources[index].sourcename)).one()
+            source_checksum = self.store.find(Source.checksum, Source.name == unicode(self.sources[index].source_name)).one()
             if source_checksum is None:
                 # Adding new source
-                self.qmlogger.info('Adding new source %s' % self.sources[index].sourcename)
+                self.qmlogger.info('Adding new source %s' % self.sources[index].source_name)
                 # Add new parser
                 parser = Parser()
                 parser.name = unicode(self.sources[index].parser)
@@ -185,23 +181,23 @@ class QueryManager:
                 self.store.flush()
                 # Add new source
                 source = Source()
-                source.name = unicode(self.sources[index].sourcename)
-                source.link = unicode(self.sources[index].sourcelink)
+                source.name = unicode(self.sources[index].source_name)
+                source.link = unicode(self.sources[index].source_link)
                 source.threat_id = threat_id
                 source.parser_id = parser.id
                 source.checksum = unicode(conf_checksum.hexdigest())
                 self.store.add(source)
                 # Commit changes
                 self.store.commit()
-                self.qmlogger.info('New Source added successfully : "%s"' % self.sources[index].sourcename)
+                self.qmlogger.info('New Source added successfully : "%s"' % self.sources[index].source_name)
             elif str(conf_checksum.hexdigest()) == str(source_checksum):
-                self.qmlogger.info('No need to reconfigure the source : %s' % self.sources[index].sourcename)
+                self.qmlogger.info('No need to reconfigure the source : %s' % self.sources[index].source_name)
             elif str(conf_checksum.hexdigest()) != str(source_checksum):
                 # Update source information
-                self.qmlogger.info('Updating the source %s' % self.sources[index].sourcename)
+                self.qmlogger.info('Updating the source %s' % self.sources[index].source_name)
                 # Update existing source
-                source = self.store.find(Source, Source.name == '%s' % unicode(self.sources[index].sourcename) ).one()
-                source.link = unicode(self.sources[index].sourcelink)
+                source = self.store.find(Source, Source.name == '%s' % unicode(self.sources[index].source_name) ).one()
+                source.link = unicode(self.sources[index].source_link)
                 source.threat_id = threat_id
                 source.checksum = unicode(conf_checksum.hexdigest())
                 self.store.add(source)
@@ -212,7 +208,7 @@ class QueryManager:
                 self.store.add(parser)
                 # Commit changes
                 self.store.commit()
-                self.qmlogger.info('Source updated successfully : "%s"' % self.sources[index].sourcename)
+                self.qmlogger.info('Source updated successfully : "%s"' % self.sources[index].source_name)
             else:
                 self.qmlogger.error('CHECK CODE')
                 self.qmlogger.warning('conf checksum ' + conf_checksum.hexdigest())
@@ -246,7 +242,7 @@ class QueryManager:
                 try:
                     returncode = subprocess.call(['python', self.sources[index].parser])
                     if returncode == 0:
-                        self.queryGenerator.createQuery(self.sources[index].parser)
+                        self.queryGenerator.generateQuery(self.sources[index].parser)
                     else:
                         self.qmlogger.warning('Parser returned with error')
                 except Exception, e:
@@ -259,7 +255,7 @@ class QueryManager:
                     try:
                         returncode = subprocess.call(['python', self.sources[index].parser])
                         if returncode == 0:
-                            self.queryGenerator.createQuery(self.sources[index].parser)
+                            self.queryGenerator.generateQuery(self.sources[index].parser)
                         else:
                             self.qmlogger.warning('Parser returned with error')
                     except Exception, e:

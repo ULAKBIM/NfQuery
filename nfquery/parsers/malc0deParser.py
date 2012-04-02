@@ -35,11 +35,14 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
         expr_list.append({'src_ip' :  ip})
 
     # JSON
-    json_dict = {'source_name' : source_name,
-                 'update_time' : update_time,
-                 'mandatory_fields' : ['src_ip'],
-                 'expr_list' : expr_list
-                }
+    json_dict = [
+                 {
+                  'source_name' : source_name,
+                  'update_time' : update_time,
+                  'mandatory_fields' : ['src_ip'],
+                  'expr_list' : expr_list
+                 }
+                ]
     #print json_dict
     outputfile.write(json.dumps(json_dict, indent=4))
 

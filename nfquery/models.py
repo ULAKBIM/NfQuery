@@ -59,18 +59,47 @@ class Source(object):
     parser =  Reference(parser_id, Parser.id)
 
 
+class Category(object):
+
+    __storm_table__ = 'category'
+
+    id = Int(primary=True)
+    category = Unicode()
+
+
+class Time(object):
+
+    __storm_table__ = 'time'
+
+    id = Int(primary=True)
+    time = DateTime()
+
+
+class Type(object):
+
+    __storm_table__ = 'type'
+
+    id = Int(primary=True)
+    type = Unicode()
+
+
 class Query(object):
     
     __storm_table__ = 'query'
     
     id = Int(primary=True)
+    type_id = Int()
     source_id = Int()
-    update_time = Unicode()
-    type = Int()
     checksum = Unicode()
-    creation_time = Unicode()
+    creation_time_id = Int()
+    update_time_id = Int()
+    category_id = Int()
 
     source =  Reference(source_id, Source.id)
+    type =  Reference(type_id, Type.id)
+    creation_time = Reference(creation_time_id, Time.id)
+    update_time = Reference(update_time_id, Time.id)
+    category = Reference(category_id, Category.id)
 
 
 class Subscription(object):
@@ -188,7 +217,7 @@ class ProtocolVersion(object):
   
     id = Int(primary=True)
     query_id = Int()
-    proto = Unicode()
+    protocol_version = Unicode()
     
     query = Reference(query_id, Query.id)
 
