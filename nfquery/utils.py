@@ -2,14 +2,6 @@
 import sys
 import socket
 
-"""
-    Utils that are used very frequently.
-
-    * dottedQuadToNum
-    * numToDottedQuad
-    * query_yes_or_no
-"""
-
 
 def dottedQuadToNum(ip):                                        
     """
@@ -18,6 +10,7 @@ def dottedQuadToNum(ip):
     
     hexn = ''.join(["%02X" % long(i) for i in ip.split('.')])   
     return long(hexn, 16)                                       
+
                                                                 
 # IP address manipulation functions                             
 def numToDottedQuad(n):                                         
@@ -69,7 +62,6 @@ def query_yes_no(question, default="yes"):
                                  "(or 'y' or 'n').\n")
 
 
-
 def is_valid_ipv4_address(address):
     try:
         addr= socket.inet_pton(socket.AF_INET, address)
@@ -84,12 +76,53 @@ def is_valid_ipv4_address(address):
 
     return True
 
+
 def is_valid_ipv6_address(address):
     try:
         addr= socket.inet_pton(socket.AF_INET6, address)
     except socket.error: # not a valid address
         return False
     return True
+
+
+def is_valid_proto(proto):
+    if proto == 'tcp' or proto == 'udp':
+        return True
+    return False 
+
+
+def is_valid_protocol_version(protocol_version):
+    #if proto == 'ipv4' or proto == 'ipv6':
+    if proto == 'ipv4':
+        return True
+    return False 
+
+
+def is_valid_tos(tos):
+    if 0 < tos < 255:
+        return True
+    return False
+
+
+def is_valid_flags(flags):
+    _flags = ['A', 'S', 'F', 'R', 'P', 'U', 'X']
+    if flags in _flags:
+        return True
+    return False
+
+
+def is_valid_scale(scale):
+    _scale = ['k', 'm', 'g']
+    if scale in _scale:
+        return True
+    return False
+
+        
+
+
+
+
+
 
 
 

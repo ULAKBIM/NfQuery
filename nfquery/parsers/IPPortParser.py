@@ -2,7 +2,7 @@
 
 # Malware Database (AMaDa) :: AMaDa Blocklist Parser
 
-import datetime
+import time
 import os
 import sys 
 import simplejson as json
@@ -14,10 +14,7 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
     '''
         Test Top Ten IPPort Source Parser
     '''
-    update_time = datetime.datetime.now()
-    update_time = update_time.strftime("%Y-%m-%d %H:%M")
-
-    output = ''
+    update_time = time.strftime('%Y-%m-%d %H:%M')
 
     try:
         source = open(source_file, "r")
@@ -44,14 +41,17 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
             expr_list.append({'src_ip' : src_ip, 'src_port' : src_port})
 
     # JSON
-    json_dict = {'source_name' : source_name,
-                 'update_time' : update_time,
-                 'mandatory_fields' : ['src_ip', 'dst_port'],
-                 'expr_list' : expr_list 
-                }
+    output = [ 
+               {
+                'source_name' : source_name,
+                'date' : update_time,
+                'mandatory_fields' : ['src_ip', 'dst_port'],
+                'expr_list' : expr_list 
+               } 
+             ]
 
     #print json_dict
-    outputfile.write(json.dumps(json_dict, indent=4))
+    outputfile.write(json.dumps(output, indent=4))
     outputfile.close()
     source.close()
 
