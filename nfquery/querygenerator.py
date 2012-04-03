@@ -52,11 +52,12 @@ class QueryGenerator:
         nfsen_filters = [ 'src_ip', 'src_port', 'dst_ip', 'dst_port', 'proto', 'protocol_version',  'packets', 
                           'bytes', 'duration', 'flags', 'tos', 'pps', 'bps', 'bpp', 'AS', 'scale' ]
         
-        # useful function to print errors in the same pattern.
+        # BUNU KALDIR
         def printOutputError(field, info):
             self.qglogger.error('%s is not valid' % field)
             self.qglogger.error('Please check your parser output %s' % output_file)
             self.qglogger.error('Error details : %s' % info)
+
         data = ''
         try:
             parser_output = open(output_file, 'r')
@@ -81,13 +82,11 @@ class QueryGenerator:
                         printOutputError('date', data[index]['date'])
                         return
                     for expr in data[index]['expr_list']:
-                        self.qglogger.debug(expr.keys())
-                        self.qglogger.debug(data[index]['mandatory_fields'])
+                        #self.qglogger.debug(expr.keys())
+                        #self.qglogger.debug(data[index]['mandatory_fields'])
                         if set(data[index]['mandatory_fields']).issubset(set(expr.keys())):
                             if set(expr.keys()).issubset(set(nfsen_filters)):
-                                query_id = self.insertQuery(source.id, date, expr)
-                                if query_id:
-                                    self.deriveOtherQueries(query_id, mandatory_fields)
+                                self.insertQuery(source.id, date, expr)
                             else:
                                 # Don't break the loop, iterate to next expr
                                 printOutputError('expression syntax', expr)
@@ -101,10 +100,17 @@ class QueryGenerator:
                     printOutputError('mandatory_fields', data[index]['mandatory_fields'])
                     continue
 
+    # query type generation util
+    def generateQueryType(type_):
+        if not self.query_type:
+            self.query_type = str(type_)
+        else:
+            self.query_type += ',' + str(type_)
+
 
     def insertQuery(self, source_id, date, expr):
         '''
-           Inserts query to database. 
+           Insert/Update query.
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         
@@ -153,370 +159,353 @@ class QueryGenerator:
                 self.qglogger.error(e)
                 self.store.rollback()
                 return
-            self.qglogger.debug('Line ')
-
-
             '''
                 Every filter table has its own index from 0 to 15.
-                Query type is determined with existing tables of the query by generating
-                an array.
+                Query type is determined by generating an array with existing fields of the query.
                 For example if a query has info in src_ip and dst_port tables,
                 its type will be '0,3' in query table.
             '''
-
-            def generateQueryType(query_type, _type):
-                if not query_type:
-                    return str(_type)
-                else:
-                    query_type += ',' + str(_type)
-                    return query_type
-
-
-            query_type = ''
+            self.query_type = ''
             for filter in expr.keys():
-                # src_ip
-                if filter == 'src_ip':
-                    # ipv6 support should be added!
-                    self.qglogger.debug('Line ')
-                    if is_valid_ipv4_address(expr['src_ip']):
-                        query_type = generateQueryType(query_type, 0)
-                        ip_int = dottedQuadToNum(expr['src_ip'])
-                        try:
-                            # Check if we already have this ip.
-                            ip_id = self.store.find(IP.id, IP.ip_int == ip_int).one()
-                            if ip_id is None:
-                                ip = IP()
-                                ip.ip = unicode(expr['src_ip'])
-                                ip.ip_int = ip_int
-                                self.store.add(ip)
-                                self.store.flush()
-                                srcIP = SrcIP()
-                                srcIP.ip_id = ip.id
-                                srcIP.query_id = query.id
-                                self.store.add(srcIP)
-                                self.store.flush()
-                                self.qglogger.debug('New src_ip is inserted')
-                            else:
-                                srcIP = SrcIP()
-                                srcIP.ip_id = ip_id
-                                srcIP.query_id = query.id
-                                self.store.add(srcIP)
-                                self.store.flush()
-                        except Exception, e:
-                            self.qglogger.error('Error details : ')
-                            self.qglogger.error(e)
-                            self.store.rollback()
-                            return
-                    else:
-                        printOutputError('ip address', expr['src_ip'])
-                        self.store.rollback()
-                        return
-
-                # src_port
-                elif filter == 'src_port':
-                    self.qglogger.debug('Line ')
-                    if expr['src_port'].isdigit():
-                        query_type = generateQueryType(query_type, 1)
-                        # Check if we already have this port.
-                        port_id = self.store.find(Port.id, Port.port == int(expr['src_port'])).one()
-                        if port_id is None:
-                            port = Port()
-                            port.port = int(expr['src_port'])
-                            self.store.add(port)
-                            self.store.flush()
-                            srcPort = SrcPort()
-                            srcPort.query_id = query.id
-                            srcPort.port_id = port.id
-                            self.store.add(srcPort)
-                            self.store.flush()
-                            self.qglogger.debug('New src_port is inserted')
-                        else:
-                            srcPort = SrcPort()
-                            srcPort.query_id = query.id
-                            srcPort.port_id = port_id
-                            self.store.add(srcPort)
-                            self.store.flush()
-                    else:
-                        printOutputError('port', expr['src_port'])
-                        self.store.rollback()
-                        return
-
-                #dst_ip
-                elif filter == 'dst_ip':
-                    self.qglogger.debug('Line ')
-                    if is_valid_ipv4_address(expr['dst_ip']):
-                        query_type = generateQueryType(query_type, 2)
-                        ip_int = dottedQuadToNum(expr['dst_ip'])
-                        # Check if we already have this ip.
-                        ip_id = self.store.find(IP.id, IP.ip_int == ip_int).one()
-                        if ip_id is None:
-                            ip = IP()
-                            ip.ip = unicode(expr['dst_ip'])
-                            ip.ip_int = ip_int
-                            self.store.add(ip)
-                            self.store.flush()
-                            dstIP = DstIP()
-                            dstIP.ip_id = ip.id
-                            dstIP.query_id = query.id
-                            self.store.add(dstIP)
-                            self.store.flush()
-                            self.qglogger.debug('New dst_ip is inserted')
-                        else:
-                            dstIP = DstIP()
-                            dstIP.ip_id = ip_id
-                            dstIP.query_id = query.id
-                            self.store.add(dstIP)
-                            self.store.flush()
-                    else:
-                        printOutputError('ip address', expr['dst_ip'])
-                        self.store.rollback()
-                        return
-               
-                #dst_port
-                elif filter == 'dst_port':
-                    self.qglogger.debug('Line ')
-                    if expr['dst_port'].isdigit():
-                        query_type = generateQueryType(query_type, 3)
-                        # Check if we already have this port.
-                        port_id = self.store.find(Port.id, Port.port == int(expr['dst_port'])).one()
-                        if port_id is None:
-                            port = Port()
-                            port.port = int(expr['dst_port'])
-                            self.store.add(port)
-                            self.store.flush()
-                            dstPort = DstPort()
-                            dstPort.query_id = query.id
-                            dstPort.port_id = port.id
-                            self.store.add(dstPort)
-                            self.store.flush()
-                            self.qglogger.debug('New dst_port is inserted')
-                        else:
-                            dstPort = DstPort()
-                            dstPort.query_id = query.id
-                            dstPort.port_id = port_id
-                            self.store.add(dstPort)
-                    else:
-                        printOutputError('port', expr['dst_port'])
-                        self.store.rollback()
-                        return
-
-                #proto
-                elif filter == 'proto':
-                    self.qglogger.debug('Line ')
-                    if is_valid_proto(expr['proto']):
-                        query_type = generateQueryType(query_type, 4)
-                        proto = Proto()
-                        proto.query_id = query.id
-                        proto.proto = unicode(expr['proto'])
-                        self.store.add(proto)
-                    else:
-                        printOutputError('proto', expr['proto'])
-                        self.store.rollback()
-                        return
-
-                # protocol version
-                elif filter == 'protocol_version':
-                    self.qglogger.debug('Line ')
-                    if is_valid_protocol_version(expr['protocol_version']):
-                        query_type = generateQueryType(query_type, 5)
-                        protocol_version = ProtocolVersion()
-                        protocol_version.query_id = query.id
-                        protocol_version.protocol_version = unicode(expr['protocol_version'])
-                        self.store.add(proto)
-                    else:
-                        printOutputError('protocol_version', expr['protocol_version'])
-                        self.store.rollback()
-                        return
-
-                # packets
-                elif filter == 'packets':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if expr['packets'].isdigit():
-                        query_type = generateQueryType(query_type, 6)
-                        packets = Packets()
-                        packets.query_id = query.id
-                        packets.packets = expr['packets']
-                        self.store.add(packets)
-                    else:
-                        printOutputError('packets', expr['packets'])
-                        self.store.rollback()
-                        return
-
-                # bytes
-                elif filter == 'bytes':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if expr['bytes'].isdigit():
-                        query_type = generateQueryType(query_type, 7)
-                        bytes = Bytes()
-                        bytes.query_id = query.id
-                        bytes.bytes = expr['bytes']
-                        self.store.add(bytes)
-                    else:
-                        printOutputError('bytes', expr['bytes'])
-                        self.store.rollback()
-                        return
-
-                # duration
-                elif filter == 'duration':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if expr['duration'].isdigit():
-                        query_type = generateQueryType(query_type, 8)
-                        duration = Duration()
-                        duration.query_id = query.id
-                        duration.duration = expr['duration']
-                        self.store.add(duration)
-                    else:
-                        printOutputError('duration', expr['duration'])
-                        self.store.rollback()
-                        return
-
-                #flags
-                elif filter == 'flags':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if is_valid_flags(expr['flags']):
-                        query_type = generateQueryType(query_type, 9)
-                        flags = Flags()
-                        flags.query_id = query.id
-                        flags.duration = expr['flags']
-                        self.store.add(flags)
-                    else:
-                        printOutputError('flags', expr['flags'])
-                        self.store.rollback()
-                        return
-
-                # tos
-                elif filter == 'tos':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if is_valid_tos(expr['tos']):
-                        query_type = generateQueryType(query_type, 10)
-                        tos = Tos()
-                        tos.query_id = query.id
-                        tos.tos = expr['tos']
-                        self.store.add(tos)
-                    else:
-                        printOutputError('tos', expr['tos'])
-                        self.store.rollback()
-                        return
-
-                # pps
-                elif filter == 'pps':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if expr['pps'].isdigit():
-                        pps = PPS()
-                        pps.query_id = query.id
-                        query_type = generateQueryType(query_type, 11)
-                        pps.pps = expr['pps']
-                        self.store.add(pps)
-                    else:
-                        printOutputError('pps', expr['pps'])
-                        self.store.rollback()
-                        return
-
-                # bps
-                elif filter == 'bps':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if expr['bps'].isdigit():
-                        query_type = generateQueryType(query_type, 12)
-                        bps = BPS()
-                        bps.query_id = query.id
-                        bps.bps = expr['bps']
-                        self.store.add(bps)
-                    else:
-                        printOutputError('bps', expr['bps'])
-                        self.store.rollback()
-                        return
-
-                # bpp
-                elif filter == 'bpp':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if expr['bpp'].isdigit():
-                        query_type = generateQueryType(query_type, 13)
-                        bpp = BPP()
-                        bpp.query_id = query.id
-                        bpp.bpp = expr['bpp']
-                        self.store.add(bpp)
-                    else:
-                        printOutputError('bpp', expr['bpp'])
-                        self.store.rollback()
-                        return
-
-                # AS
-                elif filter == 'AS':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if expr['AS'].isdigit():
-                        query_type = generateQueryType(query_type, 14)
-                        asn = ASN()
-                        asn.query_id = query.id
-                        asn.asn = expr['AS']
-                        self.store.add(asn)
-                    else:
-                        printOutputError('AS', expr['AS'])
-                        self.store.rollback()
-                        return
-
-                # scale
-                elif filter == 'scale':
-                    self.qglogger.debug('Line ')
-                    # range control should be done!
-                    if is_valid_scale(expr['scale']):
-                        query_type = generateQueryType(query_type, 15)
-                        flags = flags()
-                        flags.query_id = query.id
-                        flags.flags = expr['scale']
-                        self.store.add()
-                    else:
-                        printOutputError('scale', expr['scale'])
-                        self.store.rollback()
-                        return
-
-            # Now, insert query type.
+                try:
+                    # src_ip
+                    if filter == 'src_ip':
+                        self.insertSrcIP(expr['src_ip'], query.id)
+                    # src_port
+                    elif filter == 'src_port':
+                        self.insertSrcPort(expr['src_port'], query.id)
+                    #dst_ip
+                    elif filter == 'dst_ip':
+                        self.insertDstIP(expr['dst_ip'], query.id)
+                    # dst_port
+                    elif filter == 'dst_port':
+                        self.insertDstPort(expr['dst_port'], query.id)
+                    #proto
+                    elif filter == 'proto':
+                        self.insertProto(expr['proto'], query.id)
+                    # protocol version
+                    elif filter == 'protocol_version':
+                        self.insertProtocolVersion(expr['protocol_version'], query.id)
+                    # packets
+                    elif filter == 'packets':
+                        self.insertPackets(expr['packets'], query.id)
+                    # bytes
+                    elif filter == 'bytes':
+                        self.insertBytes(expr['bytes'], query.id)
+                    # duration
+                    elif filter == 'duration':
+                        self.insertDuration(expr['duration'], query.id)
+                    #flags
+                    elif filter == 'flags':
+                        self.insertFlags(expr['flags'], query.id)
+                    # tos
+                    elif filter == 'tos':
+                        self.insertTOS(expr['tos'], query.id)
+                    # pps
+                    elif filter == 'pps':
+                        self.insertPPS(expr['pps'], query.id)
+                    # bps
+                    elif filter == 'bps':
+                        self.insertBPS(expr['bps'], query.id)
+                    # bpp
+                    elif filter == 'bpp':
+                        self.insertBPP(expr['bpp'], query.id)
+                    # AS
+                    elif filter == 'AS':
+                        self.insertAS(expr['AS'], query.id)
+                    # scale
+                    elif filter == 'scale':
+                        self.insertScale(expr['scale'], query.id)
+                except Exception, e:
+                    self.qglogger.error('Error details : ')
+                    self.qglogger.error(e)
+                    self.store.rollback()
+                    return
+            # Now, insert other query details.
             try:
-                type_id = self.store.find(Type.id, Type.type == unicode(query_type)).one()
+                type_id = self.store.find(Type.id, Type.type == unicode(self.query_type)).one()
                 if type_id:
                     query.type_id = type_id
                 else:
                     type = Type()
-                    type.type = unicode(query_type)
+                    type.type = unicode(self.query_type)
                     self.store.add(type)
                     self.store.flush()
                     query.type_id = type.id
-            except Exception,e:
-                self.qglogger.warning('ERROR')
+                    self.store.commit()
+                    self.qglogger.debug('New query is inserted succesfully')
+            except Exception, e:
                 self.qglogger.warning(e)
                 return
-            self.qglogger.debug('New query is inserted succesfully')
         else:
             '''
                 Update update_time of the query.
             '''
             self.qglogger.debug('Query exists in the database.')
-            update_time_id = self.store.find(models.Time.id, models.Time.time == date).one()
-            if update_time_id:
-                query.update_time_id = update_time_id
-            else:
-                time = models.Time()
-                time.time = date
-                self.store.add(time)
-                self.store.flush()
-                query.update_time_id = time.id
+            try:
+                update_time_id = self.store.find(models.Time.id, models.Time.time == date).one()
+                if update_time_id:
+                    query.update_time_id = update_time_id
+                else:
+                    time = models.Time()
+                    time.time = date
+                    self.store.add(time)
+                    self.store.flush()
+                    query.update_time_id = time.id
+                    self.store.commit()
+                    self.qglogger.debug('Query time is updated')
+            except Exception, e:
+                self.qglogger.warning(e)
+                return
 
-        # end of insertQuery
-        try:
-            self.store.commit()
-        except Exception, e:
-            self.qglogger.error(e)
-            self.store.rollback()
-            return
+
+    def insertSrcIP(self, src_ip, query_id):
+        # ipv6 support should be added!
+        if is_valid_ipv4_address(src_ip):
+            self.generateQueryType(0)
+            ip_int = dottedQuadToNum(src_ip)
+            ip_id = self.store.find(IP.id, IP.ip_int == ip_int).one()
+            if not ip_id:
+                ip = IP()
+                ip.ip = unicode(src_ip)
+                ip.ip_int = ip_int
+                self.store.add(ip)
+                self.store.flush()
+                srcIP = SrcIP()
+                srcIP.ip_id = ip.id
+                srcIP.query_id = query.id
+                self.store.add(srcIP)
+                self.store.flush()
+                self.qglogger.debug('New src_ip is inserted')
+            else:
+                srcIP = SrcIP()
+                srcIP.ip_id = ip_id
+                srcIP.query_id = query.id
+                self.store.add(srcIP)
+                self.store.flush()
+        else:
+            raise Exception, "src_ip is not valid"
+
+
+    def insertSrcPort(self, src_port, query_id):
+        if src_port.isdigit():
+            self.generateQueryType(1)
+            # Check if we already have this port.
+            port_id = self.store.find(Port.id, Port.port == int(src_port)).one()
+            if not port_id:
+                port = Port()
+                port.port = int(src_port)
+                self.store.add(port)
+                self.store.flush()
+                srcPort = SrcPort()
+                srcPort.query_id = query_id
+                srcPort.port_id = port.id
+                self.store.add(srcPort)
+                self.store.flush()
+                self.qglogger.debug('New src_port is inserted')
+            else:
+                srcPort = SrcPort()
+                srcPort.query_id = query_id
+                srcPort.port_id = port_id
+                self.store.add(srcPort)
+                self.store.flush()
+        else:
+            raise Exception, "src_port is not valid." 
+
+
+    def insertDstIp(dst_ip, query_id):
+        if is_valid_ipv4_address(dst_ip):
+            self.generateQueryType(2)
+            ip_int = dottedQuadToNum(dst_ip)
+            ip_id = self.store.find(IP.id, IP.ip_int == ip_int).one()
+            if not ip_id:
+                ip = IP()
+                ip.ip = unicode(dst_ip)
+                ip.ip_int = ip_int
+                self.store.add(ip)
+                self.store.flush()
+                dstIP = DstIP()
+                dstIP.ip_id = ip.id
+                dstIP.query_id = query_id
+                self.store.add(dstIP)
+                self.store.flush()
+                self.qglogger.debug('New dst_ip is inserted')
+            else:
+                dstIP = DstIP()
+                dstIP.ip_id = ip_id
+                dstIP.query_id = query_id
+                self.store.add(dstIP)
+                self.store.flush()
+        else:
+            raise Exception, "dst_ip is not valid." 
+
+
+     def insertDstPort(self, dst_port, query_id):
+        if dst_port.isdigit():
+            self.generateQueryType(1)
+            port_id = self.store.find(Port.id, Port.port == int(dst_port)).one()
+            if not port_id:
+                port = Port()
+                port.port = int(dst_port)
+                self.store.add(port)
+                self.store.flush()
+                dstPort = DstPort()
+                dstPort.query_id = query_id
+                dstPort.port_id = port.id
+                self.store.add(dstPort)
+                self.store.flush()
+                self.qglogger.debug('New dst_port is inserted')
+            else:
+                dstPort = dstPort()
+                dstPort.query_id = query_id
+                dstPort.port_id = port_id
+                self.store.add(dstPort)
+                self.store.flush()
+        else:
+            raise Exception, "dst_port is not valid." 
+
+
+    def insertProto(self, proto_, query_id):
+        if is_valid_proto(proto_):
+            self.generateQueryType(4)
+            proto = Proto()
+            proto.query_id = query_id
+            proto.proto = unicode(proto_)
+            self.store.add(proto)
+        else:
+            raise Exception, 'proto is not valid.' 
+
+
+    def insertProtocolVersion(self, protocol_version_, query_id):
+        if is_valid_protocol_version(protocol_version_):
+            self.generateQueryType(5)
+            protocol_version_ = ProtocolVersion()
+            protocol_version_.query_id = query_id
+            protocol_version_.protocol_version = unicode(protocol_version_)
+            self.store.add(protocol_version_)
+        else:
+            raise Exception, 'protocol_version is not valid.' 
+
+
+    def insertPackets(self, packets_, query_id):
+        # range control should be done!
+        if packets_.isdigit():
+            self.generateQueryType(6)
+            packets = Packets()
+            packets.query_id = query_id
+            packets.packets = packets_
+            self.store.add(packets)
+        else:
+            raise Exception, 'packets is not valid.' 
+            
         
+    def insertBytes(bytes_, query_id):
+        # range control should be done!
+        if bytes_.isdigit():
+            self.generateQueryType(7)
+            bytes = Bytes()
+            bytes.query_id = query_id
+            bytes.bytes = bytes_
+            self.store.add(bytes)
+        else:
+            raise Exception, 'bytes is not valid.' 
+
+            
+    def insertDuration(self, duration_, query_id):
+        # range control should be done!
+        if duration_.isdigit():
+            self.generateQueryType(8)
+            duration = Duration()
+            duration.query_id = query_id
+            duration.duration = duration_
+            self.store.add(duration)
+        else:
+            raise Exception, 'duration is not valid.' 
+
+
+    def insertFlags(self, flags_, query_id):
+        # range control should be done!
+        if is_valid_flags(flags_):
+            self.generateQueryType(9)
+            flags = Flags()
+            flags.query_id = query_id
+            flags.duration = flags_
+            self.store.add(flags)
+        else:
+            raise Exception, 'flags is not valid.' 
+       
+
+    def insertTOS(self, tos_, query_id): 
+        # range control should be done!
+        if is_valid_tos(tos_):
+            self.generateQueryType(10)
+            tos = Tos()
+            tos.query_id = query_id
+            tos.tos = tos_
+            self.store.add(tos)
+        else:
+            raise Exception, 'tos is not valid.' 
+
+
+    def insertPPS(self, pps_, query_id):
+        # range control should be done!
+        if pps_.isdigit():
+            pps = PPS()
+            pps.query_id = query_id
+            self.generateQueryType(11)
+            pps.pps = pps_
+            self.store.add(pps)
+        else:
+            raise Exception, 'pps is not valid.' 
+        
+
+    def insertBPS(self, bps_, query_id):
+        # range control should be done!
+        if bps_.isdigit():
+            self.generateQueryType(12)
+            bps = BPS()
+            bps.query_id = query_id
+            bps.bps = bps_
+            self.store.add(bps)
+        else:
+            raise Exception, 'bps is not valid.' 
+
+
+    def insertBPP(self, bpp_, query_id):
+        # range control should be done!
+        if bpp_.isdigit():
+            self.generateQueryType(13)
+            bpp = BPP()
+            bpp.query_id = query_id
+            bpp.bpp = bpp_
+            self.store.add(bpp)
+        else:
+            raise Exception, 'bytes is not valid.' 
+
+
+    def insertAS(self, AS_, query_id):
+        # range control should be done!
+        if AS_.isdigit():
+            self.generateQueryType(14)
+            asn = ASN()
+            asn.query_id = query_id
+            asn.asn = AS_
+            self.store.add(asn)
+        else:
+            raise Exception, 'AS_ is not valid.' 
+     
+
+    def insertScale(self, scale_, query_id):
+        # range control should be done!
+        if is_valid_scale(scale_):
+            self.generateQueryType(15)
+            scale = Scale()
+            scale.query_id = query_id
+            scale.scale = scale_
+            self.store.add(scale)
+        else:
+            raise Exception, 'scale is not valid.' 
+
 
     def createQueryFilterExpressions(self, query_list=None):
         '''
