@@ -101,7 +101,8 @@ class QueryGenerator:
                     continue
 
     # query type generation util
-    def generateQueryType(type_):
+    def generateQueryType(self, type_):
+        # self.query_type = self.query_type + '%s' if self.query_type else ','
         if not self.query_type:
             self.query_type = str(type_)
         else:
@@ -113,14 +114,11 @@ class QueryGenerator:
            Insert/Update query.
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        
         # get the hash of expr to check if the query is updated or not.
         md5hash = hashlib.md5()
         md5hash.update(str(expr) + str(source_id))
         checksum = md5hash.hexdigest()
-        
         query = self.store.find(Query, (Query.source_id == source_id) & (Query.checksum == unicode(checksum))).one()
-        
         if not query:
             '''
                 Insert new query.
@@ -147,7 +145,7 @@ class QueryGenerator:
                 # it's validation query.
                 query.category_id = 1       
                 # We'll insert query.type_id after determining it below.
-                # For now, insert default type value
+                # For now, set it to default type value 1.
                 query.type_id = 1
                 self.qglogger.debug('here5')
                 # print query details
@@ -155,9 +153,7 @@ class QueryGenerator:
                 self.store.flush()
                 self.qglogger.debug('here6')
             except Exception, e:
-                self.qglogger.error('Error details : ')
-                self.qglogger.error(e)
-                self.store.rollback()
+                self.qglogger.warning(e)
                 return
             '''
                 Every filter table has its own index from 0 to 15.
@@ -217,9 +213,7 @@ class QueryGenerator:
                     elif filter == 'scale':
                         self.insertScale(expr['scale'], query.id)
                 except Exception, e:
-                    self.qglogger.error('Error details : ')
-                    self.qglogger.error(e)
-                    self.store.rollback()
+                    self.qglogger.warning(e)
                     return
             # Now, insert other query details.
             try:
@@ -260,6 +254,7 @@ class QueryGenerator:
 
 
     def insertSrcIP(self, src_ip, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # ipv6 support should be added!
         if is_valid_ipv4_address(src_ip):
             self.generateQueryType(0)
@@ -273,14 +268,14 @@ class QueryGenerator:
                 self.store.flush()
                 srcIP = SrcIP()
                 srcIP.ip_id = ip.id
-                srcIP.query_id = query.id
+                srcIP.query_id = query_id
                 self.store.add(srcIP)
                 self.store.flush()
                 self.qglogger.debug('New src_ip is inserted')
             else:
                 srcIP = SrcIP()
                 srcIP.ip_id = ip_id
-                srcIP.query_id = query.id
+                srcIP.query_id = query_id
                 self.store.add(srcIP)
                 self.store.flush()
         else:
@@ -288,6 +283,7 @@ class QueryGenerator:
 
 
     def insertSrcPort(self, src_port, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if src_port.isdigit():
             self.generateQueryType(1)
             # Check if we already have this port.
@@ -313,7 +309,8 @@ class QueryGenerator:
             raise Exception, "src_port is not valid." 
 
 
-    def insertDstIp(dst_ip, query_id):
+    def insertDstIP(self, dst_ip, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if is_valid_ipv4_address(dst_ip):
             self.generateQueryType(2)
             ip_int = dottedQuadToNum(dst_ip)
@@ -340,7 +337,8 @@ class QueryGenerator:
             raise Exception, "dst_ip is not valid." 
 
 
-     def insertDstPort(self, dst_port, query_id):
+    def insertDstPort(self, dst_port, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if dst_port.isdigit():
             self.generateQueryType(1)
             port_id = self.store.find(Port.id, Port.port == int(dst_port)).one()
@@ -356,7 +354,7 @@ class QueryGenerator:
                 self.store.flush()
                 self.qglogger.debug('New dst_port is inserted')
             else:
-                dstPort = dstPort()
+                dstPort = DstPort()
                 dstPort.query_id = query_id
                 dstPort.port_id = port_id
                 self.store.add(dstPort)
@@ -366,6 +364,7 @@ class QueryGenerator:
 
 
     def insertProto(self, proto_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if is_valid_proto(proto_):
             self.generateQueryType(4)
             proto = Proto()
@@ -377,6 +376,7 @@ class QueryGenerator:
 
 
     def insertProtocolVersion(self, protocol_version_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if is_valid_protocol_version(protocol_version_):
             self.generateQueryType(5)
             protocol_version_ = ProtocolVersion()
@@ -388,6 +388,7 @@ class QueryGenerator:
 
 
     def insertPackets(self, packets_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if packets_.isdigit():
             self.generateQueryType(6)
@@ -400,6 +401,7 @@ class QueryGenerator:
             
         
     def insertBytes(bytes_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if bytes_.isdigit():
             self.generateQueryType(7)
@@ -412,6 +414,7 @@ class QueryGenerator:
 
             
     def insertDuration(self, duration_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if duration_.isdigit():
             self.generateQueryType(8)
@@ -424,6 +427,7 @@ class QueryGenerator:
 
 
     def insertFlags(self, flags_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if is_valid_flags(flags_):
             self.generateQueryType(9)
@@ -436,6 +440,7 @@ class QueryGenerator:
        
 
     def insertTOS(self, tos_, query_id): 
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if is_valid_tos(tos_):
             self.generateQueryType(10)
@@ -448,6 +453,7 @@ class QueryGenerator:
 
 
     def insertPPS(self, pps_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if pps_.isdigit():
             pps = PPS()
@@ -460,6 +466,7 @@ class QueryGenerator:
         
 
     def insertBPS(self, bps_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if bps_.isdigit():
             self.generateQueryType(12)
@@ -472,6 +479,7 @@ class QueryGenerator:
 
 
     def insertBPP(self, bpp_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if bpp_.isdigit():
             self.generateQueryType(13)
@@ -484,6 +492,7 @@ class QueryGenerator:
 
 
     def insertAS(self, AS_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if AS_.isdigit():
             self.generateQueryType(14)
@@ -496,6 +505,7 @@ class QueryGenerator:
      
 
     def insertScale(self, scale_, query_id):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         # range control should be done!
         if is_valid_scale(scale_):
             self.generateQueryType(15)
