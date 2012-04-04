@@ -352,7 +352,9 @@ class QueryManager:
                 query_ids = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
                 for qid in query_id_list:
                     if not (qid in query_ids):
-                        spacket = SubscriptionPackets(subscription_id, qid)
+                        spacket = SubscriptionPackets()
+                        spacket.subscription_id = subscription_id
+                        spacket.query_id = qid
                         self.store.add(spacket)
                 self.qmlogger.debug('Source subscription packets are created2')
         self.store.commit()

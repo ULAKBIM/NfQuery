@@ -135,6 +135,7 @@ class QueryServer:
 
         # Set shutdown handler
         atexit.register(self.stop)
+        print 'aaaaaaa'
 
 
     def stop(self):
