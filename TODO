@@ -151,3 +151,6 @@
       bir karar mekanizmasi olusturmamiz lazim. Bulacagimiz cozumun honeypot scenariosunu implement etmemizi saglamamizi lazim (at least)
 
     * Databasedeki  foreig key lerin 'on delete cascade' action ini kontrol eden mekanizma koyalim.
+    
+    * type_id duzgun olusturulmuyor.
+

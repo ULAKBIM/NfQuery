@@ -38,7 +38,7 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
     json_dict = [
                  {
                   'source_name' : source_name,
-                  'update_time' : update_time,
+                  'date' : update_time,
                   'mandatory_fields' : ['src_ip'],
                   'expr_list' : expr_list
                  }

@@ -92,8 +92,8 @@ class QueryServer:
         '''
         rpc_protocol = jsonRPCServer(self.queryManager)
         rpcserver = server.Site(rpc_protocol)
-        # sslmethod=ssl.SSL.SSLv23_METHOD and other coukld be implemented here.
         
+        # sslmethod = ssl.SSL.SSLv23_METHOD and other could be implemented here.
         # For TLSV1
         reactor.listenSSL( self.config.nfquery.port, rpcserver,
                            ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file,
@@ -124,9 +124,6 @@ class QueryServer:
         self.queryManager = QueryManager(sources=self.config.sources, plugins=self.config.plugins)
         self.queryManager.start()
 
-        #print 'quitting'
-        #self.stop()
-        #sys.exit()
         # Start JSONRPCServer
         self.startJSONRPCServer()
 
@@ -135,7 +132,6 @@ class QueryServer:
 
         # Set shutdown handler
         atexit.register(self.stop)
-        print 'aaaaaaa'
 
 
     def stop(self):
