@@ -28,7 +28,7 @@ def numToDottedQuad(n):
     return '.'.join(q)                                          
 
 
-def query_yes_no(question, default="yes"):
+def ask_yes_no(question, default="yes"):
     """
         Ask a yes/no question via raw_input() and return their answer.
 

@@ -52,8 +52,8 @@ class QueryManager:
                 plugins_list.append(self.plugins[index].organization)
             for plugin in dbplugins:
                 if not plugin.organization in(plugins_list):
-                    self.qmlogger.warning('I will delete the plugin, Do you approve the deletion of plugin : %s',plugin.organization)
-                    flag = query_yes_no('', default="no")
+                    self.qmlogger.warning('I will delete the plugin, Do you approve the deletion of plugin : %s', plugin.organization)
+                    flag = ask_yes_no('', default="no")
                     if flag is True:
                         plugin_name = plugin.organization
                         prefix_id = plugin.prefix_id
@@ -142,9 +142,13 @@ class QueryManager:
                 sources_list.append(self.sources[index].source_name)
             for source in dbsources:
                 if not source.name in(sources_list):
-                    self.qmlogger.warning('I will delete the source, Do you approve the deletion of source \'%s\' and queries generated from this source \'%s\'', 
-                                          source.name, source.name)
-                    flag = query_yes_no('', default="no")
+                    self.qmlogger.warning(
+                        ( "I will delete the source, Do you approve the deleti"
+                          "on of source '%s' and queries generated from this s"
+                          "ource '%s'"), 
+                          source.name, source.name 
+                        )
+                    flag = ask_yes_no('', default="no")
                     if flag is True:
                         source_name = source.name
                         threat_id = source.threat_id
@@ -229,9 +233,10 @@ class QueryManager:
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         for index in range(len(self.sources)):
             if os.path.exists(self.sources[index].parser):
-                self.qmlogger.info('Parser "%s" Exists, OK!' % self.sources[index].parser)
+                self.qmlogger.info('Parser "%s" exists, OK!' % self.sources[index].parser)
             else:
-                self.qmlogger.warning('Parser %s doesn\'t exist\nPlease check the nfquery.conf file' % self.sources[index].parser)
+                self.qmlogger.warning('Parser %s doesn\'t exist')
+                self.qmlogger.warning('Please check the nfquery.conf file' % self.sources[index].parser)
 
     
     def executeParsers(self, parser=None):

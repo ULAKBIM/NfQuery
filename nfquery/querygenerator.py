@@ -52,53 +52,50 @@ class QueryGenerator:
         nfsen_filters = [ 'src_ip', 'src_port', 'dst_ip', 'dst_port', 'proto', 'protocol_version',  'packets', 
                           'bytes', 'duration', 'flags', 'tos', 'pps', 'bps', 'bpp', 'AS', 'scale' ]
         
-        # BUNU KALDIR
-        def printOutputError(field, info):
-            self.qglogger.error('%s is not valid' % field)
-            self.qglogger.error('Please check your parser output %s' % output_file)
-            self.qglogger.error('Error details : %s' % info)
-
         data = ''
         try:
             parser_output = open(output_file, 'r')
             data = json.load(parser_output)
             parser_output.close()
         except Exception, e:
-            printOutputError('parser output', str(e))
+            self.qglogger.error(e)
 
+        # Don't break the loop, iterate to next expr always 
+        # except we catch an exception
         for index in range(len(data)):
             if set(output_fields).issubset(set(data[index].keys())):
-                self.qglogger.debug('Parser output has necessary fields.')
+                self.qglogger.debug('output keys are valid')
                 source = self.store.find(Source, Source.name == unicode(data[index]['source_name'])).one()
-                if not source:
-                    printOutputError('source_name', data[index]['source_name'])
-                    return
-                elif set(data[index]['mandatory_fields']).issubset(set(nfsen_filters)):
+                if source:
                     self.qglogger.debug('source name is valid')
-                    try:
-                        date = datetime.strptime(data[index]['date'], '%Y-%m-%d %H:%M')
-                        self.qglogger.debug('date is valid')
-                    except Exception, e:
-                        printOutputError('date', data[index]['date'])
-                        return
-                    for expr in data[index]['expr_list']:
-                        #self.qglogger.debug(expr.keys())
-                        #self.qglogger.debug(data[index]['mandatory_fields'])
-                        if set(data[index]['mandatory_fields']).issubset(set(expr.keys())):
-                            if set(expr.keys()).issubset(set(nfsen_filters)):
-                                self.insertQuery(source.id, date, expr)
+                    if set(data[index]['mandatory_fields']).issubset(set(nfsen_filters)):
+                        self.qglogger.debug('mandatory_fields is valid')
+                        try:
+                            date = datetime.strptime(data[index]['date'], '%Y-%m-%d %H:%M')
+                            self.qglogger.debug('date is valid')
+                        except Exception, e:
+                            self.qglogger.error(e)
+                            return
+                        # iterate through expression list
+                        for expr in data[index]['expr_list']:
+                            if set(data[index]['mandatory_fields']).issubset(set(expr.keys())):
+                                self.qglogger.debug('mandatory fields matches with expression fields.')
+                                if set(expr.keys()).issubset(set(nfsen_filters)):
+                                    self.insertQuery(source.id, date, expr)
+                                else:
+                                    self.qglogger.error('expression syntax is not valid')
+                                    continue
                             else:
-                                # Don't break the loop, iterate to next expr
-                                printOutputError('expression syntax', expr)
+                                self.qglogger.error('expr filters must be in mandatory_fields list')
                                 continue
-                        else:
-                            self.qglogger.error('expr filters must be in mandatory_fields list')
-                            printOutputError('mandatory_fields', expr)
-                            continue
-                    #sys.exit()
+                        #sys.exit()
+                    else:
+                        self.qglogger.error('mandatory fields are not valid')
                 else:
-                    printOutputError('mandatory_fields', data[index]['mandatory_fields'])
-                    continue
+                    self.qglogger.error('source name is not valid')
+            else:
+                self.qglogger.error('output keys are not valid')
+
 
     # query type generation util
     def generateQueryType(self, type_):
@@ -131,15 +128,11 @@ class QueryGenerator:
                 if time_id:
                     query.creation_time_id = time_id
                     query.update_time_id = time_id
-                    self.qglogger.debug('here1')
                 else:
-                    self.qglogger.debug('here2')
                     time = models.Time()
                     time.time = date
                     self.store.add(time)
                     self.store.flush()
-                    self.qglogger.debug('here4')
-                    self.qglogger.warning(time.id)
                     query.update_time_id = time.id
                     query.creation_time_id = time.id
                 # it's validation query.
@@ -147,11 +140,9 @@ class QueryGenerator:
                 # We'll insert query.type_id after determining it below.
                 # For now, set it to default type value 1.
                 query.type_id = 1
-                self.qglogger.debug('here5')
                 # print query details
                 self.store.add(query)
                 self.store.flush()
-                self.qglogger.debug('here6')
             except Exception, e:
                 self.qglogger.warning(e)
                 return
@@ -340,7 +331,7 @@ class QueryGenerator:
     def insertDstPort(self, dst_port, query_id):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if dst_port.isdigit():
-            self.generateQueryType(1)
+            self.generateQueryType(3)
             port_id = self.store.find(Port.id, Port.port == int(dst_port)).one()
             if not port_id:
                 port = Port()
