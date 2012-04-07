@@ -258,7 +258,7 @@ class Duration(object):
 
 class Flags(object):
     
-    __storm_table__ = ''
+    __storm_table__ = 'flags'
   
     id = Int(primary=True)
     query_id = Int()
