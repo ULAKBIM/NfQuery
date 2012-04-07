@@ -33,8 +33,8 @@ class QueryManager:
     def start(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.checkParsers()
-        self.executeParsers()
-        self.createSubscriptionPackets()
+        #self.executeParsers()
+        #self.createSubscriptionPackets()
 
     ###########################################################
     ### Plugin Management                                   ###
@@ -345,8 +345,8 @@ class QueryManager:
                 self.qmlogger.warning("%s subscription creation is failed." % (source_name) )
                 continue
             subscription_id = self.store.find(Subscription.id, Subscription.name == '%s' % unicode(source_name)).one()
-            subs_packet_id = self.store.find(SubscriptionPackets.id, SubscriptionPackets.subscription_id == subscription_id).one()
-            if subs_packet_id is None:
+            subs_packets_id = self.store.find(SubscriptionPackets.id, SubscriptionPackets.subscription_id == subscription_id)
+            if subs_packets_id is None:
                 for qid in query_id_list:
                     spacket = SubscriptionPackets()
                     spacket.subscription_id = subscription_id
@@ -420,7 +420,7 @@ class QueryManager:
                 if not query_list.is_empty():
                     self.qmlogger.debug('y2')
                     self.qmlogger.debug('Returning subscription information : %s' % name)
-                    return self.queryGenerator.createQueryFilterExpressions(query_list)
+                    return self.queryGenerator.createQueryExpression(query_list)
         self.qmlogger.warning('Couldn\'t get subscription information : %s ' % name)
         return
 

@@ -154,3 +154,4 @@
     
     * type_id duzgun olusturulmuyor.
 
+    * Query Timeout will be an option in nfquery.conf file or not?

@@ -25,6 +25,23 @@ class QueryGenerator:
         self.qglogger = logger.createLogger('querygenerator')
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qglogger.info('Starting Query Generator')
+        self.nfsen_filters = [   
+                              'src_ip', 
+                              'src_port', 
+                              'dst_ip', 
+                              'dst_port', 
+                              'proto', 
+                              'protocol_version',  
+                              'packets', 
+                              'bytes', 
+                              'duration', 
+                              'flags', 
+                              'tos', 
+                              'pps', 
+                              'bps', 
+                              'bpp', 
+                              'AS', 
+                              'scale' ]
         self.store = db.get_store()
         self.sources = sources
  
@@ -49,9 +66,6 @@ class QueryGenerator:
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         output_fields = [ 'source_name', 'date', 'mandatory_fields', 'expr_list' ] 
-        nfsen_filters = [ 'src_ip', 'src_port', 'dst_ip', 'dst_port', 'proto', 'protocol_version',  'packets', 
-                          'bytes', 'duration', 'flags', 'tos', 'pps', 'bps', 'bpp', 'AS', 'scale' ]
-        
         data = ''
         try:
             parser_output = open(output_file, 'r')
@@ -68,7 +82,7 @@ class QueryGenerator:
                 source = self.store.find(Source, Source.name == unicode(data[index]['source_name'])).one()
                 if source:
                     self.qglogger.debug('source name is valid')
-                    if set(data[index]['mandatory_fields']).issubset(set(nfsen_filters)):
+                    if set(data[index]['mandatory_fields']).issubset(set(self.nfsen_filters)):
                         self.qglogger.debug('mandatory_fields is valid')
                         try:
                             date = datetime.strptime(data[index]['date'], '%Y-%m-%d %H:%M')
@@ -80,7 +94,7 @@ class QueryGenerator:
                         for expr in data[index]['expr_list']:
                             if set(data[index]['mandatory_fields']).issubset(set(expr.keys())):
                                 self.qglogger.debug('mandatory fields matches with expression fields.')
-                                if set(expr.keys()).issubset(set(nfsen_filters)):
+                                if set(expr.keys()).issubset(set(self.nfsen_filters)):
                                     self.insertQuery(source.id, date, expr)
                                 else:
                                     self.qglogger.error('expression syntax is not valid')
@@ -508,129 +522,177 @@ class QueryGenerator:
             raise Exception, 'scale is not valid.' 
 
 
-    def createQueryFilterExpressions(self, query_list=None):
+    def createQueryExpression(self, query_list=None):
         '''
            Create NfSen Query Filter Expressions
-        '''
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        # 1) Fetch all queries,
-        # 2) Check what kind of fields the query have, which will be used as netflow filter arguments : 
-        #       a) - ip (src-dst), port(src-dst), protocol, packets, bytes, start_time, end_time, etc... = Expression Part
-        #       b) - time_interval = Execution 'nfdump -r /and/dir/nfcapd.200407110845' Part
-        #       c) - order by =  Top N Statistics Part -> This part will show what we will parse as query executin result and send to QueryServer
-        # 3) Create the expression with given parameters -> the most specific one
-        #       a) - Create more general filters from already created filter with removing some options or assigning them to any,
-        #            for example ;
-        #                         if IP and PORT given -> the most spec filter expr: 'src ip IP src port PORT'
-        #                         from this expr we'll create also : 'src ip IP src port ANY' and 'src ip ANY src port PORT'
-        # 4) Concatenate produced filters like expr, expr, expr
-        # 5) Once we have all the expr integrate them with other general parameters (time_interval, file, etc.)
-        # 6) Put this information to db appropriately.
-        # 7) ?
-        
-        ## ALL ## query_list = self.store.find(Query)
-        ## ALL ## if not query_list.is_empty():
-        ## ALL ##     for query in query_list:
-        #        '''
-        #            'checksum', 'creation_time', 'query_id', 'query_type', 'source', 'source_id', 'update_time'
-        #        '''
 
+           1) Fetch all queries,
+           2) Check what kind of fields the query have, which will be used as netflow filter arguments : 
+                 a) - ip (src-dst), port(src-dst), protocol, packets, bytes, start_time, end_time, etc... = Expression Part
+                 b) - time_interval = Execution 'nfdump -r /and/dir/nfcapd.200407110845' Part
+                 c) - order by =  Top N Statistics Part -> This part will show what we will parse as query executin result and send to QueryServer
+           3) Create the expression with given parameters -> the most specific one
+                 a) - Create more general filters from already created filter with removing some options or assigning them to any,
+                      for example ;
+                                   if IP and PORT given -> the most spec filter expr: 'src ip IP src port PORT'
+                                   from this expr we'll create also : 'src ip IP src port ANY' and 'src ip ANY src port PORT'
+           4) Concatenate produced filters like expr, expr, expr
+           5) Once we have all the expr integrate them with other general parameters (time_interval, file, etc.)
+           6) Put this information to db appropriately.
+           7) ?
+        '''
+
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         query_packet = {}
         for query in query_list:
-            if query.type == 1:
-                expr = ''
-                # we've only ip information
-                ip_id_list = self.store.find(QueryIP.ip_id, QueryIP.query_id == query.id)
-                if not ip_id_list.is_empty():
-                    ip_list = self.store.find(IP.ip, In(IP.id, list(ip_id_list)))
-                    for i in range(ip_list.count()):
-                        expr +=  ' host ' + ip_list[i]
-                        if i+1 < ip_list.count():
-                                expr += ' or '
-                    query_packet[str(query.id)] = expr
-                    #self.qglogger.debug('Returning IP list expression')
-                else:
-                    self.qglogger.warning('IP list is empty for this query, PROBLEM!')
+            query_type = self.store.find( Type.type,
+                                          Type.id == query.type_id ).one()
+            expression = []
+            for type in sorted(query_type.split(',')):
+                type = int(type)
+                # src_ip
+                if type == 0:
+                    #self.qglogger.info('Line --> ')
+                    query_id = query.id
+                    src_ip_id = self.store.find( SrcIP.ip_id, 
+                                                 SrcIP.query_id == query_id ).one()
+                    src_ip = self.store.find( IP.ip, 
+                                              IP.id == src_ip_id ).one()
+                    expression.append('src ip %s ' % str(src_ip))
+                # src_port 
+                if type == 1:
+                    #self.qglogger.info('Line --> ')
+                    src_port_id = self.store.find( SrcPort.port_id, 
+                                                   SrcPort.query_id == query.id ).one()
+                    src_port = self.store.find ( Port.port,
+                                                 Port.id == src_port_id ).one()
+                    expression.append('src port %s ' % str(src_port))
+                # dst_ip
+                if type == 2:
+                    #self.qglogger.info('Line --> ')
+                    dst_ip_id = self.store.find( DstIP.ip_id, 
+                                                 DstIP.query_id == query.id ).one()
+                    dst_ip = self.store.find( IP.ip,
+                                              IP.id == dst_ip_id ).one()
+                    expression.append('dst ip %s ' % str(dst_ip))
+                # dst_port
+                if type == 3:
+                    #self.qglogger.info('Line --> ')
+                    dst_port_id = self.store.find( DstPort.port_id, 
+                                                   DstPort.query_id == query.id ).one()
+                    dst_port = self.store.find ( Port.port,
+                                                 Port.id == dst_port_id ).one()
+                    expression.append('dst port %s ' % str(dst_port))
+                # proto
+                if type == 4:
+                    #self.qglogger.info('Line --> ')
+                    proto = self.store.find( Proto.proto, 
+                                             Proto.query_id == query.id ).one()
+                    expression.appaned('proto %s ' % proto)
+                # protocol_version
+                if type == 5:
+                    #self.qglogger.info('Line --> ')
+                    protocol_version = self.store.find( ProtocolVersion.protocol_version, 
+                                                        ProtocolVersion.query_id == query.id ).one()
+                    expression.append('protocol_version %s ' % protocol_version)
+                # packets
+                if type == 6:
+                    #self.qglogger.info('Line --> ')
+                    packets = self.store.find( Packets.packets,
+                                               Packets.query_id == query.id ).one()
+                    expression.append('packets > %s ' % packets)
+                # bytes
+                if type == 7:
+                    #self.qglogger.info('Line --> ')
+                    bytes = self.store.find( Bytes.bytes, 
+                                             Bytes.query_id == query.id ).one()
+                    expression.append('bytes > %s ' % bytes)
+                # duration
+                if type == 8:
+                    #self.qglogger.info('Line --> ')
+                    duration = self.store.find( Duration.duration, 
+                                                Duration.query_id == query.id ).one()
+                    expression.append('duration %s ' % duration)
+                # flags
+                if type == 9:
+                    #self.qglogger.info('Line --> ')
+                    flags = self.store.find( Flags.flags, 
+                                             Flags.query_id == query.id ).one()
+                    expression.append('flags %s ' % flags)
+                # tos
+                if type == 10:
+                    #self.qglogger.info('Line --> ')
+                    tos = self.store.find( Tos.tos, 
+                                           Tos.query_id == query.id ).one()
+                    expression.append('tos %s ' % tos)
+                # pps
+                if type == 11:
+                    #self.qglogger.info('Line --> ')
+                    pps = self.store.find( PPS.pps, 
+                                           PPS.query_id == query.id ).one()
+                    expression.append('pps %s ' % pps)
+                # bps
+                if type == 12:
+                    #self.qglogger.info('Line --> ')
+                    bps = self.store.find( BPS.bps, 
+                                           bps.query_id == query.id ).one()
+                    expression.append('bps %s ' % bps)
+                # bpp
+                if type == 13:
+                    #self.qglogger.info('Line --> ')
+                    bpp = self.store.find( BPP.bpp, 
+                                           bpp.query_id == query.id ).one()
+                    expression.append('bpp %s ' % bpp)
+                # AS 
+                if type == 14:
+                    #self.qglogger.info('Line --> ')
+                    asn = self.store.find( ASN.asn, 
+                                           ASN.query_id == query.id ).one()
+                    expression.append('as %s ' % asn)
+                # scale
+                if type == 15:
+                    #self.qglogger.info('Line --> ')
+                    scale = self.store.find( Scale.scale, 
+                                             Scale.query_id == query.id ).one()
+                    expression.append('scale %s ' % scale)
 
-            elif query.type == 2:
-                expr = ''
-                # we've only port information
-                port_id_list = self.store.find(QueryPort.port_id, QueryPort.query_id == query.id)
-                if not port_id_list.is_empty():
-                    port_list = self.store.find(Port.port, In(Port.id, list(port_id_list)))
-                    for i in range(port_list.count()):
-                        expr +=  ' port ' + port_list[i]
-                        if i+1 < port_list.count():
-                                expr += ' or ' 
-                    #self.qglogger.debug('Returning Port list expression')
-                    query_packet[str(query.id)] = expr
-                else:
-                    self.qglogger.warning('Port list is empty for this query, PROBLEM!')
+            #print len(expression) 
+            #print range(len(expression))
+            if len(expression) > 1:
+                expression_ = ''
+                for index in range(len(expression)-1):
+                    expression_ += expression[index] + ' and '
+                expression_ += expression[index+1]
+                print 'query id : %d' % query.id
+                print 'validation_query:', expression_
+                query_packet[query.id] = expression_
+            else:
+                print 'query id : %d' % query.id
+                print 'validation_query:', expression
+                query_packet[query.id] = str(expression)
 
-            elif query.type == 3:
-                #if FORMAT1
-                    #Determine multidomain or not.
-                    # if multidomain:
-                        # Create ATTACKED DOMAIN query packet   
-                        # Create ATTACKER DOMAIN query packet   
-                        # Create MULTI DOMAIN query packet   
-                    # if not multidomain but has an internal domain in one side:
-                        # Create MALICIOUS DOMAIN query packet   
-                        # Create MULTI DOMAIN query packet
-                #????#
-                #else 
-                    # split both side of the output and turn into FORMAT2
-                    # Create MULTI DOMAIN query packet for each part
-                #????#
-                exprlist = []
-                # we've ip-port tuple information
-                ip_port_id_list = self.store.find(QueryIPPort.ip_port_id, QueryIPPort.query_id == query.id)
-                if not ip_port_id_list.is_empty():
-                    ip_port_list = self.store.find(IPPort, In(IPPort.id, list(ip_port_id_list)))
-                    for i in range(ip_port_list.count()):
-                        #print dir(ip_port_list[i])
-                        #print ip_port_list[i].format_
-                        #print ip_port_list[i].ip_port
+        return query_packet 
+            #return expression_
 
-                        if ip_port_list[i].format_ == 1:
-                            pass
-                        elif ip_port_list[i].format_ == 2:
-                            part1, part2 = ip_port_list[i].ip_port.split('-')
-                            ip1, port1 = part1.split(':')
-                            ip2, port2 = part2.split(':')
-
-                            # We assume that ip2:port2 belongs to ATTACKED DOMAIN.
-                            v1 = '( src ip ' + ip1 + ' src port ' + port1 + ' and ' + 'dst ip ' + ip2 + ' dst port ' + port2 + ' )' 
-                            v2 = '( src ip ' + ip2 + ' src port ' + port2 + ' and ' + 'dst ip ' + ip1 + ' dst port ' + port1 + ' )'
-                            validation_query = v1 + ' or ' + v2
-                            print 'validation_query:', validation_query
-                            
-                            m1 = '( src ip ' + ip1 + ' src port any and ' + 'dst ip any dst port ' + port2 + ' )'
-                            m2 = '( src ip ' + ip2 + ' src port any and ' + 'dst ip any dst port ' + port1 + ' )'
-                            master_query = m1 + ' or ' + m2
-                            print 'master_query:', master_query
-                            print '\n'
-                            #add_exprs = 'src ip ' + ip1 + ' src port any' + filters 
-                            #              'dst ip ' + ip1 + ' dst port any' + filters
-                            #              'additional filters permutations '
-                            exprlist.append(validation_query)
-                            exprlist.append(master_query)
-
-                    #self.qglogger.debug('Returning IPPort list expression')
-                    query_packet[str(query.id)] = exprlist
-                else:
-                    self.qglogger.warning('IPPort list is empty for this query, PROBLEM!')
-
-            #elif query.type == 4:
-            #    domain_id_list = self.store.find(QueryDomain.domain_id, QueryDomain.query_id == query.id)
-            #    if not domain_id_list.is_empty():
-            #        domain_list = self.store.find(Domain.domain, In(Domain.id, list(domain_id_list)))
-        return query_packet
+           #if FORMAT1
+               #Determine multidomain or not.
+               # if multidomain:
+                   # Create ATTACKED DOMAIN query packet   
+                   # Create ATTACKER DOMAIN query packet   
+                   # Create MULTI DOMAIN query packet   
+               # if not multidomain but has an internal domain in one side:
+                   # Create MALICIOUS DOMAIN query packet   
+                   # Create MULTI DOMAIN query packet
+           #????#
+           #else 
+               # split both side of the output and turn into FORMAT2
+               # Create MULTI DOMAIN query packet for each part
+           #????#
+        #return query_packet
 
 
     def createQueryFromStatistics(self):
         pass
-
 
 
 
