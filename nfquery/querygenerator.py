@@ -6,6 +6,7 @@ import sys
 import os.path
 import hashlib
 import subprocess
+import itertools
 import datetime
 from datetime import datetime
 
@@ -46,26 +47,56 @@ class QueryGenerator:
         self.sources = sources
  
 
-    def generateQuery(self, parser=None):
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        if parser:
-            for index in range(len(self.sources)):
-                if parser == self.sources[index].parser:
-                    self.qglogger.debug('generating query for source : %s' % self.sources[index].source_name)
-                    self.createQuery(self.sources[index].output_file)
-                    return
-        else:
-            for index in range(len(self.sources)):
-                self.qglogger.debug('generating query for source : %s' % self.sources[index].source_name)
-                self.createQuery(self.sources[index].output_file)
-                    
+    def createQuery(self, parser):
+        try:
+            # Load Parser Output
+            output_file = self.loadParserOutput(parser)
+            if not output_file:
+                return
+            # Validate Parser Output
+            data = self.validateParserOutput(output_file)
+            # Generate Query
+            self.generateQuery(data)
+        except Exception, e:
+            self.qglogger.error(e)
+            return
 
-    def createQuery(self, output_file):
+
+    def loadParserOutput(self, parser):
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        for index in range(len(self.sources)):
+            if parser == self.sources[index].parser:
+                try:
+                    parser_output = open(self.sources[index].output_file, 'r')
+                except Exception, e:
+                    self.qglogger.error(e)
+                    return
+
+                # calculate checksum of output
+                md5hash = hashlib.md5()
+                md5hash.update(str(parser_output.readlines()))
+                parser_output.close()
+                file_checksum = md5hash.hexdigest()
+                parser_ = self.store.find(Parser, 
+                                          Parser.name == unicode(parser) ).one()
+                # Decide if output is changed or not to create query
+                if parser_.checksum == unicode(file_checksum):
+                    self.qglogger.info('No need to generate query, '
+                                       'parser output is not changed')
+                    return
+                else:
+                    self.qglogger.info('Checking parser output for '
+                                       'query generation')
+                    parser_.checksum = unicode(file_checksum)
+                    return self.sources[index].output_file
+                                    
+
+    def validateParserOutput(self, output_file):
         '''
-            Check parser output and create query for each expression.
+            Check parser output and generate query for each expression.
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        output_fields = [ 'source_name', 'date', 'mandatory_fields', 'expr_list' ] 
+        output_fields = [ 'source_name', 'date', 'mandatory_keys', 'expr_list' ]
         data = ''
         try:
             parser_output = open(output_file, 'r')
@@ -74,62 +105,96 @@ class QueryGenerator:
         except Exception, e:
             self.qglogger.error(e)
 
-        # Don't break the loop, iterate to next expr always 
-        # except we catch an exception
         for index in range(len(data)):
-            if set(output_fields).issubset(set(data[index].keys())):
-                self.qglogger.debug('output keys are valid')
-                source = self.store.find(Source, Source.name == unicode(data[index]['source_name'])).one()
-                if source:
-                    self.qglogger.debug('source name is valid')
-                    if set(data[index]['mandatory_fields']).issubset(set(self.nfsen_filters)):
-                        self.qglogger.debug('mandatory_fields is valid')
-                        try:
-                            date = datetime.strptime(data[index]['date'], '%Y-%m-%d %H:%M')
-                            self.qglogger.debug('date is valid')
-                        except Exception, e:
-                            self.qglogger.error(e)
-                            return
-                        # iterate through expression list
-                        for expr in data[index]['expr_list']:
-                            if set(data[index]['mandatory_fields']).issubset(set(expr.keys())):
-                                self.qglogger.debug('mandatory fields matches with expression fields.')
-                                if set(expr.keys()).issubset(set(self.nfsen_filters)):
-                                    self.insertQuery(source.id, date, expr)
-                                else:
-                                    self.qglogger.error('expression syntax is not valid')
-                                    continue
-                            else:
-                                self.qglogger.error('expr filters must be in mandatory_fields list')
-                                continue
-                        #sys.exit()
-                    else:
-                        self.qglogger.error('mandatory fields are not valid')
-                else:
-                    self.qglogger.error('source name is not valid')
-            else:
-                self.qglogger.error('output keys are not valid')
+            source = self.store.find(Source, Source.name == unicode(data[index]['source_name'])).one()
+            if not source:
+                raise Exception, 'source name is not valid'
+            elif not set(output_fields).issubset(set(data[index].keys())):
+                raise Exception, 'output keys are not valid'    
+            elif not set(data[index]['mandatory_keys']).issubset(set(self.nfsen_filters)):
+                raise Exception, 'mandatory keys are not valid'
+            data[index]['date'] = datetime.strptime(data[index]['date'], '%Y-%m-%d %H:%M')
+            data[index]['source_id'] = source.id
+            self.qglogger.info('Parser Output is valid.')
+        return data
 
 
-    # query type generation util
+    def getExpressionCombinations(self, optional, mandatory, length):
+        comb_list = []
+        base_expr = dict(mandatory)
+        while(length > 0):
+            for combination in itertools.combinations(optional, length):
+                for key in combination: 
+                    base_expr.update({key : optional[key]})
+                comb_list.append(base_expr)
+                base_expr = dict(mandatory)
+            length -= 1
+        return comb_list
+ 
+
+    def generateQuery(self, data):
+        for index in range(len(data)):
+            date = data[index]['date']
+            s_id = data[index]['source_id']
+            m_keys = data[index]['mandatory_keys']
+            e_list = data[index]['expr_list']
+            # iterate through expression list
+            for expr in e_list:
+                if not set(expr.keys()).issubset(set(self.nfsen_filters)):
+                    self.qglogger.error('filter syntax is not valid')
+                    continue
+                elif not set( m_keys).issubset(set(expr.keys()) ):
+                    self.qglogger.error( 'expr_list keys must contain '
+                                         'all mandatory_keys ' )
+                    continue
+                self.qglogger.debug('v_query : %s' % str(expr))
+                # insert validation query
+                q_id = self.insertQuery(s_id, date, expr)
+                if not q_id:
+                    continue
+                if m_keys != expr.keys():
+                    m_query = {}
+                    for m in m_keys:
+                        m_query[m] = expr.pop(m)
+                    #self.qglogger.debug('m_query : %s' % str(m_query))
+                    self.qglogger.info('m_query : %s' % str(m_query))
+                    length = len(expr) - 1
+                    opt_query_list = self.getExpressionCombinations( expr, 
+                                     m_query, length )
+                    try:
+                        # insert mandatory query
+                        self.insertQuery( s_id, date, m_query, category=2, 
+                                          query_id = q_id )
+                        for opt_query in opt_query_list:
+                            # insert optional query
+                            self.qglogger.info('opt_query : %s' % str(opt_query))
+                            self.insertQuery( s_id, date, opt_query, category=3,
+                                              query_id = q_id)
+                            #self.qglogger.debug('opt_query : %s' % str(opt_query))
+                    except Exception, e:
+                        self.qglogger.error(e)
+
+
     def generateQueryType(self, type_):
-        # self.query_type = self.query_type + '%s' if self.query_type else ','
         if not self.query_type:
             self.query_type = str(type_)
         else:
             self.query_type += ',' + str(type_)
 
 
-    def insertQuery(self, source_id, date, expr):
+    def insertQuery(self, source_id, date, expr, category=1, query_id=None):
         '''
            Insert/Update query.
         '''
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        #self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+
         # get the hash of expr to check if the query is updated or not.
         md5hash = hashlib.md5()
         md5hash.update(str(expr) + str(source_id))
         checksum = md5hash.hexdigest()
-        query = self.store.find(Query, (Query.source_id == source_id) & (Query.checksum == unicode(checksum))).one()
+        query = self.store.find( Query, (Query.source_id == source_id) & 
+                                        (Query.checksum == unicode(checksum))
+                               ).one()
         if not query:
             '''
                 Insert new query.
@@ -138,7 +203,9 @@ class QueryGenerator:
                 query = Query()
                 query.source_id = source_id
                 query.checksum = unicode(checksum)
-                time_id = self.store.find(models.Time.id, models.Time.time == date).one()
+                time_id = self.store.find( models.Time.id, 
+                                           models.Time.time == date
+                                         ).one()
                 if time_id:
                     query.creation_time_id = time_id
                     query.update_time_id = time_id
@@ -149,20 +216,26 @@ class QueryGenerator:
                     self.store.flush()
                     query.update_time_id = time.id
                     query.creation_time_id = time.id
-                # it's validation query.
-                query.category_id = 1       
-                # We'll insert query.type_id after determining it below.
-                # For now, set it to default type value 1.
                 query.type_id = 1
-                # print query details
                 self.store.add(query)
+                query.category_id = category
                 self.store.flush()
+                q_packet = QueryPacket()
+                if category == 1:
+                    q_packet.validation_id = query.id
+                else:
+                    q_packet.validation_id = query_id
+                q_packet.query_id = query.id
+                self.store.add(q_packet)
+                #self.store.flush()
             except Exception, e:
                 self.qglogger.warning(e)
+                sys.exit()
                 return
             '''
                 Every filter table has its own index from 0 to 15.
-                Query type is determined by generating an array with existing fields of the query.
+                Query type is determined by generating an array with 
+                existing fields of the query.
                 For example if a query has info in src_ip and dst_port tables,
                 its type will be '0,3' in query table.
             '''
@@ -186,7 +259,9 @@ class QueryGenerator:
                         self.insertProto(expr['proto'], query.id)
                     # protocol version
                     elif filter == 'protocol_version':
-                        self.insertProtocolVersion(expr['protocol_version'], query.id)
+                        self.insertProtocolVersion( expr['protocol_version'], 
+                                                    query.id
+                                                  )
                     # packets
                     elif filter == 'packets':
                         self.insertPackets(expr['packets'], query.id)
@@ -222,7 +297,9 @@ class QueryGenerator:
                     return
             # Now, insert other query details.
             try:
-                type_id = self.store.find(Type.id, Type.type == unicode(self.query_type)).one()
+                type_id = self.store.find( Type.id, 
+                                           Type.type == unicode(self.query_type)
+                                         ).one()
                 if type_id:
                     query.type_id = type_id
                 else:
@@ -231,8 +308,10 @@ class QueryGenerator:
                     self.store.add(type)
                     self.store.flush()
                     query.type_id = type.id
-                    self.store.commit()
-                    self.qglogger.debug('New query is inserted succesfully')
+                self.store.commit()
+                self.qglogger.debug('New query is inserted succesfully')
+                self.qglogger.info('query_id : %d' % query.id)
+                return query.id
             except Exception, e:
                 self.qglogger.warning(e)
                 return
@@ -240,9 +319,11 @@ class QueryGenerator:
             '''
                 Update update_time of the query.
             '''
-            self.qglogger.debug('Query exists in the database.')
+            #self.qglogger.debug('Query exists in the database.')
             try:
-                update_time_id = self.store.find(models.Time.id, models.Time.time == date).one()
+                update_time_id = self.store.find( models.Time.id, 
+                                                  models.Time.time == date
+                                                ).one()
                 if update_time_id:
                     query.update_time_id = update_time_id
                 else:
@@ -251,8 +332,10 @@ class QueryGenerator:
                     self.store.add(time)
                     self.store.flush()
                     query.update_time_id = time.id
-                    self.store.commit()
-                    self.qglogger.debug('Query time is updated')
+                self.store.commit()
+                self.qglogger.debug('Query time is updated')
+                self.qglogger.info('query_id : %d' % query.id)
+                return query.id
             except Exception, e:
                 self.qglogger.warning(e)
                 return
@@ -522,32 +605,31 @@ class QueryGenerator:
             raise Exception, 'scale is not valid.' 
 
 
-    def createQueryExpression(self, query_list=None):
+    def createQueryFilter(self, query_list=None):
         '''
-           Create NfSen Query Filter Expressions
+           Create NfSen Query Filters
 
            1) Fetch all queries,
            2) Check what kind of fields the query have, which will be used as netflow filter arguments : 
                  a) - ip (src-dst), port(src-dst), protocol, packets, bytes, start_time, end_time, etc... = Expression Part
                  b) - time_interval = Execution 'nfdump -r /and/dir/nfcapd.200407110845' Part
                  c) - order by =  Top N Statistics Part -> This part will show what we will parse as query executin result and send to QueryServer
-           3) Create the expression with given parameters -> the most specific one
+           3) Create the filter with given parameters -> the most specific one
                  a) - Create more general filters from already created filter with removing some options or assigning them to any,
                       for example ;
                                    if IP and PORT given -> the most spec filter expr: 'src ip IP src port PORT'
                                    from this expr we'll create also : 'src ip IP src port ANY' and 'src ip ANY src port PORT'
-           4) Concatenate produced filters like expr, expr, expr
-           5) Once we have all the expr integrate them with other general parameters (time_interval, file, etc.)
+           4) Concatenate produced expressions to create filter ; expr,expr ...
+           5) Once we have iterated all expressions, integrate them with other general parameters to create nfsen filter (time_interval, file, etc.)
            6) Put this information to db appropriately.
-           7) ?
         '''
 
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        query_packet = {}
+        filter_packet = {}
         for query in query_list:
             query_type = self.store.find( Type.type,
                                           Type.id == query.type_id ).one()
-            expression = []
+            filter = []
             for type in sorted(query_type.split(',')):
                 type = int(type)
                 # src_ip
@@ -558,7 +640,7 @@ class QueryGenerator:
                                                  SrcIP.query_id == query_id ).one()
                     src_ip = self.store.find( IP.ip, 
                                               IP.id == src_ip_id ).one()
-                    expression.append('src ip %s ' % str(src_ip))
+                    filter.append('src ip %s ' % str(src_ip))
                 # src_port 
                 if type == 1:
                     #self.qglogger.info('Line --> ')
@@ -566,7 +648,7 @@ class QueryGenerator:
                                                    SrcPort.query_id == query.id ).one()
                     src_port = self.store.find ( Port.port,
                                                  Port.id == src_port_id ).one()
-                    expression.append('src port %s ' % str(src_port))
+                    filter.append('src port %s ' % str(src_port))
                 # dst_ip
                 if type == 2:
                     #self.qglogger.info('Line --> ')
@@ -574,7 +656,7 @@ class QueryGenerator:
                                                  DstIP.query_id == query.id ).one()
                     dst_ip = self.store.find( IP.ip,
                                               IP.id == dst_ip_id ).one()
-                    expression.append('dst ip %s ' % str(dst_ip))
+                    filter.append('dst ip %s ' % str(dst_ip))
                 # dst_port
                 if type == 3:
                     #self.qglogger.info('Line --> ')
@@ -582,7 +664,7 @@ class QueryGenerator:
                                                    DstPort.query_id == query.id ).one()
                     dst_port = self.store.find ( Port.port,
                                                  Port.id == dst_port_id ).one()
-                    expression.append('dst port %s ' % str(dst_port))
+                    filter.append('dst port %s ' % str(dst_port))
                 # proto
                 if type == 4:
                     #self.qglogger.info('Line --> ')
@@ -594,85 +676,84 @@ class QueryGenerator:
                     #self.qglogger.info('Line --> ')
                     protocol_version = self.store.find( ProtocolVersion.protocol_version, 
                                                         ProtocolVersion.query_id == query.id ).one()
-                    expression.append('protocol_version %s ' % protocol_version)
+                    filter.append('protocol_version %s ' % protocol_version)
                 # packets
                 if type == 6:
                     #self.qglogger.info('Line --> ')
                     packets = self.store.find( Packets.packets,
                                                Packets.query_id == query.id ).one()
-                    expression.append('packets > %s ' % packets)
+                    filter.append('packets > %s ' % packets)
                 # bytes
                 if type == 7:
                     #self.qglogger.info('Line --> ')
                     bytes = self.store.find( Bytes.bytes, 
                                              Bytes.query_id == query.id ).one()
-                    expression.append('bytes > %s ' % bytes)
+                    filter.append('bytes > %s ' % bytes)
                 # duration
                 if type == 8:
                     #self.qglogger.info('Line --> ')
                     duration = self.store.find( Duration.duration, 
                                                 Duration.query_id == query.id ).one()
-                    expression.append('duration %s ' % duration)
+                    filter.append('duration %s ' % duration)
                 # flags
                 if type == 9:
                     #self.qglogger.info('Line --> ')
                     flags = self.store.find( Flags.flags, 
                                              Flags.query_id == query.id ).one()
-                    expression.append('flags %s ' % flags)
+                    filter.append('flags %s ' % flags)
                 # tos
                 if type == 10:
                     #self.qglogger.info('Line --> ')
                     tos = self.store.find( Tos.tos, 
                                            Tos.query_id == query.id ).one()
-                    expression.append('tos %s ' % tos)
+                    filter.append('tos %s ' % tos)
                 # pps
                 if type == 11:
                     #self.qglogger.info('Line --> ')
                     pps = self.store.find( PPS.pps, 
                                            PPS.query_id == query.id ).one()
-                    expression.append('pps %s ' % pps)
+                    filter.append('pps %s ' % pps)
                 # bps
                 if type == 12:
                     #self.qglogger.info('Line --> ')
                     bps = self.store.find( BPS.bps, 
                                            bps.query_id == query.id ).one()
-                    expression.append('bps %s ' % bps)
+                    filter.append('bps %s ' % bps)
                 # bpp
                 if type == 13:
                     #self.qglogger.info('Line --> ')
                     bpp = self.store.find( BPP.bpp, 
                                            bpp.query_id == query.id ).one()
-                    expression.append('bpp %s ' % bpp)
+                    filter.append('bpp %s ' % bpp)
                 # AS 
                 if type == 14:
-                    #self.qglogger.info('Line --> ')
+                #self.qglogger.info('Line --> ')
                     asn = self.store.find( ASN.asn, 
                                            ASN.query_id == query.id ).one()
-                    expression.append('as %s ' % asn)
+                    filter.append('as %s ' % asn)
                 # scale
                 if type == 15:
                     #self.qglogger.info('Line --> ')
                     scale = self.store.find( Scale.scale, 
                                              Scale.query_id == query.id ).one()
-                    expression.append('scale %s ' % scale)
+                    filter.append('scale %s ' % scale)
 
-            #print len(expression) 
-            #print range(len(expression))
-            if len(expression) > 1:
-                expression_ = ''
-                for index in range(len(expression)-1):
-                    expression_ += expression[index] + ' and '
-                expression_ += expression[index+1]
+            #print len(filter) 
+            #print range(len(filter))
+            if len(filter) > 1:
+                filter_ = ''
+                for index in range(len(filter)-1):
+                    filter_ += filter[index] + ' and '
+                filter_ += filter[index+1]
                 print 'query id : %d' % query.id
-                print 'validation_query:', expression_
-                query_packet[query.id] = expression_
+                print 'validation_query:', filter_
+                filter_packet[query.id] = filter_
             else:
                 print 'query id : %d' % query.id
-                print 'validation_query:', expression
-                query_packet[query.id] = str(expression)
+                print 'validation_query:', filter
+                filter_packet[query.id] = str(filter)
 
-        return query_packet 
-            #return expression_
+        return filter_packet
 
            #if FORMAT1
                #Determine multidomain or not.
@@ -688,11 +769,4 @@ class QueryGenerator:
                # split both side of the output and turn into FORMAT2
                # Create MULTI DOMAIN query packet for each part
            #????#
-        #return query_packet
-
-
-    def createQueryFromStatistics(self):
-        pass
-
-
 

@@ -33,6 +33,7 @@ class Parser(object):
 
     id = Int(primary=True)
     name = Unicode()
+    checksum = Unicode()
     time_interval = Int()
 
 
@@ -102,6 +103,18 @@ class Query(object):
     category = Reference(category_id, Category.id)
 
 
+class QueryPacket(object):
+    
+    __storm_table__ = 'query_packet'
+    __storm_primary__ = "validation_id", "query_id"
+
+    validation_id = Int()
+    query_id = Int()
+
+    validation = Reference(validation_id, Query.id)
+    query = Reference(query_id, Query.id)
+
+
 class Subscription(object):
     
     __storm_table__ = 'subscription'
@@ -112,17 +125,17 @@ class Subscription(object):
     timeout = DateTime()
 
 
-class SubscriptionPackets(object):
+class SubscriptionPacket(object):
     
-    __storm_table__ = 'subscription_packets'
+    __storm_table__ = 'subscription_packet'
     
     id = Int(primary=True)
     subscription_id = Int()
-    query_id = Int()
+    query_packet_id = Int()
     tags = Unicode()
 
     subscription = Reference(subscription_id, Subscription.id)
-    query = Reference(query_id, Query.id)
+    query_packet = Reference(query_packet_id, QueryPacket.validation_id)
 
 
 class Statistics(object):

@@ -27,13 +27,13 @@ class QueryManager:
         self.store = db.get_store()
         self.sources = sources
         self.plugins = plugins
-        self.queryGenerator = QueryGenerator(sources)
+        self.qGenerator = QueryGenerator(sources)
         
 
     def start(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.checkParsers()
-        #self.executeParsers()
+        self.executeParsers()
         #self.createSubscriptionPackets()
 
     ###########################################################
@@ -52,29 +52,41 @@ class QueryManager:
                 plugins_list.append(self.plugins[index].organization)
             for plugin in dbplugins:
                 if not plugin.organization in(plugins_list):
-                    self.qmlogger.warning('I will delete the plugin, Do you approve the deletion of plugin : %s', plugin.organization)
+                    self.qmlogger.warning( 'I will delete the plugin, '
+                                           'Do you approve the deletion of '
+                                           'plugin : %s', plugin.organization )
                     flag = ask_yes_no('', default="no")
                     if flag is True:
                         plugin_name = plugin.organization
                         prefix_id = plugin.prefix_id
-                        self.store.find(Plugin, Plugin.organization == plugin.organization).remove()
-                        self.store.find(Prefix, Prefix.id == prefix_id).remove()
+                        self.store.find( Plugin, 
+                                         Plugin.organization == plugin.organization
+                                       ).remove()
+                        self.store.find( Prefix, 
+                                         Prefix.id == prefix_id ).remove()
                         self.store.commit()
-                        self.qmlogger.warning('Plugin %s is deleted' % plugin_name)
+                        self.qmlogger.warning( 'Plugin %s is deleted' % 
+                                               plugin_name )
                     else:
                         self.qmlogger.info('Not deleted anything.')
         
         for index in range(len(self.plugins)):
             # Calculate the checksum
             conf_checksum = hashlib.md5()
-            conf_checksum.update( self.plugins[index].organization       + self.plugins[index].adm_name    + 
-                                  self.plugins[index].adm_mail           + self.plugins[index].adm_tel     +          
-                                  self.plugins[index].adm_publickey_file + self.plugins[index].prefix_list +
+            conf_checksum.update( self.plugins[index].organization       +
+                                  self.plugins[index].adm_name           +
+                                  self.plugins[index].adm_mail           +
+                                  self.plugins[index].adm_tel            +
+                                  self.plugins[index].adm_publickey_file +
+                                  self.plugins[index].prefix_list        +
                                   self.plugins[index].plugin_ip )
-            plugin_checksum = self.store.find(Plugin.checksum, Plugin.organization == unicode(self.plugins[index].organization)).one()
-
+            plugin_checksum = self.store.find( Plugin.checksum, 
+                                               Plugin.organization == unicode( 
+                                               self.plugins[index].organization)
+                                             ).one()
             if plugin_checksum is None:
-                self.qmlogger.info('Adding new plugin : "%s"' % self.plugins[index].organization)
+                self.qmlogger.info( 'Adding new plugin : "%s"' % 
+                                    self.plugins[index].organization )
                 plugin = Plugin()
                 prefix_list = Prefix()
                 prefix_list.prefix   = unicode(self.plugins[index].prefix_list)
@@ -92,29 +104,39 @@ class QueryManager:
                 self.store.commit()
                 self.qmlogger.debug(plugin.id)
                 self.qmlogger.debug(prefix_list.id)
-                self.qmlogger.info('New Plugin added successfully : "%s"' % self.plugins[index].organization)
+                self.qmlogger.info( 'New Plugin added successfully : "%s"' % 
+                                    self.plugins[index].organization )
             elif plugin_checksum == conf_checksum.hexdigest():
-                self.qmlogger.info('No need to update the plugin : %s' % self.plugins[index].organization)
+                self.qmlogger.info( 'No need to update the plugin : %s' % 
+                                    self.plugins[index].organization )
             elif plugin_checksum != conf_checksum.hexdigest():
                 # Update plugin information
-                self.qmlogger.info('Updating the plugin %s' % self.plugins[index].organization)
+                self.qmlogger.info( 'Updating the plugin %s' % 
+                                    self.plugins[index].organization )
                 # Update existing plugin information
-                plugin = self.store.find(Plugin, Plugin.organization == unicode(self.plugins[index].organization)).one()
+                plugin = self.store.find( Plugin, 
+                                          Plugin.organization == unicode( 
+                                            self.plugins[index].organization) 
+                                        ).one()
                 plugin.organization = unicode(self.plugins[index].organization)
                 plugin.adm_name = unicode(self.plugins[index].adm_name)
                 plugin.adm_mail = unicode(self.plugins[index].adm_mail)
                 plugin.adm_tel = unicode(self.plugins[index].adm_tel)
-                plugin.adm_publickey_file = unicode(self.plugins[index].adm_publickey_file)
+                plugin.adm_publickey_file = unicode(
+                                         self.plugins[index].adm_publickey_file)
                 plugin.plugin_ip = unicode(self.plugins[index].plugin_ip)
                 plugin.checksum = unicode(conf_checksum.hexdigest())
                 self.store.add(plugin)
                 # Update existing prefix list information
-                prefix_list = self.store.find(Prefix, Prefix.id == plugin.prefix_id).one()
+                prefix_list = self.store.find( Prefix, 
+                                               Prefix.id == plugin.prefix_id 
+                                             ).one()
                 prefix_list.prefix  = unicode(self.plugins[index].prefix_list)
                 self.store.add(prefix_list)
                 # Commit changes
                 self.store.commit()
-                self.qmlogger.info('Plugin updated successfully : "%s"' % self.plugins[index].organization)
+                self.qmlogger.info( 'Plugin updated successfully : "%s"' % 
+                                    self.plugins[index].organization )
             else:
                 self.qmlogger.error('CHECK CODE')
                 self.qmlogger.warning('conf checksum ' + conf_checksum.hexdigest())
@@ -153,30 +175,47 @@ class QueryManager:
                         source_name = source.name
                         threat_id = source.threat_id
                         parser_id = source.parser_id
-                        self.store.find(Source, Source.name == source.name).remove()
-                        self.store.find(Parser, Parser.id == parser_id).remove()
+                        self.store.find( Source, 
+                                         Source.name == source.name 
+                                       ).remove()
+                        self.store.find( Parser, 
+                                         Parser.id == parser_id 
+                                       ).remove()
                         self.store.commit()
-                        self.qmlogger.warning('Source %s is deleted' % source_name)
+                        self.qmlogger.warning( 'Source %s is deleted' % 
+                                               source_name )
                     else:
                         self.qmlogger.info('Not deleted any source.')
                         
         for index in range(len(self.sources)):
             # Check list type
-            threat_id = self.store.find(Threat.id, Threat.type == unicode(self.sources[index].threat_type)).one()
+            threat_id = self.store.find( Threat.id, 
+                                         Threat.type == unicode(
+                                         self.sources[index].threat_type)
+                                       ).one()
             if threat_id is None:
-                self.qmlogger.warning('Threat type couldn\'t be found in the database, please check your configuration.')
+                self.qmlogger.warning('Threat type couldn\'t be found'
+                                      ' in the database, please check'
+                                      ' your configuration.')
                 self.qmlogger.warning('Assigning default list type value.')
                 threat_id = 1 #means default unknown list type
 
             # Calculate the checksum
             conf_checksum = hashlib.md5()   
-            conf_checksum.update(self.sources[index].source_name + str(self.sources[index].threat_type) + 
-                                 self.sources[index].source_link + self.sources[index].source_file    +
-                                 self.sources[index].parser     + str(self.sources[index].time_interval) )
-            source_checksum = self.store.find(Source.checksum, Source.name == unicode(self.sources[index].source_name)).one()
+            conf_checksum.update(self.sources[index].source_name        +
+                                 str(self.sources[index].threat_type)   + 
+                                 self.sources[index].source_link        + 
+                                 self.sources[index].source_file        +
+                                 self.sources[index].parser             + 
+                                 str(self.sources[index].time_interval) )
+            source_checksum = self.store.find( Source.checksum, 
+                                               Source.name == unicode(
+                                               self.sources[index].source_name)
+                                             ).one()
             if source_checksum is None:
                 # Adding new source
-                self.qmlogger.info('Adding new source %s' % self.sources[index].source_name)
+                self.qmlogger.info( 'Adding new source %s' % 
+                                    self.sources[index].source_name )
                 # Add new parser
                 parser = Parser()
                 parser.name = unicode(self.sources[index].parser)
@@ -193,26 +232,34 @@ class QueryManager:
                 self.store.add(source)
                 # Commit changes
                 self.store.commit()
-                self.qmlogger.info('New Source added successfully : "%s"' % self.sources[index].source_name)
+                self.qmlogger.info( 'New Source added successfully : "%s"' % 
+                                    self.sources[index].source_name )
             elif str(conf_checksum.hexdigest()) == str(source_checksum):
-                self.qmlogger.info('No need to reconfigure the source : %s' % self.sources[index].source_name)
+                self.qmlogger.info( 'No need to reconfigure the source : %s' % 
+                                    self.sources[index].source_name )
             elif str(conf_checksum.hexdigest()) != str(source_checksum):
                 # Update source information
-                self.qmlogger.info('Updating the source %s' % self.sources[index].source_name)
+                self.qmlogger.info( 'Updating the source %s' % 
+                                    self.sources[index].source_name )
                 # Update existing source
-                source = self.store.find(Source, Source.name == '%s' % unicode(self.sources[index].source_name) ).one()
+                source = self.store.find( Source, Source.name == '%s' % unicode(
+                                          self.sources[index].source_name) 
+                                        ).one()
                 source.link = unicode(self.sources[index].source_link)
                 source.threat_id = threat_id
                 source.checksum = unicode(conf_checksum.hexdigest())
                 self.store.add(source)
                 # Update existing parser
-                parser = self.store.find(Parser, Parser.id == source.parser_id).one()
+                parser = self.store.find( Parser, 
+                                          Parser.id == source.parser_id
+                                        ).one()
                 parser.name = unicode(self.sources[index].parser)
                 parser.time_interval = self.sources[index].time_interval
                 self.store.add(parser)
                 # Commit changes
                 self.store.commit()
-                self.qmlogger.info('Source updated successfully : "%s"' % self.sources[index].source_name)
+                self.qmlogger.info( 'Source updated successfully : "%s"' % 
+                                    self.sources[index].source_name )
             else:
                 self.qmlogger.error('CHECK CODE')
                 self.qmlogger.warning('conf checksum ' + conf_checksum.hexdigest())
@@ -233,10 +280,12 @@ class QueryManager:
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         for index in range(len(self.sources)):
             if os.path.exists(self.sources[index].parser):
-                self.qmlogger.info('Parser "%s" exists, OK!' % self.sources[index].parser)
+                self.qmlogger.info( 'Parser "%s" exists, OK!' % 
+                                    self.sources[index].parser )
             else:
                 self.qmlogger.warning('Parser %s doesn\'t exist')
-                self.qmlogger.warning('Please check the nfquery.conf file' % self.sources[index].parser)
+                self.qmlogger.warning( 'Please check the nfquery.conf file' % 
+                                       self.sources[index].parser )
 
     
     def executeParsers(self, parser=None):
@@ -245,11 +294,13 @@ class QueryManager:
             self.qmlogger.debug('running all parsers')
             for index in range(len(self.sources)):
                 try:
-                    returncode = subprocess.call(['python', self.sources[index].parser])
+                    returncode = subprocess.call([ 'python', 
+                                                   self.sources[index].parser] )
                     if returncode == 0:
-                        self.queryGenerator.generateQuery(self.sources[index].parser)
+                        self.qGenerator.createQuery(self.sources[index].parser)
                     else:
                         self.qmlogger.warning('Parser returned with error')
+                    #self.qGenerator.createQuery(self.sources[index].parser)
                 except Exception, e:
                     self.qmlogger.error('got exception: %r, exiting' % (e))
                     continue
@@ -258,9 +309,10 @@ class QueryManager:
             for index in range(len(self.sources)):
                 if self.sources[index].parser == parser:
                     try:
-                        returncode = subprocess.call(['python', self.sources[index].parser])
+                        returncode = subprocess.call([ 'python', 
+                                                       self.sources[index].parser])
                         if returncode == 0:
-                            self.queryGenerator.generateQuery(self.sources[index].parser)
+                            self.qGenerator.createQuery(self.sources[index].parser)
                         else:
                             self.qmlogger.warning('Parser returned with error')
                     except Exception, e:
@@ -278,8 +330,10 @@ class QueryManager:
         '''
             We have 2 different subscription types.
             
-            1) Source -> example : "Amada,Malc0de,DFN-Honeypot,ABC-NREN_Special_Source"
-            2) Threat Type -> example : "Botnet,Malware,Honeypot Output, Special Source Output"
+            1) Source -> example : "Amada,Malc0de,DFN-Honeypot,
+                                    ABC-NREN_Special_Source"
+            2) Threat Type -> example : "Botnet,Malware,Honeypot Output, 
+                                         Special Source Output"
             
             These subscription types are inserted into subscription table
             according to the condition of "if that subscription type have queries" 
@@ -295,26 +349,34 @@ class QueryManager:
         source_name_list = self.store.find(Source.name)
         source_name_list.group_by(Source.name)
         for source_name in source_name_list:
-            subscription = self.store.find(Subscription.id, Subscription.name == '%s' % (source_name))
+            subscription = self.store.find( Subscription.id, 
+                                            Subscription.name == '%s' % 
+                                            (source_name)
+                                          )
             if subscription.is_empty():
                 subscription = Subscription()
                 subscription.type = subscription_type
                 subscription.name = source_name
                 self.store.add(subscription)
-                self.qmlogger.debug('Subscription type %s added to db' % source_name)
+                self.qmlogger.debug( 'Subscription type %s added to db' % 
+                                     source_name )
     
         # 2) Threat Type
         subscription_type=2
         threat_type_list = self.store.find(Threat.type)
         threat_type_list.group_by(Threat.type)
         for threat_type in threat_type_list:
-            subscription = self.store.find(Subscription.id, Subscription.name == '%s' % (threat_type))
+            subscription = self.store.find( Subscription.id, 
+                                            Subscription.name == '%s' % 
+                                            (threat_type)
+                                          )
             if subscription.is_empty():
                 subscription = Subscription()
                 subscription.type = subscription_type
                 subscription.name = threat_type
                 self.store.add(subscription)
-                self.qmlogger.debug('Subscription type %s added to db' % threat_type)
+                self.qmlogger.debug( 'Subscription type %s added to db' % 
+                                     threat_type )
 
         self.store.commit()
         self.qmlogger.debug('Subscription types are created')
@@ -332,38 +394,72 @@ class QueryManager:
     def createSourceSubscriptionPackets(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         # If source_name is not given, we work for all sources.
-        source_name_list = self.store.find(Subscription.name, Subscription.type == 1)
+        source_name_list = self.store.find( Subscription.name, 
+                                            Subscription.type == 1 )
         if source_name_list is None:
-            self.qmlogger.error("Source is not registered to database. Run 'reconfig sources' or check sources.")
+            self.qmlogger.error( "Source is not found."
+                                 "Run 'reconfig sources' to update database." )
             #sys.exit()
             return
         for source_name in source_name_list:
-            source_id = self.store.find(Source.id, Source.name == '%s' % unicode(source_name)).one()
-            query_id_list = self.store.find(Query.id, Query.source_id == source_id)
+            source_id = self.store.find( Source.id, 
+                                         Source.name == '%s' % unicode(
+                                         source_name)
+                                       ).one()
+            query_id_list = self.store.find( Query.id, 
+                                             Query.source_id == source_id and 
+                                             Query.category_id == 1)
             if query_id_list is None:
-                self.qmlogger.warning("We don't have any query for this source.")
-                self.qmlogger.warning("%s subscription creation is failed." % (source_name) )
+                self.qmlogger.warning( "We don't have any query "
+                                       "for this source." )
+                self.qmlogger.warning( "%s subscription creation is failed." % 
+                                       (source_name) )
                 continue
-            subscription_id = self.store.find(Subscription.id, Subscription.name == '%s' % unicode(source_name)).one()
-            subs_packets_id = self.store.find(SubscriptionPackets.id, SubscriptionPackets.subscription_id == subscription_id)
+            subscription_id = self.store.find( Subscription.id, 
+                                               Subscription.name == '%s' % 
+                                               unicode(source_name)
+                                             ).one()
+            s_packets_id = self.store.find( SubscriptionPackets.id,
+                                            SubscriptionPackets.subscription_id == subscription_id 
+                                          )
             if subs_packets_id is None:
-                for qid in query_id_list:
+                for query_id in query_id_list:
+                    q_packet_ids = self.store.find( QueryPacket.query_id, 
+                                                    QueryPacket.validation_id == query_id 
+                                                  )
+                    if q_packet_ids.count() > 1:
+                        for q_id in q_packet_ids:
+                            c_id = self.store.find( Query.category_id,
+                                                     Query.id == q_id
+                                                   ).one()
+                            if c_id == 1
+
+
+
+
+
+
+
+
+
+                    else:
+
                     spacket = SubscriptionPackets()
                     spacket.subscription_id = subscription_id
                     spacket.query_id = qid
                     self.store.add(spacket)
-                self.qmlogger.debug('Source subscription packets are created')
             else:
-                query_ids = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
-                for qid in query_id_list:
-                    if not (qid in query_ids):
+                q_ids = self.store.find( SubscriptionPackets.query_id, 
+                                         SubscriptionPackets.subscription_id == subscription_id
+                                       )
+                for q_id in q_ids:
+                    if not (q_id in query_ids):
                         spacket = SubscriptionPackets()
                         spacket.subscription_id = subscription_id
-                        spacket.query_id = qid
+                        spacket.query_id = q_id
                         self.store.add(spacket)
-                self.qmlogger.debug('Source subscription packets are created2')
         self.store.commit()
-    
+ 
     
     def createThreatSubscriptionPackets(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -420,7 +516,7 @@ class QueryManager:
                 if not query_list.is_empty():
                     self.qmlogger.debug('y2')
                     self.qmlogger.debug('Returning subscription information : %s' % name)
-                    return self.queryGenerator.createQueryExpression(query_list)
+                    return self.qGenerator.createQueryFilter(query_list)
         self.qmlogger.warning('Couldn\'t get subscription information : %s ' % name)
         return
 
