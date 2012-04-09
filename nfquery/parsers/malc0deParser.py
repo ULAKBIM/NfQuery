@@ -39,7 +39,7 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
                  {
                   'source_name' : source_name,
                   'date' : update_time,
-                  'mandatory_fields' : ['src_ip'],
+                  'mandatory_keys' : ['src_ip'],
                   'expr_list' : expr_list
                  }
                 ]
