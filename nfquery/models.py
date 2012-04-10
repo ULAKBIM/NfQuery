@@ -106,8 +106,8 @@ class Query(object):
 class QueryPacket(object):
     
     __storm_table__ = 'query_packet'
-    __storm_primary__ = "validation_id", "query_id"
 
+    id = Int(primary=True)
     validation_id = Int()
     query_id = Int()
 
@@ -135,7 +135,7 @@ class SubscriptionPacket(object):
     tags = Unicode()
 
     subscription = Reference(subscription_id, Subscription.id)
-    query_packet = Reference(query_packet_id, QueryPacket.validation_id)
+    query_packet = Reference(query_packet_id, QueryPacket.id)
 
 
 class Statistics(object):

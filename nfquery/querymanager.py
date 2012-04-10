@@ -346,7 +346,8 @@ class QueryManager:
     
         # 1) Source Name
         subscription_type=1
-        source_name_list = self.store.find(Source.name)
+        source_name_list = self.store.find( Subscription.id, 
+                                            In(Subscription.name, Source.name )
         source_name_list.group_by(Source.name)
         for source_name in source_name_list:
             subscription = self.store.find( Subscription.id, 
@@ -394,21 +395,31 @@ class QueryManager:
     def createSourceSubscriptionPackets(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         # If source_name is not given, we work for all sources.
-        source_name_list = self.store.find( Subscription.name, 
-                                            Subscription.type == 1 )
-        if source_name_list is None:
-            self.qmlogger.error( "Source is not found."
-                                 "Run 'reconfig sources' to update database." )
-            #sys.exit()
-            return
+        subs_id_list = self.store.find( Subscription.id,
+                                        Subscription.type == 1 and
+                                        Susbcription.name == Source.name
+        )
+        
+        source_id_list = self.store.find( Source.id,
+                                          Source.
+)
+
+        query_id_list = self.store.find( Query.id,
+                                         Query.category_id ==1 and
+                                         Query.source_id == source_id
+        )
+ 
+        for subs_id in subs_id_list:
+            
+ 
         for source_name in source_name_list:
             source_id = self.store.find( Source.id, 
-                                         Source.name == '%s' % unicode(
-                                         source_name)
+                                         Source.name == '%s' % 
+                                         unicode(source_name)
                                        ).one()
             query_id_list = self.store.find( Query.id, 
                                              Query.source_id == source_id and 
-                                             Query.category_id == 1)
+                                             Query.category_id == 1 )
             if query_id_list is None:
                 self.qmlogger.warning( "We don't have any query "
                                        "for this source." )
@@ -430,9 +441,9 @@ class QueryManager:
                     if q_packet_ids.count() > 1:
                         for q_id in q_packet_ids:
                             c_id = self.store.find( Query.category_id,
-                                                     Query.id == q_id
-                                                   ).one()
-                            if c_id == 1
+                                                    Query.id == q_id
+                                                  ).one()
+                            if c_id == 1:
 
 
 

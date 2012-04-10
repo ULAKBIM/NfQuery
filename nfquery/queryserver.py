@@ -120,6 +120,11 @@ class QueryServer:
         # Start Database Connection 
         self.store = db.get_store(self.config.database)
 
+        # Check if configuration file has changed or not
+        # If changed run reconfig sources or reconfig plugins.
+        # ASSUME THAT WE HANDLED HERE!!
+        # So db and conf file is consistent.
+
         # Start QueryManager
         self.queryManager = QueryManager(sources=self.config.sources, plugins=self.config.plugins)
         self.queryManager.start()
