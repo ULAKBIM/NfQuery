@@ -80,15 +80,16 @@ class QueryGenerator:
                 parser_ = self.store.find(Parser, 
                                           Parser.name == unicode(parser) ).one()
                 # Decide if output is changed or not to create query
-                if parser_.checksum == unicode(file_checksum):
-                    self.qglogger.info('No need to generate query, '
-                                       'parser output is not changed')
-                    return
-                else:
-                    self.qglogger.info('Checking parser output for '
-                                       'query generation')
-                    parser_.checksum = unicode(file_checksum)
-                    return self.sources[index].output_file
+                #if parser_.checksum == unicode(file_checksum):
+                #    self.qglogger.info('No need to generate query, '
+                #                       'parser output is not changed')
+                #    return
+                #else:
+                #    self.qglogger.info('Checking parser output for '
+                #                       'query generation')
+                #    parser_.checksum = unicode(file_checksum)
+                #    return self.sources[index].output_file
+                return self.sources[index].output_file
                                     
 
     def validateParserOutput(self, output_file):
@@ -217,8 +218,8 @@ class QueryGenerator:
                     query.update_time_id = time.id
                     query.creation_time_id = time.id
                 query.type_id = 1
-                self.store.add(query)
                 query.category_id = category
+                self.store.add(query)
                 self.store.flush()
                 q_packet = QueryPacket()
                 if category == 1:
@@ -227,7 +228,7 @@ class QueryGenerator:
                     q_packet.validation_id = query_id
                 q_packet.query_id = query.id
                 self.store.add(q_packet)
-                #self.store.flush()
+                self.store.flush()
             except Exception, e:
                 self.qglogger.warning(e)
                 sys.exit()

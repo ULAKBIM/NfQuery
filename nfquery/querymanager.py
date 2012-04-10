@@ -32,9 +32,9 @@ class QueryManager:
 
     def start(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.checkParsers()
-        self.executeParsers()
-        #self.createSubscriptionPackets()
+        #self.checkParsers()
+        #self.executeParsers()
+        self.createSubscriptionPackets()
 
     ###########################################################
     ### Plugin Management                                   ###
@@ -335,25 +335,18 @@ class QueryManager:
             2) Threat Type -> example : "Botnet,Malware,Honeypot Output, 
                                          Special Source Output"
             
-            These subscription types are inserted into subscription table
-            according to the condition of "if that subscription type have queries" 
-            in query table. "createSubscriptions" function fills the subscription 
-            table by inserting these subscription types. 
-    
     		!!!!!! SUBSCRIPTION_TAGS NE OLACAK !!!!!!!!
     
         '''
     
         # 1) Source Name
         subscription_type=1
-        source_name_list = self.store.find( Subscription.id, 
-                                            In(Subscription.name, Source.name )
+        source_name_list = self.store.find(Source.name)
         source_name_list.group_by(Source.name)
         for source_name in source_name_list:
             subscription = self.store.find( Subscription.id, 
                                             Subscription.name == '%s' % 
-                                            (source_name)
-                                          )
+                                            (source_name) )
             if subscription.is_empty():
                 subscription = Subscription()
                 subscription.type = subscription_type
@@ -381,6 +374,7 @@ class QueryManager:
 
         self.store.commit()
         self.qmlogger.debug('Subscription types are created')
+
     
     ###########################################################
     ### Subscription Packets Creation                       ###
@@ -395,121 +389,80 @@ class QueryManager:
     def createSourceSubscriptionPackets(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         # If source_name is not given, we work for all sources.
-        subs_id_list = self.store.find( Subscription.id,
-                                        Subscription.type == 1 and
-                                        Susbcription.name == Source.name
-        )
-        
-        source_id_list = self.store.find( Source.id,
-                                          Source.
-)
-
-        query_id_list = self.store.find( Query.id,
-                                         Query.category_id ==1 and
-                                         Query.source_id == source_id
-        )
- 
-        for subs_id in subs_id_list:
-            
- 
-        for source_name in source_name_list:
-            source_id = self.store.find( Source.id, 
-                                         Source.name == '%s' % 
-                                         unicode(source_name)
-                                       ).one()
-            query_id_list = self.store.find( Query.id, 
-                                             Query.source_id == source_id and 
-                                             Query.category_id == 1 )
-            if query_id_list is None:
-                self.qmlogger.warning( "We don't have any query "
-                                       "for this source." )
-                self.qmlogger.warning( "%s subscription creation is failed." % 
-                                       (source_name) )
-                continue
-            subscription_id = self.store.find( Subscription.id, 
-                                               Subscription.name == '%s' % 
-                                               unicode(source_name)
-                                             ).one()
-            s_packets_id = self.store.find( SubscriptionPackets.id,
-                                            SubscriptionPackets.subscription_id == subscription_id 
-                                          )
-            if subs_packets_id is None:
-                for query_id in query_id_list:
-                    q_packet_ids = self.store.find( QueryPacket.query_id, 
-                                                    QueryPacket.validation_id == query_id 
-                                                  )
-                    if q_packet_ids.count() > 1:
-                        for q_id in q_packet_ids:
-                            c_id = self.store.find( Query.category_id,
-                                                    Query.id == q_id
-                                                  ).one()
-                            if c_id == 1:
-
-
-
-
-
-
-
-
-
-                    else:
-
-                    spacket = SubscriptionPackets()
-                    spacket.subscription_id = subscription_id
-                    spacket.query_id = qid
-                    self.store.add(spacket)
-            else:
-                q_ids = self.store.find( SubscriptionPackets.query_id, 
-                                         SubscriptionPackets.subscription_id == subscription_id
-                                       )
-                for q_id in q_ids:
-                    if not (q_id in query_ids):
-                        spacket = SubscriptionPackets()
-                        spacket.subscription_id = subscription_id
-                        spacket.query_id = q_id
+        subs_list = self.store.find(( Subscription.id, Subscription.name),
+                                      (Subscription.type == 1) &
+                                      (Subscription.name == Source.name)   )
+        for subs_id, subs_name in subs_list:
+            print 'subs_id', subs_id
+            print 'subs_name', subs_name
+            s_id = self.store.find( Source.id, 
+                                    Source.name == subs_name ).one()
+            print 's_id', s_id
+            query_id_list = self.store.find( Query.id,
+                                            (Query.category_id == 1) &
+                                            (Query.source_id == s_id)  )
+            for q_id in query_id_list:
+                print 'q_id', q_id
+                qp_id = self.store.find( QueryPacket.id,
+                                         QueryPacket.query_id == q_id ).one()
+                if qp_id:
+                    # Check if it exists already
+                    s_packet = self.store.find( SubscriptionPacket.id,
+                                                (SubscriptionPacket.subscription_id == subs_id) & 
+                                                (SubscriptionPacket.query_packet_id == qp_id) ).one()
+                    print 'qp_id', qp_id
+                    print 'subs_id', subs_id
+                    if not s_packet:
+                        spacket = SubscriptionPacket()
+                        spacket.subscription_id = subs_id
+                        spacket.query_packet_id = qp_id
                         self.store.add(spacket)
+                        self.store.flush()
+                        #self.store.commit()
+                        print 'h3'
+                    else:
+                        self.qmlogger.debug('subscription packet already generated.')
+                else:
+                    raise Exception, 'QueryPacket couldn\'t be empty'
         self.store.commit()
- 
-    
+
+
     def createThreatSubscriptionPackets(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        threat_type_list = self.store.find(Subscription.name, Subscription.type == 2)
-        if threat_type_list is None:
-            self.qmlogger.error("Threat type is not registered to subscriptions. Run reconfig or check sources.")
-            #sys.exit()
-            return
-        for threat_type in threat_type_list:
-            threat_id = self.store.find(Threat.id, Threat.type == '%s' % unicode(threat_type)).one()
-            source_id = self.store.find(Source.id, Source.threat_id == threat_id)
-            if source_id.is_empty():
-                continue
-            query_id_list = self.store.find(Query.id, In(Query.source_id, list(source_id)))
-            if not query_id_list.is_empty():
-                subscription_id = self.store.find(Subscription.id, Subscription.name == '%s' % unicode(threat_type)).one()
-                subs_packet_id = self.store.find(SubscriptionPackets.id, SubscriptionPackets.subscription_id == subscription_id)
-                if subs_packet_id.is_empty():
-                    for qid in query_id_list:
-                        spacket = SubscriptionPackets()
-                        spacket.subscription_id = subscription_id
-                        spacket.query_id = qid
-                        self.store.add(spacket)
-                    self.qmlogger.debug('Threat subscription packets are created')
-                else:
-                    query_ids = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
-                    for qid in query_id_list:
-                        if not (qid in query_ids):
-                            spacket = SubscriptionPackets()
-                            spacket.subscription_id = subscription_id
-                            spacket.query_id = qid
+        # If source_name is not given, we work for all sources.
+        subs_list = self.store.find( (Subscription.id, Subscription.name),
+                                     (Subscription.type == 2) &
+                                     (Subscription.name == Threat.type)   ) 
+        for subs_id, subs_name in subs_list:
+            t_id = self.store.find( Threat.id,
+                                    Threat.type == subs_name).one()
+            source_id_list = self.store.find( Source.id, 
+                                              Source.threat_id == t_id )
+            for s_id in source_id_list:
+                query_id_list = self.store.find( Query.id,
+                                                 (Query.category_id ==1) & 
+                                                 (Query.source_id == s_id)   )
+                for q_id in query_id_list:
+                    qp_id = self.store.find( QueryPacket.id,
+                                             QueryPacket.query_id == q_id ).one()
+                    if qp_id:
+                        # Check if it exists already
+                        s_packet = self.store.find( SubscriptionPacket.id,
+                                                    (SubscriptionPacket.subscription_id == subs_id) &
+                                                    (SubscriptionPacket.query_packet_id == qp_id)     )
+                        if s_packet.is_empty():
+                            spacket  = SubscriptionPacket()
+                            spacket.subscription_id = subs_id
+                            spacket.query_packet_id = qp_id
                             self.store.add(spacket)
-                    self.qmlogger.debug('Threat subscription packets are added2')
-            else:
-                self.qmlogger.warning("We don't have any query for this threat type.")
-                self.qmlogger.warning("%s subscription is not created." % (threat_type))
+                            self.store.flush()
+                        else:
+                            self.qmlogger.debug('subscription packet already generated.')
+                    else:
+                        raise Exception, 'QueryPacket couldn\'t be empty'
         self.store.commit()
 
- 
+    
     ###########################################################
     ### Subscription Releasing and Plugin Request Handling  ###
     ###########################################################
