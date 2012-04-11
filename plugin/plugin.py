@@ -12,7 +12,7 @@ import logging
 class Plugin:
 
     def __init__(self):
-        #logger.LOGLEVEL = logging.DEBUG
+        #logger.LOGLEVEL = logging.INFO
         logger.LOGLEVEL = logging.DEBUG
         self.plogger = logger.createLogger('Plugin')
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -46,36 +46,60 @@ class Plugin:
    
     def getSubscriptionInformation(self, subscription):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.plogger.info('getting subscription information %s' % subscription)
+        #self.plogger.debug('Getting subscription information %s' % subscription)
+        #return [subscription, self.proxy.callRemote('get_subscription', subscription)]
         return self.proxy.callRemote('get_subscription', subscription)
 
 
+    #def printSubscriptionDetails(self, subscription_list):
     def printSubscriptionDetails(self, subscription):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
         if subscription is None:
             self.plogger.warning('Subscription info couldn\'t be gathered. Please try another subscription option : ')
         else:
+            #subscription_name = susbcription_list[0]
+            #subscription = susbcription_list[1]
             self.plogger.info('Here is the subscription information : ')
             #print dir(subscription)
-            print type(subscription)
-            print subscription
+            #print type(subscription)
+            #print subscription
             items = subscription.items()
             items.sort()
-            sorted_subs = [value for key, value in items]
-            for subs in sorted_subs:
-                for category, sub in subs.iteritems():
-                    print 'QueryPacket Details : '
-                    if category == 'validation':
-                        print category
-                        print 'query_id', sub["query_id"] 
-                        print 'filter', sub['filter']
-                        #for key,value in sub.iteritems():
-                        #    print key, value
-                    else:
-                        print '\tcategory', category
-                        print '\tquery_id', sub[u'query_id']
-                        print '\tfilter', sub[u'filter']
-                    print '\n'
+            s_subscription = [value for key, value in items]
+            try:
+                pp.pprint(s_subscription)
+                for subscription_id, query_packet_dict in s_subscription[0].iteritems():
+                    print '--------------------------------------------------------'
+                    print 'Subscription id : ', subscription_id
+                    #print 'Subscription name : ', subscription
+                    query_packet_items = query_packet_dict.items()
+                    query_packet_items.sort()
+                    query_packet_items = [value for key, value in query_packet_items]
+                    for q_packet_id, query_packet in query_packet_items[0].iteritems():
+                        print '\tQueryPacket ID : ', q_packet_id
+                    #    for id, query in query_packet.iteritems():
+                    #        print '\t\tQuery ID    : ', query['query_id']
+                    #        print '\t\t\tCategory ID : ', query['category_id']
+                    #        print '\t\t\tFilter      : ', query['filter']
+                        
+                    #print 'QueryPacket Details :'
+                    #for category, sub in sorted_subs:
+                    #    if category == 'validation':
+                    #        print '\t',category
+                    #        print '\tquery_id', sub["query id"]
+                    #        print '\tfilter', sub["filter"]
+                    #        #for key,value in sub.iteritems():
+                    #        #    print key, value
+                    #    else:
+                    #        print '\t\tcategory', category
+                    #        print '\t\tquery_id', sub['query id']
+                    #        print '\t\tfilter', sub['filter']
+                    #    print '\n'
+            except Exception, e:
+                self.plogger.warning(e)
+                #return
 
                    # 
                    # if category == 'validation':
@@ -99,13 +123,18 @@ class Plugin:
             self.plogger.warning('we don\'t have any subscriptions in QueryServer yet ;(')
             raise Exception, "No Query for subscription error"
         else:
+            self.plogger.info("Here is the subscription types.")
+            #print "- Here is the subscription types."
+            #print value
             for index in range(len(value)):
-                self.plogger.info("%d  : %s " % (index, value[index]))
+                #self.plogger.info("%d  : %s " % (index, value[index]))
+                print "\t%d\t:\t%s " % (index, value[index])
+            print "\tq/Q\t:\tQUIT"
             while True:
-                print len(value)
-                self.plogger.info("Please enter your subscription number : ")
+                #self.plogger.info("Please enter the subscription number you want to use")
+                print "Please enter the subscription number you want to use : "
                 index = raw_input()
-                if index == 'q':
+                if index == 'q' or index == 'Q':
                     self.plogger.warning("Quitting.")
                     raise Exception, 'Quitting.'
                 else:
@@ -123,6 +152,7 @@ class Plugin:
     def getSubscriptionList(self):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
         return self.proxy.callRemote('get_subscriptions')
+
 
     #def register(self):
     #    self.plogger.info('In %s' % sys._getframe().f_code.co_name)
@@ -156,6 +186,7 @@ class Plugin:
         d1.addCallbacks(self.printSubscriptionDetails, self.printError)
         d1.addErrback(self.printError)
 
+        # recursive call of self.start
         self.reactor.callLater(1, self.start)
 
         #d2 = self.chooseSubscription

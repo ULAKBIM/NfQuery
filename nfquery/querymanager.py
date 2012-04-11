@@ -461,34 +461,41 @@ class QueryManager:
     ###########################################################
     def getSubscription(self, name):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
         self.qmlogger.debug('Getting subscription %s' % name)
         subscription_id = self.store.find(Subscription.id, Subscription.name == unicode(name)).one()
         self.qmlogger.debug('subscription_id = %d' % subscription_id)
-        if not (subscription_id is None):
+        if subscription_id:
             self.qmlogger.debug('y1')
             qpacket_list = self.store.find(SubscriptionPacket.query_packet_id, SubscriptionPacket.subscription_id == subscription_id)
             if not qpacket_list.is_empty():
                 result = {}
                 self.qmlogger.debug('y2')
                 qp_query_id_list = self.store.find(QueryPacket.query_id, In(QueryPacket.id, list(qpacket_list)))
-                index = 0
+                query_packet = {}
                 for qp_query_id in qp_query_id_list:
-                    packet = {}
                     # I've validation id, now let's get other ids and try to create the whole query_packet
                     query_packet_ids = self.store.find(QueryPacket.query_id, QueryPacket.validation_id == qp_query_id)
+                    packet = {}
+                    index = 0
                     for query_id in query_packet_ids:
-                        #print 'query_id', query_id
                         query = self.store.find(Query, Query.id == query_id).one()
-                        category  = self.store.find( Category.category, Category.id == query.category_id).one()
                         query_filter = self.QGenerator.createQueryFilter([query])
-                        packet[category] = {'query id' : query.id, 'filter' : query_filter}
-                    result[index] = packet
-                    #print packet
-                    index+=1
-                self.qmlogger.debug('Returning subscription information : %s' % name)
-                #print result
+                        if query.category_id == 1:
+                            query_packet_id = query.id
+                        packet[index] = {   
+                                         'query_id' : query.id, 
+                                         'category_id' : query.category.id, 
+                                         'filter' : query_filter
+                                        }
+                        index += 1
+                    query_packet[qp_query_id] = packet
+                result[subscription_id] = query_packet
+                self.qmlogger.debug('Returning details for subscription %s ' % name)
+                pp.pprint(result)
                 return result
-        self.qmlogger.warning('Couldn\'t get subscription information : %s ' % name)
+        self.qmlogger.warning('Couldn\'t get details for subscription %s ' % name)
         return
 
 
