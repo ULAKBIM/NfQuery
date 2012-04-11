@@ -27,14 +27,14 @@ class QueryManager:
         self.store = db.get_store()
         self.sources = sources
         self.plugins = plugins
-        self.qGenerator = QueryGenerator(sources)
+        self.QGenerator = QueryGenerator(sources)
         
 
     def start(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         #self.checkParsers()
         #self.executeParsers()
-        self.createSubscriptionPackets()
+        #self.createSubscriptionPackets()
 
     ###########################################################
     ### Plugin Management                                   ###
@@ -297,10 +297,10 @@ class QueryManager:
                     returncode = subprocess.call([ 'python', 
                                                    self.sources[index].parser] )
                     if returncode == 0:
-                        self.qGenerator.createQuery(self.sources[index].parser)
+                        self.QGenerator.createQuery(self.sources[index].parser)
                     else:
                         self.qmlogger.warning('Parser returned with error')
-                    #self.qGenerator.createQuery(self.sources[index].parser)
+                    #self.QGenerator.createQuery(self.sources[index].parser)
                 except Exception, e:
                     self.qmlogger.error('got exception: %r, exiting' % (e))
                     continue
@@ -312,7 +312,7 @@ class QueryManager:
                         returncode = subprocess.call([ 'python', 
                                                        self.sources[index].parser])
                         if returncode == 0:
-                            self.qGenerator.createQuery(self.sources[index].parser)
+                            self.QGenerator.createQuery(self.sources[index].parser)
                         else:
                             self.qmlogger.warning('Parser returned with error')
                     except Exception, e:
@@ -393,16 +393,12 @@ class QueryManager:
                                       (Subscription.type == 1) &
                                       (Subscription.name == Source.name)   )
         for subs_id, subs_name in subs_list:
-            print 'subs_id', subs_id
-            print 'subs_name', subs_name
             s_id = self.store.find( Source.id, 
                                     Source.name == subs_name ).one()
-            print 's_id', s_id
             query_id_list = self.store.find( Query.id,
                                             (Query.category_id == 1) &
                                             (Query.source_id == s_id)  )
             for q_id in query_id_list:
-                print 'q_id', q_id
                 qp_id = self.store.find( QueryPacket.id,
                                          QueryPacket.query_id == q_id ).one()
                 if qp_id:
@@ -410,8 +406,6 @@ class QueryManager:
                     s_packet = self.store.find( SubscriptionPacket.id,
                                                 (SubscriptionPacket.subscription_id == subs_id) & 
                                                 (SubscriptionPacket.query_packet_id == qp_id) ).one()
-                    print 'qp_id', qp_id
-                    print 'subs_id', subs_id
                     if not s_packet:
                         spacket = SubscriptionPacket()
                         spacket.subscription_id = subs_id
@@ -419,7 +413,6 @@ class QueryManager:
                         self.store.add(spacket)
                         self.store.flush()
                         #self.store.commit()
-                        print 'h3'
                     else:
                         self.qmlogger.debug('subscription packet already generated.')
                 else:
@@ -473,14 +466,28 @@ class QueryManager:
         self.qmlogger.debug('subscription_id = %d' % subscription_id)
         if not (subscription_id is None):
             self.qmlogger.debug('y1')
-            squery_id_list = self.store.find(SubscriptionPackets.query_id, SubscriptionPackets.subscription_id == subscription_id)
-            if not squery_id_list.is_empty():
+            qpacket_list = self.store.find(SubscriptionPacket.query_packet_id, SubscriptionPacket.subscription_id == subscription_id)
+            if not qpacket_list.is_empty():
+                result = {}
                 self.qmlogger.debug('y2')
-                query_list = self.store.find(Query, In(Query.id, list(squery_id_list)))
-                if not query_list.is_empty():
-                    self.qmlogger.debug('y2')
-                    self.qmlogger.debug('Returning subscription information : %s' % name)
-                    return self.qGenerator.createQueryFilter(query_list)
+                qp_query_id_list = self.store.find(QueryPacket.query_id, In(QueryPacket.id, list(qpacket_list)))
+                index = 0
+                for qp_query_id in qp_query_id_list:
+                    packet = {}
+                    # I've validation id, now let's get other ids and try to create the whole query_packet
+                    query_packet_ids = self.store.find(QueryPacket.query_id, QueryPacket.validation_id == qp_query_id)
+                    for query_id in query_packet_ids:
+                        #print 'query_id', query_id
+                        query = self.store.find(Query, Query.id == query_id).one()
+                        category  = self.store.find( Category.category, Category.id == query.category_id).one()
+                        query_filter = self.QGenerator.createQueryFilter([query])
+                        packet[category] = {'query id' : query.id, 'filter' : query_filter}
+                    result[index] = packet
+                    #print packet
+                    index+=1
+                self.qmlogger.debug('Returning subscription information : %s' % name)
+                #print result
+                return result
         self.qmlogger.warning('Couldn\'t get subscription information : %s ' % name)
         return
 

@@ -746,15 +746,15 @@ class QueryGenerator:
                 for index in range(len(filter)-1):
                     filter_ += filter[index] + ' and '
                 filter_ += filter[index+1]
-                print 'query id : %d' % query.id
-                print 'validation_query:', filter_
-                filter_packet[query.id] = filter_
+                #filter_packet[query.id] = filter_
+                return filter_
             else:
-                print 'query id : %d' % query.id
-                print 'validation_query:', filter
-                filter_packet[query.id] = str(filter)
+                #print 'query id : %d' % query.id
+                #print 'validation_query:', filter
+                #filter_packet[query.id] = str(filter)
+                return str(filter)
 
-        return filter_packet
+        #return filter_packet
 
            #if FORMAT1
                #Determine multidomain or not.

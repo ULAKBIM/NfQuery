@@ -57,19 +57,35 @@ class Plugin:
         else:
             self.plogger.info('Here is the subscription information : ')
             #print dir(subscription)
-            #print subscription
-            
-            for key, value in subscription.iteritems():
-                #print key
-                #print value
-                #print type(value)
-                print 'Subscription ID : ', key 
-                if isinstance(value, list):
-                    for i in value:
-                        print i
-                elif isinstance(value, unicode):
-                    #for i in value.split()
-                    print value
+            print type(subscription)
+            print subscription
+            items = subscription.items()
+            items.sort()
+            sorted_subs = [value for key, value in items]
+            for subs in sorted_subs:
+                for category, sub in subs.iteritems():
+                    print 'QueryPacket Details : '
+                    if category == 'validation':
+                        print category
+                        print 'query_id', sub["query_id"] 
+                        print 'filter', sub['filter']
+                        #for key,value in sub.iteritems():
+                        #    print key, value
+                    else:
+                        print '\tcategory', category
+                        print '\tquery_id', sub[u'query_id']
+                        print '\tfilter', sub[u'filter']
+                    print '\n'
+
+                   # 
+                   # if category == 'validation':
+                   #     # category, filter, query_id
+                   #     print sub['category'] + 'query id : ' + sub['query_id'] 
+                   #     print sub['filter']
+                   # else:
+                   #     print '\t' + sub['category'] + 'query id : ' + sub['query_id']
+                   #     print '\t' + sub['filter']
+                   # print '\n'
                     
         #self.start()
         #self.shutDown()
@@ -135,9 +151,9 @@ class Plugin:
 
 
         d1 = self.getSubscriptionList()
-        d1.addCallbacks(self.chooseSubscription)
-        d1.addCallbacks(self.getSubscriptionInformation)
-        d1.addCallbacks(self.printSubscriptionDetails)
+        d1.addCallbacks(self.chooseSubscription, self.printError)
+        d1.addCallbacks(self.getSubscriptionInformation, self.printError)
+        d1.addCallbacks(self.printSubscriptionDetails, self.printError)
         d1.addErrback(self.printError)
 
         self.reactor.callLater(1, self.start)
