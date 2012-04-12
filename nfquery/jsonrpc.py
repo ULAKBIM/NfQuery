@@ -11,7 +11,7 @@ from twisted.internet import reactor, ssl
 from twisted.application import service,internet
 
 import db
-from models import Plugin 
+from models import Plugin, Prefix 
 from logger import createLogger
 
 class jsonRPCServer(jsonrpc.JSONRPC):
@@ -59,6 +59,25 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         return self.queryManager.getSubscription(name)
 
 
+    def jsonrpc_get_prefixes(self, ip_address):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('getting prefix list information')
+        prefix_id = self.store.find( Plugin.prefix_id, 
+                                     Plugin.plugin_ip == unicode(ip_address)
+                                   ).one()
+        if not prefix_id:
+            self.rpclogger.warning('Plugin ip is not correct')
+            self.rpclogger.warning('Can not return prefix list')
+            return
+        else:
+            prefix_list = self.store.find(Prefix.prefix)
+            p_list = []
+            for prefix in prefix_list:
+                p_list.append(prefix)
+            print p_list
+            return p_list
+
+
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
@@ -89,7 +108,8 @@ class jsonRPCServer(jsonrpc.JSONRPC):
                 message =  'Your plugin is registered.'
                 message += 'Feel free to checkout query subscriptions.'
                 print message
-                return self.jsonrpc_get_subscriptions()
+                return message
+                #return self.jsonrpc_get_subscriptions()
        
 
  

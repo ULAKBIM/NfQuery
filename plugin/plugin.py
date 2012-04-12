@@ -1,5 +1,8 @@
 #!/usr/local/bin/python
 
+import subprocess
+import logging
+import locale
 import time
 import sys
 
@@ -8,9 +11,8 @@ from txjsonrpc.web.jsonrpc import Proxy
 from config import Config, ConfigError
 from nfquery import logger
 from termcolor import colored, cprint
-from nfquery.utils import ask_yes_no
-import subprocess
-import logging
+from nfquery.utils import ask_yes_no, addressInNetwork
+
 
 class Plugin:
 
@@ -19,9 +21,10 @@ class Plugin:
         #logger.LOGLEVEL = logging.DEBUG
         self.plogger = logger.createLogger('Plugin')
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.proxy = Proxy('https://127.0.0.1:7777/')
+        self.proxy = Proxy('https://193.140.94.205:7777/')
         #self.subscription = None
         self.chosen = None
+        self.prefix_list = None
         self.reactor = reactor
 
     def parseConfig(self, conf_file):
@@ -38,12 +41,17 @@ class Plugin:
     def printError(self, error):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
         #print 'error', error
-        self.shutDown()
+        try:
+            self.shutDown()
+            return
+        except Exception, e:
+            #print("%s" % e)
+            sys.exit()
 
 
     def shutDown(self):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.plogger.info("Shutting down reactor...")
+        self.plogger.warning("Shutting down reactor...")
         self.reactor.stop()
 
    
@@ -115,40 +123,123 @@ class Plugin:
                         print '\n--------------------------------------------------------' \
                               '--------------------------------------------------------'
                         text = '\n\tFilter : '
-                        filter = colored('\n\t\t%s ' % value['filter'], 'magenta')
+                        filter = colored('\n\t\t%s ' % value['filter'], 'magenta', attrs=['bold'])
                         print text + filter
                         text = colored('Do you approve the execution of filter above :', 'green')
                         answer = ask_yes_no('\n\t' + text , default="no")
                         if answer is True:
                             print colored('\tStarting Query Execution ....', 'green')
-                            self.runNfDump(value['filter'])
+                            self.runNfDump(value['filter'], type=1)
+                            print '\n--------------------------------------------------------' \
+                                  '--------------------------------------------------------\n'
                         else:
                             return
             except Exception, e:
                 print e
                 return
 
-        #self.start()
-        #self.shutDown()
-        #self.printValue(name)
+
+    def format_num(self, num):
+        locale.setlocale(locale.LC_NUMERIC, "")
+        """
+            Format a number according to given places.
+            Adds commas, etc. Will truncate floats into ints!
+        """
+        try:
+            inum = int(num)
+            return locale.format("%.*f", (0, inum), True)
+
+        except (ValueError, TypeError):
+            return str(num)
 
 
-    def runNfDump(self, filter):
-        filter = 'src net 193.140.94.0/24 and dst port 22'
+    def get_max_width(self, table, index):
+        """
+            Get the maximum width of the given column index
+        """
+        return max([len(self.format_num(row[index])) for row in table])
+
+
+    def pprint_table(self, out, table):
+        """
+            Prints out a table of data, padded for alignment
+            @param out: Output stream (file-like object)
+            @param table: The table to print. A list of lists.
+            Each row must have the same number of columns. 
+        """
+
+        col_paddings = []
+
+        for i in range(len(table[0])):
+            col_paddings.append(self.get_max_width(table, i))
+
+        for row in table:
+            # left col
+            print >> out, row[0].ljust(col_paddings[0] + 1),
+            # rest of the cols
+            for i in range(1, len(row)):
+                col = self.format_num(row[i]).rjust(col_paddings[i] + 1)
+                print >> out, col,
+            print >> out
+
+
+    def runNfDump(self, filter, type=1):
+        import string
+        #filter = 'src ip 193.140.94.140 and dst port 123'
         nfdump = '/usr/local/bin/nfdump'
-        data = './data/nfcapd.201106211000'
+        data = './demoflow/'
+        #data = './data/'
         format = "fmt:srcip:%sa-srcport:%sp-dstip:%da-dstport:%dp"
-        wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        #aggregate = "srcip,dstip,dstport"
+        aggregate = "dstip"
+        wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, '-A', aggregate, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         (standardout, junk) = wgproc.communicate()
         output_length = len(standardout.split('\n'))
         if output_length == 6:
-            print colored('\tCouldn\'t find any meaningful result', 'red')
+            print colored('\tCouldn\'t find any meaningful result', 'green')
         else:
-            print colored('\tFound query execution results as given below : ', 'green')
+            print colored('\tFound query execution results as given below : \n', 'green')
             output = standardout.split('\n')[1:]
             output_length -= 1
+            #key_list = []
+            fields = ["\tsrcip", "srcport", "dstip", "dstport"]
+            for i in range(len(fields)):
+                fields[i] = colored(fields[i], 'magenta', attrs=['bold'])
+            print_table = [fields]
+            table = []
             for index in range(output_length-5):
-                print '\t',output[index]
+                out = output[index].replace(" ","").split('-')
+                l_print = []
+                l_all = []
+                for o in out:
+                    #print o
+                    #if o.split(':')[0] == 'srcip':
+                    #    l_print.append(colored('\t' + o.split(':')[1], 'white', attrs=['bold']))
+                    #    l_all(o.split(':')[1])
+                    #elif o.split(':')[0] == 'srcport':
+                    #    l_print.append(colored(o.split(':')[1], 'white', attrs=['bold']))
+                    #elif o.split(':')[0] == 'dstip':
+                    #    l_print.append(colored(o.split(':')[1], 'white', attrs=['bold']))
+                    #elif o.split(':')[0] == 'dstport':
+                    #    l_print.append(colored(o.split(':')[1], 'white', attrs=['bold']))
+                    #else:
+                    #    print 'pat'
+                    l_print.append(colored('\t' + o.split(':')[1], 'white', attrs=['bold']))
+                    l_all.append(o.split(':')[1])
+                print_table.append(l_print)
+                table.append(l_all)
+            #print len(table)
+            #print table
+
+            for index in range(len(table)-1):
+                for prefix in self.prefix_list:
+                    flag1 = addressInNetwork(table[index][0], prefix)
+                    flag2 = addressInNetwork(table[index][2], prefix)
+                    print colored(' -------------- found2 -----------', 'red', attrs=['bold'])
+                    print prefix
+                    print table[index][2]
+
+            self.pprint_table(sys.stdout, print_table)
             question = colored('\n\tDo you want to send statistics to NfQueryServer:', 'green')
             answer = ask_yes_no(question, default="no")
             if answer is True:
@@ -203,14 +294,38 @@ class Plugin:
         return self.proxy.callRemote('get_subscriptions')
 
 
-    #def register(self):
-    #    self.plogger.info('In %s' % sys._getframe().f_code.co_name)
-    #    e = self.proxy.callRemote( 'register', self.config.plugin.organization, self.config.plugin.adm_name, 
-    #                          self.config.plugin.adm_mail, self.config.plugin.adm_tel, self.config.plugin.adm_publickey_file, 
-    #                          self.config.plugin.prefix_list, self.config.plugin.plugin_ip )
-    #    e.addCallback(self.printValue)
-    #    self.reactor.stop()
+    def register(self):
+        self.plogger.info('In %s' % sys._getframe().f_code.co_name)
+        call = self.proxy.callRemote( 'register', self.config.plugin.organization, 
+                                               self.config.plugin.adm_name,
+                                               self.config.plugin.adm_mail, 
+                                               self.config.plugin.adm_tel, 
+                                               self.config.plugin.adm_publickey_file,
+                                               self.config.plugin.prefix_list, 
+                                               self.config.plugin.plugin_ip )
+        call.addCallback(self.printValue)
+        
 
+    def printValue(self, return_value):
+        self.plogger.info('In %s' % sys._getframe().f_code.co_name)
+        print '--------------------------------------------------------' \
+              '--------------------------------------------------------'
+        self.plogger.info(colored(return_value, 'green', attrs=['bold']))
+        print '--------------------------------------------------------' \
+              '--------------------------------------------------------'
+
+
+    def getPrefixes(self):
+        self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
+        call = self.proxy.callRemote( 'get_prefixes', self.proxy.host)
+        call.addCallback(self.assignPrefixList)
+
+
+    def assignPrefixList(self, prefix_list):
+        self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.prefix_list = prefix_list
+        self.plogger.info(self.prefix_list)
+        
 
     def start(self):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -229,9 +344,9 @@ class Plugin:
         #####   run it reverse way ###  d4.addCallbacks(d1, self.printError)
 
         d1 = self.getSubscriptionList()
-        d1.addCallbacks(self.chooseSubscription, self.printError)
-        d1.addCallbacks(self.getSubscriptionInformation, self.printError)
-        d1.addCallbacks(self.printSubscriptionDetails, self.printError)
+        d1.addCallbacks(self.chooseSubscription)
+        d1.addCallbacks(self.getSubscriptionInformation)
+        d1.addCallbacks(self.printSubscriptionDetails)
         #d1.addCallbacks(self.Test, self.printError)
         d1.addErrback(self.printError)
 
@@ -247,13 +362,17 @@ class Plugin:
         #d2.addCallbacks(d3, self.printError)
         #d3.addCallbacks(d4, self.printError)
         #d4.addCallbacks(d1, self.printError)
- 
+
+
+        
+
     def run(self):
         try:
             self.reactor.run()
         except KeyboardInterrupt:
             print "You hit control-c"
-            self.shutDown()
+            sys.exit()
+            #self.shutDown()
 
 
 
@@ -261,6 +380,8 @@ if __name__ == "__main__":
 
     p = Plugin()
     p.parseConfig('./plugin.conf')
+    p.register()
+    p.getPrefixes()
     p.start()
     p.run()
     

@@ -414,7 +414,8 @@ class QueryManager:
                         self.store.flush()
                         #self.store.commit()
                     else:
-                        self.qmlogger.debug('subscription packet already generated.')
+                        #self.qmlogger.debug('subscription packet already generated.')
+                        pass
                 else:
                     raise Exception, 'QueryPacket couldn\'t be empty'
         self.store.commit()
@@ -450,7 +451,8 @@ class QueryManager:
                             self.store.add(spacket)
                             self.store.flush()
                         else:
-                            self.qmlogger.debug('subscription packet already generated.')
+                            #self.qmlogger.debug('subscription packet already generated.')
+                            pass
                     else:
                         raise Exception, 'QueryPacket couldn\'t be empty'
         self.store.commit()
