@@ -148,7 +148,7 @@ class QueryGenerator:
                     self.qglogger.error( 'expr_list keys must contain '
                                          'all mandatory_keys ' )
                     continue
-                self.qglogger.debug('v_query : %s' % str(expr))
+                #self.qglogger.debug('v_query : %s' % str(expr))
                 # insert validation query
                 q_id = self.insertQuery(s_id, date, expr)
                 if not q_id:
@@ -158,7 +158,7 @@ class QueryGenerator:
                     for m in m_keys:
                         m_query[m] = expr.pop(m)
                     #self.qglogger.debug('m_query : %s' % str(m_query))
-                    self.qglogger.info('m_query : %s' % str(m_query))
+                    #self.qglogger.info('m_query : %s' % str(m_query))
                     length = len(expr) - 1
                     opt_query_list = self.getExpressionCombinations( expr, 
                                      m_query, length )
@@ -168,7 +168,7 @@ class QueryGenerator:
                                           query_id = q_id )
                         for opt_query in opt_query_list:
                             # insert optional query
-                            self.qglogger.info('opt_query : %s' % str(opt_query))
+                            #self.qglogger.info('opt_query : %s' % str(opt_query))
                             self.insertQuery( s_id, date, opt_query, category=3,
                                               query_id = q_id)
                             #self.qglogger.debug('opt_query : %s' % str(opt_query))
@@ -310,8 +310,8 @@ class QueryGenerator:
                     self.store.flush()
                     query.type_id = type.id
                 self.store.commit()
-                self.qglogger.debug('New query is inserted succesfully')
-                self.qglogger.info('query_id : %d' % query.id)
+                #self.qglogger.debug('New query is inserted succesfully')
+                #self.qglogger.info('query_id : %d' % query.id)
                 return query.id
             except Exception, e:
                 self.qglogger.warning(e)
@@ -334,8 +334,8 @@ class QueryGenerator:
                     self.store.flush()
                     query.update_time_id = time.id
                 self.store.commit()
-                self.qglogger.debug('Query time is updated')
-                self.qglogger.info('query_id : %d' % query.id)
+                #self.qglogger.debug('Query time is updated')
+                #self.qglogger.info('query_id : %d' % query.id)
                 return query.id
             except Exception, e:
                 self.qglogger.warning(e)

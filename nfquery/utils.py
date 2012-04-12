@@ -1,13 +1,20 @@
-
 import sys
 import socket
+import struct
+
+
+def addressInNetwork(ip, net):
+    ipaddr = int(''.join([ '%02x' % int(x) for x in ip.split('.') ]), 16)
+    netstr, bits = net.split('/')
+    netaddr = int(''.join([ '%02x' % int(x) for x in netstr.split('.') ]), 16)
+    mask = (0xffffffff << (32 - int(bits))) & 0xffffffff
+    return (ipaddr & mask) == (netaddr & mask)
 
 
 def dottedQuadToNum(ip):                                        
     """
         convert decimal dotted quad string to long integer
     """
-    
     hexn = ''.join(["%02X" % long(i) for i in ip.split('.')])   
     return long(hexn, 16)                                       
 
