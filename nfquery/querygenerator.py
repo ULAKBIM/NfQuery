@@ -134,6 +134,7 @@ class QueryGenerator:
  
 
     def generateQuery(self, data):
+        q_id = 0
         for index in range(len(data)):
             date = data[index]['date']
             s_id = data[index]['source_id']
@@ -147,6 +148,8 @@ class QueryGenerator:
                 elif not set( m_keys).issubset(set(expr.keys()) ):
                     self.qglogger.error( 'expr_list keys must contain '
                                          'all mandatory_keys ' )
+                    print m_keys
+                    expr.keys()
                     continue
                 #self.qglogger.debug('v_query : %s' % str(expr))
                 # insert validation query
@@ -174,6 +177,7 @@ class QueryGenerator:
                             #self.qglogger.debug('opt_query : %s' % str(opt_query))
                     except Exception, e:
                         self.qglogger.error(e)
+        return q_id
 
 
     def generateQueryType(self, type_):
@@ -638,7 +642,8 @@ class QueryGenerator:
                     #self.qglogger.info('Line --> ')
                     query_id = query.id
                     src_ip_id = self.store.find( SrcIP.ip_id, 
-                                                 SrcIP.query_id == query_id ).one()
+                                                 SrcIP.query_id == query_id 
+                                               ).one()
                     src_ip = self.store.find( IP.ip, 
                                               IP.id == src_ip_id ).one()
                     filter.append('src ip %s ' % str(src_ip))
@@ -646,7 +651,8 @@ class QueryGenerator:
                 if type == 1:
                     #self.qglogger.info('Line --> ')
                     src_port_id = self.store.find( SrcPort.port_id, 
-                                                   SrcPort.query_id == query.id ).one()
+                                                   SrcPort.query_id == query.id 
+                                                 ).one()
                     src_port = self.store.find ( Port.port,
                                                  Port.id == src_port_id ).one()
                     filter.append('src port %s ' % str(src_port))
@@ -654,7 +660,8 @@ class QueryGenerator:
                 if type == 2:
                     #self.qglogger.info('Line --> ')
                     dst_ip_id = self.store.find( DstIP.ip_id, 
-                                                 DstIP.query_id == query.id ).one()
+                                                 DstIP.query_id == query.id 
+                                               ).one()
                     dst_ip = self.store.find( IP.ip,
                                               IP.id == dst_ip_id ).one()
                     filter.append('dst ip %s ' % str(dst_ip))

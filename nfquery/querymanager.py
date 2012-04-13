@@ -32,9 +32,9 @@ class QueryManager:
 
     def start(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.checkParsers()
-        self.executeParsers()
-        self.createSubscriptionPackets()
+        #self.checkParsers()
+        #self.executeParsers()
+        #self.createSubscriptionPackets()
 
     ###########################################################
     ### Plugin Management                                   ###
@@ -486,9 +486,12 @@ class QueryManager:
                         query_filter = self.QGenerator.createQueryFilter([query])
                         if query.category_id == 1:
                             query_packet_id = query.id
+                        query_type = self.store.find(Type.type, query.type_id == Type.id).one()
+                        print query_type
                         packet[index] = {   
                                          'query_id' : query.id, 
-                                         'category_id' : query.category.id, 
+                                         'query_type' : query_type,
+                                         'category_id' : query.category.id,
                                          'filter' : query_filter
                                         }
                         index += 1
@@ -509,4 +512,33 @@ class QueryManager:
         return list(subscription_list)
 
 
-            
+    def registerAlert(self, alert):
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
+        print '\n'
+        self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
+        pp.pprint(alert)
+        print '\n'
+        #return
+        q_id = self.QGenerator.generateQuery(alert)
+    
+        # ayni query insert edilmeyeceginden, generateQuery ' den q_id donmez
+        # o zaman alerti eklemeye de gerek kalmaz.
+        if q_id:
+            self.qmlogger.warning('Query already generated so no need to create new alert.')
+            #alerts = self.store.find( Alert.id,
+            #                          Alert.query_id == q_id )
+        else:
+            try:
+                print 'here!!!!!!!!!!!!!!!!!!!!!'
+                alert = Alert()
+                alert.query_id = q_id
+                self.store.add(alert)
+                self.store.commit()
+                return True
+            except Exception, e:
+                print e
+                return False
+        
+
+        

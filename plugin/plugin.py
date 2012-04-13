@@ -5,6 +5,7 @@ import logging
 import locale
 import time
 import sys
+import string
 
 from twisted.internet import reactor,defer
 from txjsonrpc.web.jsonrpc import Proxy
@@ -126,17 +127,216 @@ class Plugin:
                         filter = colored('\n\t\t%s ' % value['filter'], 'magenta', attrs=['bold'])
                         print text + filter
                         text = colored('Do you approve the execution of filter above :', 'green')
-                        answer = ask_yes_no('\n\t' + text , default="no")
+                        answer = ask_yes_no('\n\t' + text, default="no")
                         if answer is True:
                             print colored('\tStarting Query Execution ....', 'green')
-                            self.runNfDump(value['filter'], type=1)
+                            #print dir(value)
+                            #pp.pprint(value)
+                            self.runNfDump(value['filter'], type=value['query_type'], index=id)
                             print '\n--------------------------------------------------------' \
                                   '--------------------------------------------------------\n'
                         else:
+                            print 'here3'
                             return
             except Exception, e:
                 print e
                 return
+
+    '''
+        SUBSCRIPTION_ID : 49
+
+        QueryPacket : 
+
+            [0] Validation Query
+                filter : src ip 193.140.94.160  and src port 41315  and dst ip 193.140.83.122  and dst port 4101 
+
+            [1] Mandatory Query
+                filter :  src ip 193.140.94.160  and dst port 4101 
+
+            [2] Optional Query
+                filter :  src ip 193.140.94.160  and dst ip 193.140.83.122  and dst port 4101 
+
+            [3] Optional Query
+                filter :  src ip 193.140.94.160  and src port 41315  and dst port 4101
+
+    '''
+
+
+    def runNfDump(self, filter, type='', index=0):
+        print 'here6'
+        # This works without errors only for the honeypot demo use-case scenario
+        # Try to find a generic way for analyzing flows according to queries.
+        nfdump = '/usr/local/bin/nfdump'
+        data = './demoflow/'
+        format = "fmt:srcip:%sa-srcport:%sp-dstip:%da-dstport:%dp"
+        filter = filter
+        index = index
+        type_list = ['srcip', 'srcport', 'dstip', 'dstport']
+        type = type.split(',')
+
+        if  index == 0:       # means it's validation query
+
+            '''
+                [0] Validation Query
+                    filter : src ip 193.140.94.160  and src port 41315  and dst ip 193.140.83.122  and dst port 4101
+            '''
+
+
+            aggregate = "srcip,srcport,dstip,dstport"
+
+            #wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, '-A', aggregate, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            #(standardout, junk) = wgproc.communicate()
+
+        elif  index == 1:     # means it's mandatory query
+
+            '''
+                [1] Mandatory Query
+                    filter :  src ip 193.140.94.160  and dst port 4101
+            '''
+
+            # Format Determination
+            #   * Output format should include only the fields we need to correlate
+            #   * So, for mandatory and optional queries, we don't include filter fields
+            #     in the output format.
+            #   * Additionally, for now, we won't include srcport, because we never need it.
+
+
+            # Aggregation Determination
+            #   * Generally, the complement fields of what is given as filter fields
+            #     is used as aggreagation fields. Because we already know what is given,
+            #     and we need to correlate extracted output. 
+            #   * Also, We don't use srcport here as we don't use it in output format.
+
+            print type_list
+            removal_list1=[]
+            #removal_list2=[]
+            for t in type:
+                removal_list1.append(type_list[int(t)])
+                #removal_list2.append(format_list[int(t)])
+
+            for removal in removal_list1:
+                for t in type_list:
+                    if removal == t:
+                        type_list.remove(removal)
+
+            #for removal in removal_list2:
+            #    for f in format_list:
+            #        if removal == f:
+            #            format_list.remove(removal)
+
+            # Lastly remove srcport
+            #print type_list.remove('srcport')
+            #print format_list.remove('sp')
+
+
+            print type_list
+            #print format_list
+
+            '''
+                determining the aggregation and output format, by manipulating type_list
+                and format_list variables.
+            '''
+
+            aggregate = ""
+            length = len(type_list)
+            #print length
+            for i in range(length-1):
+                aggregate += type_list[i]
+                #format += "%s:\%%s-" % (type_list[i], format_list[i])
+            print 'ok'
+            #aggregate += type_list[length-1]
+            aggregate = "srcip,dstip,dstport"
+            #print type_list[length-1]
+            #print 'aggregate', aggregate
+            #print 'format', format
+            wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, '-A', aggregate, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            (standardout, junk) = wgproc.communicate()
+            output_length = len(standardout.split('\n'))
+            if output_length == 6:
+                print colored('\tCouldn\'t find any meaningful result', 'green')
+                return
+            else:
+                print colored('\tFound query execution results as given below : \n', 'green')
+                output = standardout.split('\n')[1:output_length-5]
+                #print output
+
+            fields = ["\tsrcip", "srcport", "dstip", "\t\tdstport"]
+            for i in range(len(fields)):
+                fields[i] = colored(fields[i], 'magenta', attrs=['bold'])
+            print_table = [fields]
+            table = []
+            for index in range(output_length-6):
+                #print output[index]
+                out = output[index].replace(" ","").split('-')
+                l_print = []
+                l_all = []
+                for o in out:
+                    l_print.append(colored('\t' + o.split(':')[1], 'white', attrs=['bold']))
+                    l_all.append(o.split(':')[1])
+                print_table.append(l_print)
+                table.append(l_all)
+            #print len(table)
+            #print table
+        
+            self.prefix_list.remove('193.140.83.0/24')
+
+
+            new_query_list = []
+            expr_list = []
+            for prefix in self.prefix_list:
+                for index in range(len(table)):
+                    flag = addressInNetwork(table[index][2], prefix)
+                    if flag:
+                        print colored(' -------------- found2 -----------', 'red', attrs=['bold'])
+                        print prefix
+                        print table[index][2]
+                        print colored(' ---------------------------------', 'red', attrs=['bold'])
+                        expr_list.append( 
+                                           {
+                                            "src_ip"   : str(table[index][0]),
+                                            "dst_ip"   : str(table[index][2]),
+                                            "dst_port" : str(table[index][3])
+                                           }
+                                          
+                                         )
+
+            #-------------------------------------------#
+            alert = [
+                        {
+                         "expr_list" : expr_list,
+                         "mandatory_keys" : "src_ip,dst_port",
+                         "source_id" : 13,
+                         "date" : time.strftime('%Y-%m-%d %H:%M')
+                        }
+                    ]
+            print alert[0]['date']
+            #-------------------------------------------#
+            self.pprint_table(sys.stdout, print_table)
+            question = colored('\n\tDo you want to send statistics to NfQueryServer:', 'green')
+            answer = ask_yes_no(question, default="no")
+            if answer is True:
+                print colored('\n\tSending statistics to NfQueryServer... ', 'green')
+                call = self.proxy.callRemote('get_alert', alert)
+                call.addCallback(self.printValue)
+            else:
+                print colored('\tAs you wish.', 'red')
+                return
+
+        else:                 # means it's optional query
+ 
+            '''
+                [2] Optional Query
+                    filter :  src ip 193.140.94.160  and dst ip 193.140.83.122  and dst port 4101    
+            ''' 
+
+            print 'doing nothing'
+
+            #wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, '-A', aggregate, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            #(standardout, junk) = wgproc.communicate()
+
+
+
+
 
 
     def format_num(self, num):
@@ -181,80 +381,7 @@ class Plugin:
                 col = self.format_num(row[i]).rjust(col_paddings[i] + 1)
                 print >> out, col,
             print >> out
-
-
-    def runNfDump(self, filter, type=1):
-        import string
-        #filter = 'src ip 193.140.94.140 and dst port 123'
-        nfdump = '/usr/local/bin/nfdump'
-        data = './demoflow/'
-        #data = './data/'
-        format = "fmt:srcip:%sa-srcport:%sp-dstip:%da-dstport:%dp"
-        #aggregate = "srcip,dstip,dstport"
-        aggregate = "dstip"
-        wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, '-A', aggregate, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        (standardout, junk) = wgproc.communicate()
-        output_length = len(standardout.split('\n'))
-        if output_length == 6:
-            print colored('\tCouldn\'t find any meaningful result', 'green')
-        else:
-            print colored('\tFound query execution results as given below : \n', 'green')
-            output = standardout.split('\n')[1:]
-            output_length -= 1
-            #key_list = []
-            fields = ["\tsrcip", "srcport", "dstip", "dstport"]
-            for i in range(len(fields)):
-                fields[i] = colored(fields[i], 'magenta', attrs=['bold'])
-            print_table = [fields]
-            table = []
-            for index in range(output_length-5):
-                out = output[index].replace(" ","").split('-')
-                l_print = []
-                l_all = []
-                for o in out:
-                    #print o
-                    #if o.split(':')[0] == 'srcip':
-                    #    l_print.append(colored('\t' + o.split(':')[1], 'white', attrs=['bold']))
-                    #    l_all(o.split(':')[1])
-                    #elif o.split(':')[0] == 'srcport':
-                    #    l_print.append(colored(o.split(':')[1], 'white', attrs=['bold']))
-                    #elif o.split(':')[0] == 'dstip':
-                    #    l_print.append(colored(o.split(':')[1], 'white', attrs=['bold']))
-                    #elif o.split(':')[0] == 'dstport':
-                    #    l_print.append(colored(o.split(':')[1], 'white', attrs=['bold']))
-                    #else:
-                    #    print 'pat'
-                    l_print.append(colored('\t' + o.split(':')[1], 'white', attrs=['bold']))
-                    l_all.append(o.split(':')[1])
-                print_table.append(l_print)
-                table.append(l_all)
-            #print len(table)
-            #print table
-
-            for index in range(len(table)-1):
-                for prefix in self.prefix_list:
-                    flag1 = addressInNetwork(table[index][0], prefix)
-                    flag2 = addressInNetwork(table[index][2], prefix)
-                    print colored(' -------------- found2 -----------', 'red', attrs=['bold'])
-                    print prefix
-                    print table[index][2]
-
-            self.pprint_table(sys.stdout, print_table)
-            question = colored('\n\tDo you want to send statistics to NfQueryServer:', 'green')
-            answer = ask_yes_no(question, default="no")
-            if answer is True:
-                print colored('\n\tSending statistics to NfQueryServer... ', 'green')
-                self.sendStatistics('statistic')
-            else:
-                print colored('\tAs you wish.', 'red')
-                return
-            #print standardout
-
-
-    def sendStatistics(self, statistics):
-        pass
-        return
-
+    
 
     def chooseSubscription(self, value):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -363,8 +490,6 @@ class Plugin:
         #d3.addCallbacks(d4, self.printError)
         #d4.addCallbacks(d1, self.printError)
 
-
-        
 
     def run(self):
         try:
