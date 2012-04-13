@@ -344,3 +344,13 @@ class Scale(object):
 
     query = Reference(query_id, Query.id)
 
+class Alert(object):
+
+    __storm_table__ = 'alert'
+  
+    id = Int(primary=True)
+    query_id = Int()
+
+    query = Reference(query_id, Query.id)
+
+

@@ -46,37 +46,6 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         """
         raise jsonrpc.Fault(123, "The fault procedure is faulty.")
 
-    
-    def jsonrpc_get_subscriptions(self):
-        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.rpclogger.debug('returning subscriptions')
-        return list(self.queryManager.getAllSubscriptions())
-
-    
-    def jsonrpc_get_subscription(self, name):
-        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.rpclogger.debug('getting subscription information')
-        return self.queryManager.getSubscription(name)
-
-
-    def jsonrpc_get_prefixes(self, ip_address):
-        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.rpclogger.debug('getting prefix list information')
-        prefix_id = self.store.find( Plugin.prefix_id, 
-                                     Plugin.plugin_ip == unicode(ip_address)
-                                   ).one()
-        if not prefix_id:
-            self.rpclogger.warning('Plugin ip is not correct')
-            self.rpclogger.warning('Can not return prefix list')
-            return
-        else:
-            prefix_list = self.store.find(Prefix.prefix)
-            p_list = []
-            for prefix in prefix_list:
-                p_list.append(prefix)
-            print p_list
-            return p_list
-
 
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -110,7 +79,47 @@ class jsonRPCServer(jsonrpc.JSONRPC):
                 print message
                 return message
                 #return self.jsonrpc_get_subscriptions()
-       
+
+    
+    def jsonrpc_get_subscriptions(self):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('returning subscriptions')
+        return list(self.queryManager.getAllSubscriptions())
+
+    
+    def jsonrpc_get_subscription(self, name):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('getting subscription information')
+        return self.queryManager.getSubscription(name)
+
+
+    def jsonrpc_get_prefixes(self, ip_address):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('getting prefix list information')
+        prefix_id = self.store.find( Plugin.prefix_id, 
+                                     Plugin.plugin_ip == unicode(ip_address)
+                                   ).one()
+        if not prefix_id:
+            self.rpclogger.warning('Plugin ip is not correct')
+            self.rpclogger.warning('Can not return prefix list')
+            return
+        else:
+            prefix_list = self.store.find(Prefix.prefix)
+            p_list = []
+            for prefix in prefix_list:
+                p_list.append(prefix)
+            print p_list
+            return p_list
+
+
+    def jsonrpc_get_alert(self, alert):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        result = self.queryManager.registerAlert(alert)
+        return result
+        
+        
+        
+
 
  
 #def getExampleService():
