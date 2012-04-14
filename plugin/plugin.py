@@ -11,8 +11,9 @@ from twisted.internet import reactor,defer
 from txjsonrpc.web.jsonrpc import Proxy
 from config import Config, ConfigError
 from nfquery import logger
-from termcolor import colored, cprint
+from termcolor import colored
 from nfquery.utils import ask_yes_no, addressInNetwork
+from datetime import datetime
 
 
 class Plugin:
@@ -121,9 +122,7 @@ class Plugin:
                 id = int(raw_input(text1 + text2 + text3))
                 for key,value in q_dict.iteritems():
                     if int(key) == id:
-                        print '\n--------------------------------------------------------' \
-                              '--------------------------------------------------------'
-                        text = '\n\tFilter : '
+                        text = '\tFilter : '
                         filter = colored('\n\t\t%s ' % value['filter'], 'magenta', attrs=['bold'])
                         print text + filter
                         text = colored('Do you approve the execution of filter above :', 'green')
@@ -136,7 +135,6 @@ class Plugin:
                             print '\n--------------------------------------------------------' \
                                   '--------------------------------------------------------\n'
                         else:
-                            print 'here3'
                             return
             except Exception, e:
                 print e
@@ -163,7 +161,7 @@ class Plugin:
 
 
     def runNfDump(self, filter, type='', index=0):
-        print 'here6'
+        #print 'here6'
         # This works without errors only for the honeypot demo use-case scenario
         # Try to find a generic way for analyzing flows according to queries.
         nfdump = '/usr/local/bin/nfdump'
@@ -207,7 +205,7 @@ class Plugin:
             #     and we need to correlate extracted output. 
             #   * Also, We don't use srcport here as we don't use it in output format.
 
-            print type_list
+            #print type_list
             removal_list1=[]
             #removal_list2=[]
             for t in type:
@@ -219,22 +217,13 @@ class Plugin:
                     if removal == t:
                         type_list.remove(removal)
 
-            #for removal in removal_list2:
-            #    for f in format_list:
-            #        if removal == f:
-            #            format_list.remove(removal)
-
             # Lastly remove srcport
             #print type_list.remove('srcport')
-            #print format_list.remove('sp')
 
-
-            print type_list
-            #print format_list
+            #print type_list
 
             '''
-                determining the aggregation and output format, by manipulating type_list
-                and format_list variables.
+                determining the aggregation 
             '''
 
             aggregate = ""
@@ -242,8 +231,7 @@ class Plugin:
             #print length
             for i in range(length-1):
                 aggregate += type_list[i]
-                #format += "%s:\%%s-" % (type_list[i], format_list[i])
-            print 'ok'
+            #print 'ok'
             #aggregate += type_list[length-1]
             aggregate = "srcip,dstip,dstport"
             #print type_list[length-1]
@@ -256,7 +244,7 @@ class Plugin:
                 print colored('\tCouldn\'t find any meaningful result', 'green')
                 return
             else:
-                print colored('\tFound query execution results as given below : \n', 'green')
+                print colored('\tQuery execution result is given below : \n', 'green')
                 output = standardout.split('\n')[1:output_length-5]
                 #print output
 
@@ -276,52 +264,60 @@ class Plugin:
                 print_table.append(l_print)
                 table.append(l_all)
             #print len(table)
-            #print table
-        
-            self.prefix_list.remove('193.140.83.0/24')
+            self.pprint_table(sys.stdout, print_table)
+            print '\n'
 
+            # We should remove this for demo.
+            self.prefix_list.remove('193.140.83.0/24')
 
             new_query_list = []
             expr_list = []
+            print '\n--------------------------------------------------------' \
+                    '--------------------------------------------------------\n'
             for prefix in self.prefix_list:
                 for index in range(len(table)):
                     flag = addressInNetwork(table[index][2], prefix)
                     if flag:
-                        print colored(' -------------- found2 -----------', 'red', attrs=['bold'])
-                        print prefix
-                        print table[index][2]
-                        print colored(' ---------------------------------', 'red', attrs=['bold'])
+                        print colored(('\tFound : %s in prefix %s' % (table[index][2], prefix)), 'green', attrs=['bold'])
                         expr_list.append( 
                                            {
                                             "src_ip"   : str(table[index][0]),
                                             "dst_ip"   : str(table[index][2]),
                                             "dst_port" : str(table[index][3])
                                            }
-                                          
                                          )
-
+            creation_time = time.strftime('%Y-%m-%d %H:%M')
+            #print creation_time
+            #print type(creation_time)
+            #print 'hee'
+            
             #-------------------------------------------#
             alert = [
                         {
                          "expr_list" : expr_list,
-                         "mandatory_keys" : "src_ip,dst_port",
+                         "mandatory_keys" : ["src_ip","dst_port"],
                          "source_id" : 13,
-                         "date" : time.strftime('%Y-%m-%d %H:%M')
+                         "date" : creation_time,
+                         "prefix" : prefix,
                         }
                     ]
-            print alert[0]['date']
+            #print alert
             #-------------------------------------------#
-            self.pprint_table(sys.stdout, print_table)
+            print '\n--------------------------------------------------------' \
+                  '--------------------------------------------------------\n'
+
             question = colored('\n\tDo you want to send statistics to NfQueryServer:', 'green')
             answer = ask_yes_no(question, default="no")
             if answer is True:
                 print colored('\n\tSending statistics to NfQueryServer... ', 'green')
-                call = self.proxy.callRemote('get_alert', alert)
-                call.addCallback(self.printValue)
+                try:
+                    call = self.proxy.callRemote('get_alert', alert)
+                    call.addCallback(self.printValue)
+                except Exception,e:
+                    print e
             else:
                 print colored('\tAs you wish.', 'red')
                 return
-
         else:                 # means it's optional query
  
             '''
@@ -333,10 +329,6 @@ class Plugin:
 
             #wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, '-A', aggregate, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             #(standardout, junk) = wgproc.communicate()
-
-
-
-
 
 
     def format_num(self, num):
@@ -434,10 +426,8 @@ class Plugin:
         
 
     def printValue(self, return_value):
-        self.plogger.info('In %s' % sys._getframe().f_code.co_name)
-        print '--------------------------------------------------------' \
-              '--------------------------------------------------------'
-        self.plogger.info(colored(return_value, 'green', attrs=['bold']))
+        self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
+        print colored(str(return_value), 'green', attrs=['bold'])
         print '--------------------------------------------------------' \
               '--------------------------------------------------------'
 
@@ -448,10 +438,31 @@ class Plugin:
         call.addCallback(self.assignPrefixList)
 
 
+    def getAlerts(self):
+        self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
+        # get with ip
+        #call = self.proxy.callRemote( 'get_alerts', self.proxy.host)
+        # get with prefix
+        call = self.proxy.callRemote( 'get_my_alerts', self.proxy.host)
+        call.addCallback(self.printAlerts)
+
+
+    def printAlerts(self, return_value):
+        self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
+        if return_value:
+            for alert in return_value:
+                print colored('\t' + str(alert), 'green', attrs=['magenta'])
+            print '--------------------------------------------------------' \
+                  '--------------------------------------------------------'
+        else:
+            print 'No alert exists for your plugin.'
+        print '\n\n'
+
+
     def assignPrefixList(self, prefix_list):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.prefix_list = prefix_list
-        self.plogger.info(self.prefix_list)
+        #self.plogger.info(self.prefix_list)
         
 
     def start(self):
@@ -507,6 +518,7 @@ if __name__ == "__main__":
     p.parseConfig('./plugin.conf')
     p.register()
     p.getPrefixes()
+    p.getAlerts()
     p.start()
     p.run()
     
