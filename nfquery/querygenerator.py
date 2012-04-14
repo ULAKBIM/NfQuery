@@ -7,8 +7,6 @@ import os.path
 import hashlib
 import subprocess
 import itertools
-import datetime
-from datetime import datetime
 
 # nfquery imports
 import db
@@ -17,6 +15,8 @@ import models
 from models import *
 from storm.locals import *
 from utils import *
+from datetime import datetime
+from termcolor import colored
 
 __all__ = ['QueryGenerator']
 
@@ -94,7 +94,7 @@ class QueryGenerator:
 
     def validateParserOutput(self, output_file):
         '''
-            Check parser output and generate query for each expression.
+            Check parser output and return validated data.
         '''
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         output_fields = [ 'source_name', 'date', 'mandatory_keys', 'expr_list' ]
@@ -120,6 +120,26 @@ class QueryGenerator:
         return data
 
 
+    def validateAlert(self, alert):
+        '''
+           Check alert sent by a plugin and return validated data.
+        '''
+        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        alert_fields = [ 'source_id', 'date', 'mandatory_keys', 'expr_list' ]
+        for index in range(len(alert)):
+            source = self.store.find(Source, Source.id == alert[index]['source_id']).one()
+            if not source:
+                raise Exception, 'source id is not valid'
+            elif not set(alert_fields).issubset(set(alert[index].keys())):
+                raise Exception, 'alert keys are not valid'
+            elif not set(alert[index]['mandatory_keys']).issubset(set(self.nfsen_filters)):
+                raise Exception, 'mandatory keys are not valid'
+            alert[index]['date'] = datetime.strptime(alert[index]['date'], '%Y-%m-%d %H:%M')
+            alert[index]['source_id'] = int(source.id)
+            self.qglogger.debug('Alert Output is valid. OK')
+        return alert
+
+
     def getExpressionCombinations(self, optional, mandatory, length):
         comb_list = []
         base_expr = dict(mandatory)
@@ -135,6 +155,7 @@ class QueryGenerator:
 
     def generateQuery(self, data):
         q_id = 0
+        inserted_query_list = []
         for index in range(len(data)):
             date = data[index]['date']
             s_id = data[index]['source_id']
@@ -142,20 +163,21 @@ class QueryGenerator:
             e_list = data[index]['expr_list']
             # iterate through expression list
             for expr in e_list:
+                #print 'm_keys',m_keys
+                #print 'expr.keys',expr.keys()
                 if not set(expr.keys()).issubset(set(self.nfsen_filters)):
                     self.qglogger.error('filter syntax is not valid')
                     continue
-                elif not set( m_keys).issubset(set(expr.keys()) ):
+                elif not set(m_keys).issubset(set(expr.keys()) ):
                     self.qglogger.error( 'expr_list keys must contain '
                                          'all mandatory_keys ' )
-                    print m_keys
-                    expr.keys()
                     continue
                 #self.qglogger.debug('v_query : %s' % str(expr))
                 # insert validation query
                 q_id = self.insertQuery(s_id, date, expr)
                 if not q_id:
                     continue
+                inserted_query_list.append(q_id)
                 if m_keys != expr.keys():
                     m_query = {}
                     for m in m_keys:
@@ -167,17 +189,20 @@ class QueryGenerator:
                                      m_query, length )
                     try:
                         # insert mandatory query
+                        
+                        self.qglogger.debug(colored('Inserting mandatory query.', 'green', attrs=['bold']))
                         self.insertQuery( s_id, date, m_query, category=2, 
                                           query_id = q_id )
+                        #self.qglogger.debug('opt_query : %s' % str(m_query))
                         for opt_query in opt_query_list:
                             # insert optional query
-                            #self.qglogger.info('opt_query : %s' % str(opt_query))
+                            self.qglogger.debug(colored('Inserting optional query.', 'green', attrs=['bold']))
                             self.insertQuery( s_id, date, opt_query, category=3,
-                                              query_id = q_id)
+                                              query_id = q_id )
                             #self.qglogger.debug('opt_query : %s' % str(opt_query))
                     except Exception, e:
                         self.qglogger.error(e)
-        return q_id
+        return inserted_query_list
 
 
     def generateQueryType(self, type_):
@@ -227,6 +252,7 @@ class QueryGenerator:
                 self.store.flush()
                 q_packet = QueryPacket()
                 if category == 1:
+                    self.qglogger.debug(colored('Inserting validation query.', 'green', attrs=['bold']))
                     q_packet.validation_id = query.id
                 else:
                     q_packet.validation_id = query_id
@@ -314,8 +340,8 @@ class QueryGenerator:
                     self.store.flush()
                     query.type_id = type.id
                 self.store.commit()
-                #self.qglogger.debug('New query is inserted succesfully')
-                #self.qglogger.info('query_id : %d' % query.id)
+                self.qglogger.debug('New query is inserted succesfully')
+                self.qglogger.debug('query_id : %d' % query.id)
                 return query.id
             except Exception, e:
                 self.qglogger.warning(e)
@@ -324,7 +350,7 @@ class QueryGenerator:
             '''
                 Update update_time of the query.
             '''
-            #self.qglogger.debug('Query exists in the database.')
+            self.qglogger.debug(colored('Query exists in the database.', 'green', attrs=['bold']))
             try:
                 update_time_id = self.store.find( models.Time.id, 
                                                   models.Time.time == date
@@ -338,12 +364,32 @@ class QueryGenerator:
                     self.store.flush()
                     query.update_time_id = time.id
                 self.store.commit()
-                #self.qglogger.debug('Query time is updated')
+                self.qglogger.debug('Query time is updated')
                 #self.qglogger.info('query_id : %d' % query.id)
-                return query.id
             except Exception, e:
                 self.qglogger.warning(e)
                 return
+
+            # Check if this optional or mandatory query is derived 
+            # from this validation query -> qid
+
+            if not category == 1:
+                q_packet = self.store.find( QueryPacket.id, 
+                                            (QueryPacket.validation_id == query_id) & 
+                                            (QueryPacket.query_id == query.id)
+                                          ).one()
+                if q_packet:
+                    self.qglogger.debug('Query Packet exists.')
+                else:
+                    try:
+                        q_packet = QueryPacket()
+                        q_packet.validation_id = query_id
+                        q_packet.query_id = query.id
+                        self.store.add(q_packet)
+                        self.store.commit()
+                    except Exception, e:
+                        self.qglogger.warning(e)
+                        return
 
 
     def insertSrcIP(self, src_ip, query_id):

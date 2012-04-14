@@ -7,6 +7,7 @@ import os.path
 import hashlib
 import subprocess
 import time
+import pprint
 
 # nfquery imports
 import db
@@ -32,9 +33,9 @@ class QueryManager:
 
     def start(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        #self.checkParsers()
-        #self.executeParsers()
-        #self.createSubscriptionPackets()
+        self.checkParsers()
+        self.executeParsers()
+        self.createSubscriptionPackets()
 
     ###########################################################
     ### Plugin Management                                   ###
@@ -463,7 +464,6 @@ class QueryManager:
     ###########################################################
     def getSubscription(self, name):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        import pprint
         pp = pprint.PrettyPrinter(indent=4)
         self.qmlogger.debug('Getting subscription %s' % name)
         subscription_id = self.store.find(Subscription.id, Subscription.name == unicode(name)).one()
@@ -487,7 +487,7 @@ class QueryManager:
                         if query.category_id == 1:
                             query_packet_id = query.id
                         query_type = self.store.find(Type.type, query.type_id == Type.id).one()
-                        print query_type
+                        #print query_type
                         packet[index] = {   
                                          'query_id' : query.id, 
                                          'query_type' : query_type,
@@ -498,7 +498,7 @@ class QueryManager:
                     query_packet[qp_query_id] = packet
                 result[subscription_id] = query_packet
                 self.qmlogger.debug('Returning details for subscription %s ' % name)
-                pp.pprint(result)
+                #pp.pprint(result)
                 return result
         self.qmlogger.warning('Couldn\'t get details for subscription %s ' % name)
         return
@@ -513,32 +513,69 @@ class QueryManager:
 
 
     def registerAlert(self, alert):
-        import pprint
         pp = pprint.PrettyPrinter(indent=4)
         print '\n'
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        pp.pprint(alert)
-        print '\n'
-        #return
-        q_id = self.QGenerator.generateQuery(alert)
-    
+        #print '============= ALERT PACKET ==============='
+        #pp.pprint(alert)
+        #print '============= ALERT PACKET ==============='
+        #print '\n'
+
+        prefix = alert[0]["prefix"]
+        del alert[0]["prefix"]
+        prefix_id = self.store.find( Prefix.id, 
+                                     Prefix.prefix == unicode(prefix) 
+                                   ).one()
+        plugin_id = self.store.find( Plugin.id,
+                                     Plugin.prefix_id == prefix_id 
+                                   ).one()
+        #print 'plugin_id', plugin_id
+
+        try:
+            alert = self.QGenerator.validateAlert(alert)
+            #pp.pprint(alert)
+            self.qmlogger.info('Validated alert packet')
+            alert_query_list = self.QGenerator.generateQuery(alert)
+            #print alert_query_list
+        except Exception, e:
+            print e
+            return
+        
         # ayni query insert edilmeyeceginden, generateQuery ' den q_id donmez
         # o zaman alerti eklemeye de gerek kalmaz.
-        if q_id:
-            self.qmlogger.warning('Query already generated so no need to create new alert.')
+        if not alert_query_list:
+            self.qmlogger.info('Alert is already created')
             #alerts = self.store.find( Alert.id,
             #                          Alert.query_id == q_id )
+            print '\n'
+            return 'Alert is already created.'
         else:
-            try:
-                print 'here!!!!!!!!!!!!!!!!!!!!!'
-                alert = Alert()
-                alert.query_id = q_id
-                self.store.add(alert)
-                self.store.commit()
-                return True
-            except Exception, e:
-                print e
-                return False
-        
-
+            alert_id_list = []
+            alert_id = ''
+            expression = 'select max(id) from alert'
+            result = self.store.execute(expression)
+            result = result.get_one()
+            if result[0]:
+                alert_id = int(result[0]) + 1 
+            else:
+                alert_id = 1
+            for index in range(len((alert_query_list))):
+                try:
+                    alert = Alert()
+                    alert.alert_id = alert_id
+                    alert.query_id = alert_query_list[index]
+                    alert.plugin_id = plugin_id
+                    self.store.add(alert)
+                    self.store.flush()
+                    alert_id_list.append(alert_id)
+                    self.store.commit()
+                except Exception, e:
+                    print e
+                    return
+            message = 'Created new alert, alert id : %d' %  alert_id
+            self.qmlogger.warning(message)
+            #print alert_id_list
+            #self.qmlogger.warning('Returning alert list ')
+            print '\n'
+            return message
         

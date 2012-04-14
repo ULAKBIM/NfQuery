@@ -11,7 +11,7 @@ from twisted.internet import reactor, ssl
 from twisted.application import service,internet
 
 import db
-from models import Plugin, Prefix 
+from models import Plugin, Prefix, Alert
 from logger import createLogger
 
 class jsonRPCServer(jsonrpc.JSONRPC):
@@ -57,7 +57,7 @@ class jsonRPCServer(jsonrpc.JSONRPC):
             message =  'Your plugin is not registered to QueryServer yet.'
             message += 'Plugin is not found.'
             message += 'Please ask to QS Administrator about your registration process.'
-            print message
+            #print message
             return message
         else:
             checksum = hashlib.md5()
@@ -67,16 +67,16 @@ class jsonRPCServer(jsonrpc.JSONRPC):
                 message = 'Your plugin information doesn\'t match with the QueryServer side.'
                 message += 'Plugin Checksum Error'
                 message += 'Please check your information and try again.'
-                print message
+                #print message
                 return message 
             elif checksum.hexdigest() == plugin.checksum:
                 # Set the plugin registered
                 plugin.registered = True
                 self.store.add(plugin)
                 self.store.commit()
-                message =  'Your plugin is registered.'
+                message =  'Your plugin is registered.\n'
                 message += 'Feel free to checkout query subscriptions.'
-                print message
+                #print message
                 return message
                 #return self.jsonrpc_get_subscriptions()
 
@@ -108,18 +108,35 @@ class jsonRPCServer(jsonrpc.JSONRPC):
             p_list = []
             for prefix in prefix_list:
                 p_list.append(prefix)
-            print p_list
+            #print p_list
             return p_list
 
 
     def jsonrpc_get_alert(self, alert):
+        print '\n'
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         result = self.queryManager.registerAlert(alert)
         return result
-        
-        
-        
 
+    def jsonrpc_get_my_alerts(self, plugin_ip):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        alert_list = ''
+        try:
+            plugin_id = self.store.find( Plugin.id,
+                                         Plugin.plugin_ip == unicode(plugin_ip)
+                                       ).one()
+            print plugin_id
+            alert_list = self.store.find( Alert,
+                                          Alert.plugin_id == plugin_id )
+            print list(alert_list)
+            self.rpclogger.debug('Returning alert list')
+        except Exception, e:
+            print e
+            return
+        #print list(alert_list)
+        return list(alert_list)
+        
+        
 
  
 #def getExampleService():
