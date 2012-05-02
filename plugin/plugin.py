@@ -24,6 +24,9 @@ class Plugin:
         self.plogger = logger.createLogger('Plugin')
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.proxy = Proxy('https://193.140.94.205:7777/')
+        #self.proxy = Proxy('http://193.140.94.205:7777/')
+        #self.proxy = Proxy('https://193.140.94.205:7777/', version=2)
+        #self.proxy = Proxy('http://193.140.94.205:7777/', version=2)
         #self.subscription = None
         self.chosen = None
         self.prefix_list = None
@@ -48,13 +51,17 @@ class Plugin:
             return
         except Exception, e:
             #print("%s" % e)
-            sys.exit()
+            #self.shutdown()
+            return
 
 
     def shutDown(self):
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.plogger.warning("Shutting down reactor...")
-        self.reactor.stop()
+        if reactor.running:
+            self.reactor.stop()
+        else:
+            return
 
    
     def getSubscriptionInformation(self, subscription):
@@ -415,13 +422,14 @@ class Plugin:
 
     def register(self):
         self.plogger.info('In %s' % sys._getframe().f_code.co_name)
-        call = self.proxy.callRemote( 'register', self.config.plugin.organization, 
-                                               self.config.plugin.adm_name,
-                                               self.config.plugin.adm_mail, 
-                                               self.config.plugin.adm_tel, 
-                                               self.config.plugin.adm_publickey_file,
-                                               self.config.plugin.prefix_list, 
-                                               self.config.plugin.plugin_ip )
+        call = self.proxy.callRemote( 'register', 
+                                      self.config.plugin.organization, 
+                                      self.config.plugin.adm_name,
+                                      self.config.plugin.adm_mail, 
+                                      self.config.plugin.adm_tel, 
+                                      self.config.plugin.adm_publickey_file,
+                                      self.config.plugin.prefix_list, 
+                                      self.config.plugin.plugin_ip )
         call.addCallback(self.printValue)
         
 
@@ -482,9 +490,9 @@ class Plugin:
         #####   run it reverse way ###  d4.addCallbacks(d1, self.printError)
 
         d1 = self.getSubscriptionList()
-        d1.addCallbacks(self.chooseSubscription)
-        d1.addCallbacks(self.getSubscriptionInformation)
-        d1.addCallbacks(self.printSubscriptionDetails)
+        d1.addCallbacks(self.chooseSubscription,self.printError)
+        d1.addCallbacks(self.getSubscriptionInformation,self.printError)
+        d1.addCallbacks(self.printSubscriptionDetails,self.printError)
         #d1.addCallbacks(self.Test, self.printError)
         d1.addErrback(self.printError)
 
@@ -518,7 +526,7 @@ if __name__ == "__main__":
     p.parseConfig('./plugin.conf')
     p.register()
     p.getPrefixes()
-    p.getAlerts()
+    #p.getAlerts()
     p.start()
     p.run()
     

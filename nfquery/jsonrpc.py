@@ -84,7 +84,8 @@ class jsonRPCServer(jsonrpc.JSONRPC):
     def jsonrpc_get_subscriptions(self):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.rpclogger.debug('returning subscriptions')
-        return list(self.queryManager.getAllSubscriptions())
+        subs = self.queryManager.getAllSubscriptions()
+        return list(subs)
 
     
     def jsonrpc_get_subscription(self, name):
