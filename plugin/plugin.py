@@ -19,8 +19,8 @@ from datetime import datetime
 class Plugin:
 
     def __init__(self):
-        logger.LOGLEVEL = logging.INFO
-        #logger.LOGLEVEL = logging.DEBUG
+        #logger.LOGLEVEL = logging.INFO
+        logger.LOGLEVEL = logging.DEBUG
         self.plogger = logger.createLogger('Plugin')
         self.plogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.proxy = Proxy('https://193.140.94.205:7777/')
@@ -172,7 +172,7 @@ class Plugin:
         # This works without errors only for the honeypot demo use-case scenario
         # Try to find a generic way for analyzing flows according to queries.
         nfdump = '/usr/local/bin/nfdump'
-        data = './demoflow/'
+        data = './flow/demoflow/'
         format = "fmt:srcip:%sa-srcport:%sp-dstip:%da-dstport:%dp"
         filter = filter
         index = index
@@ -523,7 +523,7 @@ class Plugin:
 if __name__ == "__main__":
 
     p = Plugin()
-    p.parseConfig('./plugin.conf')
+    p.parseConfig('./plugin.conf.py')
     p.register()
     p.getPrefixes()
     #p.getAlerts()

@@ -5,9 +5,35 @@ use warnings;
 use Data::Dumper;
 use JSON::RPC::Common::Marshal::HTTP;
 use LWP::Protocol::https;
-use LWP::UserAgent 6;
+use LWP::UserAgent;
+use Config::Simple;
 
 use feature 'say';
+
+
+sub ParseConfigFile {
+
+    my $config_file = shift;
+    my %Config;
+
+    Config::Simple->import_from($config_file, \%Config);
+    
+    my $cfg = new Config::Simple($config_file);
+    
+    # accessing values:
+    my $adm = $cfg->param('organization');
+    
+    print $adm;
+
+    return;
+}
+
+&ParseConfigFile('plugin.conf.pm');
+
+
+#while( my ($k, $v) = each %Config ) {
+#        print "key: $k, value: $v.\n";
+#    }
 
 #my $ua = eval { LWP::UserAgent->new(ssl_opts => { verify_hostname => 1, SSL_ca_file => "/home/serdar/workspace/nfquery/cfg/certs/nfquery.crt" }) }
 #    or die "Could not make user-agent! $@";
@@ -15,9 +41,9 @@ use feature 'say';
 my $ua = eval { LWP::UserAgent->new() }
     or die "Could not make user-agent! $@";
 
-$ua->ssl_opts( verify_hostname => 1, SSL_ca_file => './nfquery.crt' );
+#$ua->ssl_opts( verify_hostname => 1, SSL_ca_file => './nfquery.crt' );
 #$ua->ssl_opts( verify_hostname => 1, SSL_ca_file => 'nfquery.crt', SSL_version => 'TLSv1');
-#$ua->ssl_opts( verify_hostname => 0, SSL_ca_file => 'nfquery.crt', SSL_version => 'TLSv1');
+$ua->ssl_opts( verify_hostname => 0, SSL_ca_file => 'nfquery.crt', SSL_version => 'TLSv1');
 
 my $req_data = {
 		jsonrpc => "2.0",
