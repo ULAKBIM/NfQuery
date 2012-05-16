@@ -33,9 +33,9 @@ class QueryManager:
 
     def start(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        #self.checkParsers()
-        #self.executeParsers()
-        #self.createSubscriptionPackets()
+        self.checkParsers()
+        self.executeParsers()
+        self.createSubscriptionPackets()
 
     ###########################################################
     ### Plugin Management                                   ###
