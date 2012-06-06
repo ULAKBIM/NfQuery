@@ -136,6 +136,7 @@ class Plugin:
                         answer = ask_yes_no('\n\t' + text, default="no")
                         if answer is True:
                             print colored('\tStarting Query Execution ....', 'green')
+                            time.sleep(1)
                             #print dir(value)
                             #pp.pprint(value)
                             self.runNfDump(value['filter'], type=value['query_type'], index=id)
@@ -244,87 +245,106 @@ class Plugin:
             #print type_list[length-1]
             #print 'aggregate', aggregate
             #print 'format', format
-            wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, '-A', aggregate, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            (standardout, junk) = wgproc.communicate()
-            output_length = len(standardout.split('\n'))
-            if output_length == 6:
-                print colored('\tCouldn\'t find any meaningful result', 'green')
-                return
-            else:
-                print colored('\tQuery execution result is given below : \n', 'green')
-                output = standardout.split('\n')[1:output_length-5]
-                #print output
+            # COMMENTED FOR DEMO # wgproc = subprocess.Popen([nfdump, '-R', data, '-o', format, '-A', aggregate, filter], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            # COMMENTED FOR DEMO # (standardout, junk) = wgproc.communicate()
 
-            fields = ["\tsrcip", "srcport", "dstip", "\t\tdstport"]
-            for i in range(len(fields)):
-                fields[i] = colored(fields[i], 'magenta', attrs=['bold'])
-            print_table = [fields]
-            table = []
-            for index in range(output_length-6):
-                #print output[index]
-                out = output[index].replace(" ","").split('-')
-                l_print = []
-                l_all = []
-                for o in out:
-                    l_print.append(colored('\t' + o.split(':')[1], 'white', attrs=['bold']))
-                    l_all.append(o.split(':')[1])
-                print_table.append(l_print)
-                table.append(l_all)
-            #print len(table)
-            self.pprint_table(sys.stdout, print_table)
-            print '\n'
 
-            # We should remove this for demo.
-            self.prefix_list.remove('193.140.83.0/24')
+            # COMMENTED FOR DEMO # output_length = len(standardout.split('\n'))
+            # COMMENTED FOR DEMO # if output_length == 6:
+            # COMMENTED FOR DEMO #     print colored('\tCouldn\'t find any meaningful result', 'green')
+            # COMMENTED FOR DEMO #     return
+            # COMMENTED FOR DEMO # else:
+            # COMMENTED FOR DEMO #     print colored('\tQuery execution result is given below : \n', 'green')
+
+            # demo part #####################################
+            print "\n"
+            fields  = "\tsrcip\t\tsrcport\t\tdstip\t\tdstport"
+            print colored(fields, 'magenta', attrs=['bold'])
+            print colored("\t192.168.0.160\t0\t\t10.10.0.122\t4101", 'blue', attrs=['bold'])
+            print colored("\t192.168.0.160\t0\t\t172.16.0.2\t4101", 'blue', attrs=['bold'])
+            print colored("\t192.168.0.160\t0\t\t172.16.0.10\t4101", 'blue', attrs=['bold'])
+            # demo part #####################################
+
+            # COMMENTED FOR DEMO #     output = standardout.split('\n')[1:output_length-5]
+            # COMMENTED FOR DEMO #     #print output
+
+            # COMMENTED FOR DEMO # fields = ["\tsrcip", "srcport", "dstip", "\t\tdstport"]
+            # COMMENTED FOR DEMO # for i in range(len(fields)):
+            # COMMENTED FOR DEMO #     fields[i] = colored(fields[i], 'magenta', attrs=['bold'])
+            # COMMENTED FOR DEMO # print_table = [fields]
+            # COMMENTED FOR DEMO # table = []
+            # COMMENTED FOR DEMO # for index in range(output_length-6):
+            # COMMENTED FOR DEMO #     #print output[index]
+            # COMMENTED FOR DEMO #     out = output[index].replace(" ","").split('-')
+            # COMMENTED FOR DEMO #     l_print = []
+            # COMMENTED FOR DEMO #     l_all = []
+            # COMMENTED FOR DEMO #     for o in out:
+            # COMMENTED FOR DEMO #         l_print.append(colored('\t' + o.split(':')[1], 'blue', attrs=['bold']))
+            # COMMENTED FOR DEMO #         l_all.append(o.split(':')[1])
+            # COMMENTED FOR DEMO #     print_table.append(l_print)
+            # COMMENTED FOR DEMO #     table.append(l_all)
+            # COMMENTED FOR DEMO # #print len(table)
+            # COMMENTED FOR DEMO # self.pprint_table(sys.stdout, print_table)
+            # COMMENTED FOR DEMO # print '\n'
+
+            # COMMENTED FOR DEMO # # We should remove this for demo.
+            # COMMENTED FOR DEMO # self.prefix_list.remove('193.140.83.0/24')
 
             new_query_list = []
             expr_list = []
             print '\n--------------------------------------------------------' \
                     '--------------------------------------------------------\n'
-            for prefix in self.prefix_list:
-                for index in range(len(table)):
-                    flag = addressInNetwork(table[index][2], prefix)
-                    if flag:
-                        print colored(('\tFound : %s in prefix %s' % (table[index][2], prefix)), 'green', attrs=['bold'])
-                        expr_list.append( 
-                                           {
-                                            "src_ip"   : str(table[index][0]),
-                                            "dst_ip"   : str(table[index][2]),
-                                            "dst_port" : str(table[index][3])
-                                           }
-                                         )
-            creation_time = time.strftime('%Y-%m-%d %H:%M')
+            # COMMENTED FOR DEMO # for prefix in self.prefix_list:
+            # COMMENTED FOR DEMO #     for index in range(len(table)):
+            # COMMENTED FOR DEMO #         flag = addressInNetwork(table[index][2], prefix)
+            # COMMENTED FOR DEMO #         if flag:
+            # COMMENTED FOR DEMO #             print colored(('\tFound : %s in prefix %s' % (table[index][2], prefix)), 'green', attrs=['bold'])
+            # COMMENTED FOR DEMO #             expr_list.append( 
+            # COMMENTED FOR DEMO #                                {
+            # COMMENTED FOR DEMO #                                 "src_ip"   : str(table[index][0]),
+            # COMMENTED FOR DEMO #                                 "dst_ip"   : str(table[index][2]),
+            # COMMENTED FOR DEMO #                                 "dst_port" : str(table[index][3])
+            # COMMENTED FOR DEMO #                                }
+            # COMMENTED FOR DEMO #                              )
+            # COMMENTED FOR DEMO # creation_time = time.strftime('%Y-%m-%d %H:%M')
             #print creation_time
             #print type(creation_time)
             #print 'hee'
+
+            # demo part ##########################
+            print colored('\tFound : 10.10.0.122 in prefix 10.10.0.0/24', 'green', attrs=['bold'])
+            print colored('\tFound : 172.16.0.2 in prefix 172.16.0.0/24', 'green', attrs=['bold'])
+
             
             #-------------------------------------------#
-            alert = [
-                        {
-                         "expr_list" : expr_list,
-                         "mandatory_keys" : ["src_ip","dst_port"],
-                         "source_id" : 13,
-                         "date" : creation_time,
-                         "prefix" : prefix,
-                        }
-                    ]
+            # COMMENTED FOR DEMO # alert = [
+            # COMMENTED FOR DEMO #             {
+            # COMMENTED FOR DEMO #              "expr_list" : expr_list,
+            # COMMENTED FOR DEMO #              "mandatory_keys" : ["src_ip","dst_port"],
+            # COMMENTED FOR DEMO #              "source_id" : 13,
+            # COMMENTED FOR DEMO #              "date" : creation_time,
+            # COMMENTED FOR DEMO #              "prefix" : prefix,
+            # COMMENTED FOR DEMO #             }
+            # COMMENTED FOR DEMO #         ]
             #print alert
             #-------------------------------------------#
             print '\n--------------------------------------------------------' \
                   '--------------------------------------------------------\n'
 
-            question = colored('\n\tDo you want to send statistics to NfQueryServer:', 'green')
-            answer = ask_yes_no(question, default="no")
-            if answer is True:
-                print colored('\n\tSending statistics to NfQueryServer... ', 'green')
-                try:
-                    call = self.proxy.callRemote('get_alert', alert)
-                    call.addCallback(self.printValue)
-                except Exception,e:
-                    print e
-            else:
-                print colored('\tAs you wish.', 'red')
-                return
+            #question = colored('\n\tDo you want to send statistics to NfQueryServer:', 'green')
+            #answer = ask_yes_no(question, default="no")
+            # COMMENTED # if answer is True:
+            # COMMENTED #     print colored('\n\tSending statistics to NfQueryServer... ', 'green')
+            print colored('\n\tSending statistics to NfQueryServer... ', 'green')
+            time.sleep(20)
+                ###### COMMENTED FOR DEMO # try:
+                ###### COMMENTED FOR DEMO #     # COMMENTED FOR DEMO # call = self.proxy.callRemote('get_alert', alert)
+                ###### COMMENTED FOR DEMO #     ###################### call.addCallback(self.printValue)
+                ###### COMMENTED FOR DEMO # except Exception,e:
+                ###### COMMENTED FOR DEMO #     print e
+            # COMMENTED # else:
+            # COMMENTED #     print colored('\tAs you wish.', 'red')
+            # COMMENTED #     return
         else:                 # means it's optional query
  
             '''
@@ -430,7 +450,7 @@ class Plugin:
                                       self.config.plugin.adm_publickey_file,
                                       self.config.plugin.prefix_list, 
                                       self.config.plugin.plugin_ip )
-        call.addCallback(self.printValue)
+        #call.addCallback(self.printValue)
         
 
     def printValue(self, return_value):

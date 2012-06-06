@@ -3,13 +3,18 @@
 use strict;
 use warnings;
 use Data::Dumper;
+use Data::Printer;
+use Data::Types qw(:all);
 use JSON::RPC::Common::Marshal::HTTP;
 use LWP::Protocol::https;
 use LWP::UserAgent;
+use JSON::RPC::LWP;
 use Config::Simple;
+use Term::ANSIColor;
+
+#package NfQueryPlugin::Main; 
 
 use feature 'say';
-
 
 sub ParseConfigFile {
 
@@ -20,76 +25,122 @@ sub ParseConfigFile {
     
     my $cfg = new Config::Simple($config_file);
     
-    # accessing values:
-    my $adm = $cfg->param('organization');
-    
-    print $adm;
-
-    return;
+    return $cfg;
 }
 
-&ParseConfigFile('plugin.conf.pm');
+# prepare connection parameters
+sub get_connection {
+
+    # Prepare user agent
+    my $ua = eval { LWP::UserAgent->new() }
+            or die "Could not make user-agent! $@";
+    $ua->ssl_opts( verify_hostname => 0, SSL_ca_file => 'nfquery.crt', SSL_version => 'TLSv1');
+    
+    my $rpc = JSON::RPC::LWP->new(
+      ua => $ua,
+      version => '2.0'
+    );
+
+    return $rpc;
+
+}
+
+# get configuration
+my $cfg = &ParseConfigFile('plugin.conf.pm');
+
+# assign values
+my $organization = $cfg->param('organization');
+my $adm_name = $cfg->param('adm_name');
+my $adm_mail = $cfg->param('adm_mail');
+my $adm_tel  = $cfg->param('adm_tel');
+my $adm_publickey_file = $cfg->param('adm_publickey_file');     # not using for the time.
+
+# plugin info                                                                                           
+my $prefix_list = $cfg->param('prefix_list');
+my $plugin_ip = $cfg->param('plugin_ip');
+
+# Query Server info                                                                                           
+my $qs_ip = $cfg->param('queryserver_ip');
+my $qs_port = $cfg->param('queryserver_port');
+my $uri = 'https://' . $qs_ip . ':' . $qs_port;
+                                                                                           
+#print all
+my $plugin_info = $organization      ." \n " .
+                  $adm_name          ." \n " .
+                  $adm_mail          ." \n " .
+                  $adm_tel           ." \n " .
+                  $prefix_list       ." \n " .
+                  $plugin_ip         ." \n " .
+                  $qs_ip             ." \n " .
+                  $qs_port;      
+
+#p($plugin_info);
+
+my $rpc = &get_connection($qs_ip, $qs_port);
+
+# register
+my $result = $rpc->call( $uri, 'register', [$organization, $adm_name, $adm_mail, $adm_tel,
+                                            $adm_publickey_file, $prefix_list, $plugin_ip, ]);
+
+my $str = "================= Registration =================";
+p($str);
+p($result->result);
+print("\n");
+
+# get subscriptions
+my $result = $rpc->call($uri, 'get_subscriptions', []);
+
+#p($result->result);
+
+# dereference the result array
+#p($result);
+my $r = $result->result;
+
+#print $size;
+
+if (defined $result->result) {
+    my $str = "================= Subscriptions =================";
+    p($str);
+    my $size = scalar @$r;
+    my $index = 0;
+    for my $i (0 .. $size-1) {
+        print colored ("[". $index . "]\t" . @{$r}[$i], 'bold white');
+        print "\n";
+        $index+=1;
+    }
+    print colored ("[q/Q]\tQuit\n", 'bold white');
+    print("\n");
+    print colored ("Please enter the subscription number you want to use : \n");
+    $index = <>;
+    print $index;
+    if ($index eq "q") {
+        print 'Quitting...';
+        exit 0;
+    }
+    elsif (is_int($index)) {
+        if ((0<$index) and ($index<$size)) {
+            $result = $rpc->call($uri, 'get_subscription', [@{$r}[$index]]);
+        }
+        else {
+            print colored('Please enter the number in valid range', 'red');
+            exit 0;
+        }
+    }
+    else {
+        print colored('Please enter a valid number/character', 'red');
+        exit 0;
+    }
+
+}
+else {
+    print colored ("QueryServer doesn\'t have any subscriptions.\nPlease ask your QS Administrator.\n", "magenta");
+}
 
 
-#while( my ($k, $v) = each %Config ) {
-#        print "key: $k, value: $v.\n";
-#    }
 
-#my $ua = eval { LWP::UserAgent->new(ssl_opts => { verify_hostname => 1, SSL_ca_file => "/home/serdar/workspace/nfquery/cfg/certs/nfquery.crt" }) }
-#    or die "Could not make user-agent! $@";
 
-my $ua = eval { LWP::UserAgent->new() }
-    or die "Could not make user-agent! $@";
 
-#$ua->ssl_opts( verify_hostname => 1, SSL_ca_file => './nfquery.crt' );
-#$ua->ssl_opts( verify_hostname => 1, SSL_ca_file => 'nfquery.crt', SSL_version => 'TLSv1');
-$ua->ssl_opts( verify_hostname => 0, SSL_ca_file => 'nfquery.crt', SSL_version => 'TLSv1');
 
-my $req_data = {
-		jsonrpc => "2.0",
-		id		=> "TEST",
-        method  => "add",
-		#id      => "xxx",
-        #params  => { user=>'yyy', password=>'zzz' },
-		#params  => {name => 'yyy'}
-		params  => [99, 23]
-};
-
-#my $mod_data =  Dumper($req_data);
-
-#print $req_data;
-
-#print $a;
-
-#print each(%req_data);
-
-my $req_obj = JSON::RPC::Common::Procedure::Call->inflate($req_data);
-
-my $m = JSON::RPC::Common::Marshal::HTTP->new;
-
-my $req = $m->call_to_request($req_obj);
-
-$req->uri("https://193.140.94.205:7777");
-
-print 'here1    ';
-print $req;
-print "\n";
-
-#$ua->ssl_opts(
-#		verify_hostname => 'False',
-#	);
-#
-my $res = $ua->request($req);
-#
-print 'here2    ';
-print bless $res;
-print "\n";
-#
-#my $res_obj = $m->response_to_result($res);
-#print Dumper($res_obj);
-print Dumper($res);
-#
-#
 
 
 
