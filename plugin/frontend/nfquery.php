@@ -22,7 +22,7 @@ function nfquery_ParseInput( $plugin_id ) {
 	#SetMessage('error', "Error set by demo plugin!");
 	#SetMessage('warning', "Warning set by demo plugin!");
 	#SetMessage('alert', "Alert set by demo plugin!");
-	#SetMessage('info', "Info set by demo plugin!");
+	SetMessage('info', "Info set by demo plugin!");
 
 } // End of demoplugin_ParseInput
 
