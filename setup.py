@@ -13,7 +13,7 @@ setup(
        license = "BSD",
        keywords = "test setup",
        #url = "http://packages.python.org/an_example_pypi_project",
-	   packages=['nfquery', 'nfquery.json_test'],
+	   packages=['nfquery'],
        scripts=['bin/nfqueryd'],
 	   zip_safe = False,
 	   #install_requires = ['MySQLdb',],
