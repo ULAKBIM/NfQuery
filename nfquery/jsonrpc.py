@@ -61,14 +61,15 @@ class jsonRPCServer(jsonrpc.JSONRPC):
             return message
         else:
             checksum = hashlib.md5()
-            checksum.update( organization + adm_name + adm_mail + adm_tel +
-                             adm_publickey_file + prefix_list + plugin_ip  )
+            checksum.update( organization + adm_name + adm_mail + 
+                             adm_tel      + adm_publickey_file  + 
+                             prefix_list  + plugin_ip )
             if checksum.hexdigest() != plugin.checksum:
                 message = 'Your plugin information doesn\'t match with the QueryServer side.'
                 message += 'Plugin Checksum Error'
                 message += 'Please check your information and try again.'
                 #print message
-                return message 
+                return message
             elif checksum.hexdigest() == plugin.checksum:
                 # Set the plugin registered
                 plugin.registered = True
