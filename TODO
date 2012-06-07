@@ -155,3 +155,5 @@
     * type_id duzgun olusturulmuyor.
 
     * Query Timeout will be an option in nfquery.conf file or not?
+
+    * README file is updated but links are not ready for the time being.

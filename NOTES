@@ -1,19 +1,10 @@
- **** This file has some important notes about the decisions and written codes from the development phase of NfQuery. ****
+============
+Notes
+============
+This file has some important notes about decisions made during the development of NfQuery.
 
 
  * 24 September 2011 - 20:13
-   MySQL INNODB transaction model has autocommit enabled by default. So in database class when we create a database connection instance
-   we also set the autocommit disabled. Then we catch the exceptions if any error happens. Finally, we commit the queries into database
+   MySQL INNODB transaction model has autocommit enabled by default. So in database class when we create a database connection instance we also set the autocommit disabled. Then we catch the exceptions if any error happens. Finally, we commit the queries into database
    before closing the connection. 
-
- * 7 October 2011 - 15:56
-
-   "from multiproccessing import Pool"
-
-   to import Pool or other objects of the multiproccessing module in freebsd, we should have python version of at least 2.7 installed.
-   Also there is a warning in multiprocessing documentation:
-   "Some of this packages functionality requires a functioning shared semaphore implementation on the host operating system. Without one, 
-    the multiprocessing.synchronize module will be disabled, and attempts to import it will result in an ImportError. See issue 3770 for additional information."
-
-
 

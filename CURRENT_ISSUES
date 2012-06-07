@@ -3,19 +3,12 @@
 
     *****
     ######  SOLVED #####* scheduler duzgun calismiyor, 2 dakka sonra calis diyorsun, ama main basladiktan sonraki ilk dakkada once bir calistirip, bundan 2 dakka sonra calistir
-    ######  SOLVED #####maya basliyor.
 
     ######  SOLVED #####* executeParsers fonksiyonunu scheduler ' a ekledigimizde, bir muddet sonra database objeleri kayboluyor, mysql has gone away problemi ve  
+
     ######  SOLVED #####  ' Exception _mysql_exceptions.ProgrammingError: (2014, "Commands out of sync; you can't run this command now") in <bound method Cursor.__del__ of <MySQ      Ldb.cursors
     ######  SOLVED #####  .Cursor object at 0x28a9824c>> ignored ' hatalarini aliyoruz. 
 
     ######  SOLVED #####* http://groups.google.com/group/web2py/browse_thread/thread/9efbca4a22c9c8b8 linki yarali olabilir
 
     *****
-
-
-    9 Mart 2012
-
-    * Su an icin sadece ip, port ve ip-port outputu alabildigimiz sourcelarimiz var. Query creation icinde query type olarak bunlari belirledik buna gore olusturuyoruz. 
-      Ileride baska outputlarda alacagimiz zaman onlari da isin icine kattigimiz bir cozumle gelmemiz lazim. Simdilik bu parameterler disindaki herseyi, verildiyse direkexpression
-      ' a katmali, verilmediyse katmamaliyiz... vs vs karisik oldu 
