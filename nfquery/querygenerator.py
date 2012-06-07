@@ -190,13 +190,13 @@ class QueryGenerator:
                     try:
                         # insert mandatory query
                         
-                        self.qglogger.debug(colored('Inserting mandatory query.', 'green', attrs=['bold']))
+                        self.qglogger.info(colored('Inserting mandatory query.', 'green', attrs=['bold']))
                         self.insertQuery( s_id, date, m_query, category=2, 
                                           query_id = q_id )
                         #self.qglogger.debug('opt_query : %s' % str(m_query))
                         for opt_query in opt_query_list:
                             # insert optional query
-                            self.qglogger.debug(colored('Inserting optional query.', 'green', attrs=['bold']))
+                            self.qglogger.info(colored('Inserting optional query.', 'green', attrs=['bold']))
                             self.insertQuery( s_id, date, opt_query, category=3,
                                               query_id = q_id )
                             #self.qglogger.debug('opt_query : %s' % str(opt_query))
@@ -252,7 +252,7 @@ class QueryGenerator:
                 self.store.flush()
                 q_packet = QueryPacket()
                 if category == 1:
-                    self.qglogger.debug(colored('Inserting validation query.', 'green', attrs=['bold']))
+                    self.qglogger.info(colored('Inserting validation query.', 'green', attrs=['bold']))
                     q_packet.validation_id = query.id
                 else:
                     q_packet.validation_id = query_id
@@ -399,6 +399,7 @@ class QueryGenerator:
             self.generateQueryType(0)
             ip_int = dottedQuadToNum(src_ip)
             ip_id = self.store.find(IP.id, IP.ip_int == ip_int).one()
+            self.qglogger.info('Src IP : %s ' % src_ip)
             if not ip_id:
                 ip = IP()
                 ip.ip = unicode(src_ip)
@@ -427,6 +428,7 @@ class QueryGenerator:
             self.generateQueryType(1)
             # Check if we already have this port.
             port_id = self.store.find(Port.id, Port.port == int(src_port)).one()
+            self.qglogger.info('Src Port : %s' % src_port)
             if not port_id:
                 port = Port()
                 port.port = int(src_port)
@@ -454,6 +456,7 @@ class QueryGenerator:
             self.generateQueryType(2)
             ip_int = dottedQuadToNum(dst_ip)
             ip_id = self.store.find(IP.id, IP.ip_int == ip_int).one()
+            self.qglogger.info('Dst IP : %s' % dst_ip)
             if not ip_id:
                 ip = IP()
                 ip.ip = unicode(dst_ip)
@@ -481,6 +484,7 @@ class QueryGenerator:
         if dst_port.isdigit():
             self.generateQueryType(3)
             port_id = self.store.find(Port.id, Port.port == int(dst_port)).one()
+            self.qglogger.info('Dst Port : %s' % dst_port)
             if not port_id:
                 port = Port()
                 port.port = int(dst_port)
@@ -505,6 +509,7 @@ class QueryGenerator:
     def insertProto(self, proto_, query_id):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         if is_valid_proto(proto_):
+            #self.qglogger.info('Proto : %s' % proto_)
             self.generateQueryType(4)
             proto = Proto()
             proto.query_id = query_id

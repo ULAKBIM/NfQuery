@@ -74,13 +74,21 @@ class QueryManager:
         for index in range(len(self.plugins)):
             # Calculate the checksum
             conf_checksum = hashlib.md5()
-            conf_checksum.update( self.plugins[index].organization       +
-                                  self.plugins[index].adm_name           +
-                                  self.plugins[index].adm_mail           +
-                                  self.plugins[index].adm_tel            +
-                                  self.plugins[index].adm_publickey_file +
-                                  self.plugins[index].prefix_list        +
-                                  self.plugins[index].plugin_ip )
+            #print self.plugins[index].organization,\
+            #      self.plugins[index].adm_name, \
+            #      self.plugins[index].adm_mail, \
+            #      self.plugins[index].adm_tel, \
+            #      self.plugins[index].adm_publickey_file, \
+            #      self.plugins[index].prefix_list, \
+            #      self.plugins[index].plugin_ip
+            conf_checksum.update( str(self.plugins[index].organization)       +
+                                  str(self.plugins[index].adm_name)           +
+                                  str(self.plugins[index].adm_mail)           +
+                                  str(self.plugins[index].adm_tel)            +
+                                  str(self.plugins[index].adm_publickey_file) +
+                                  str(self.plugins[index].prefix_list)        +
+                                  str(self.plugins[index].plugin_ip) )
+            #print conf_checksum.hexdigest()
             plugin_checksum = self.store.find( Plugin.checksum, 
                                                Plugin.organization == unicode( 
                                                self.plugins[index].organization)
@@ -287,6 +295,9 @@ class QueryManager:
                 self.qmlogger.warning('Parser %s doesn\'t exist')
                 self.qmlogger.warning( 'Please check the nfquery.conf file' % 
                                        self.sources[index].parser )
+                # TODO : Create a list of found parsers and execute only this list
+                # in executeParsers ;), because executeParser gives error if it can't
+                # find a parser and crash!!!
 
     
     def executeParsers(self, parser=None):
@@ -295,6 +306,7 @@ class QueryManager:
             self.qmlogger.debug('running all parsers')
             for index in range(len(self.sources)):
                 try:
+                    self.qmlogger.info('Running parser : %s' % self.sources[index].parser)
                     returncode = subprocess.call([ 'python', 
                                                    self.sources[index].parser] )
                     if returncode == 0:
@@ -310,6 +322,7 @@ class QueryManager:
             for index in range(len(self.sources)):
                 if self.sources[index].parser == parser:
                     try:
+                        self.qmlogger.info('Running parser : %s' % self.sources[index].parser)
                         returncode = subprocess.call([ 'python', 
                                                        self.sources[index].parser])
                         if returncode == 0:
@@ -336,7 +349,7 @@ class QueryManager:
             2) Threat Type -> example : "Botnet,Malware,Honeypot Output, 
                                          Special Source Output"
             
-    		!!!!!! SUBSCRIPTION_TAGS NE OLACAK !!!!!!!!
+            !!!!!! SUBSCRIPTION_TAGS NE OLACAK !!!!!!!!
     
         '''
     
