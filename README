@@ -32,13 +32,10 @@ NfQuery sources are the main components that provide threat information. This in
 
 Dependencies
 ============
- - Python 2.7.3, Python 2.7-dev
- - Python Modules -
-    - config : for parsing configuration file.
-    - storm : orm  for mysqldb
-    -
-
-
+Platform : Ubuntu
+Python Version : Python 2.7.3, Python 2.7-dev
+Python Modules : config, MySQLdb, storm, termcolor, txJSON-RPC
+    
 
 
 
