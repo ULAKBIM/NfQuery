@@ -67,9 +67,9 @@ if __name__ == "__main__":
     #parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
     source_name = 'DFN-Honeypot'
-    source_file = '/home/serdar/workspace/test/sources/honeypot/honeypotSource.txt'
+    source_file = './honeypotSource.txt'
     output_type  = 3
-    output_file = '/home/serdar/workspace/test/sources/honeypot/honeypotOutput.txt'
+    output_file = './honeypotOutput.txt'
     
     #fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)

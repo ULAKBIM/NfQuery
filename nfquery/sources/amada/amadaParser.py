@@ -11,7 +11,11 @@ import simplejson as json
 __all__ = ['fetch_source', 'parse_source']
 
 def fetch_source(source_link, source_file):
-    os.system("fetch -o " + source_file + " " + source_link)
+    try:
+        os.system("fetch -o " + source_file + " " + source_link)
+    except Exception, e:
+        os.system("wget " + source_link + " -O " + source_file)
+
 
 def parse_source_and_create_output(source_name, source_file, output_type, output_file):
     '''
@@ -40,6 +44,7 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
         outputfile = open(output_file, "w")
     except Exception, e:
         print 'Exception'
+        print e
         sys.exit(1)
 
     # parse the file line by line and create an ip list
@@ -68,21 +73,16 @@ if __name__ == "__main__":
     print 'calling main'
 
     # making parameter assignments manually for now.
-
-    #source_name = 'Amada'
-    #source_link = 'http://amada.abuse.ch/blocklist.php?download=ipblocklist'
-    #source_file = '/usr/local/nfquery/sources/amada/amadaSource.txt'
-    #output_type  = 1 
-    #output_file = '/usr/local/nfquery/sources/amada/amadaOutput.txt'
-    #fetch_source(source_link, source_file)
-    #parse_source_and_create_output(source_name, source_file, output_type, output_file)
-    
     source_name = 'Amada'
     source_link = 'http://amada.abuse.ch/blocklist.php?download=ipblocklist'
-    source_file = '/home/serdar/workspace/test/sources/amada/amadaSource.txt'
-    output_type  = 1
-    output_file = '/home/serdar/workspace/test/sources/amada/amadaOutput.txt'
+    source_dir  = os.path.dirname(__file__)
+    source_file = source_dir + '/amadaSource.txt'
+    output_type = 1
+    output_file = source_dir + '/amadaOutput.txt'
     
-    #fetch_source(source_link, source_file)
-    parse_source_and_create_output(source_name, source_file, output_type, output_file)
-
+    fetch_source(source_link, source_file)
+    try:
+        parse_source_and_create_output(source_name, source_file, output_type, output_file)
+    except Exception ,e:
+        print 'asdasdas'
+        print e 
