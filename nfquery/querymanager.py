@@ -292,7 +292,7 @@ class QueryManager:
                 self.qmlogger.info( 'Parser "%s" exists, OK!' % 
                                     self.sources[index].parser )
             else:
-                self.qmlogger.warning('Parser doesn\'t exist' % self.sources[index].parser)
+                self.qmlogger.warning('Parser doesn\'t exist : %s' % self.sources[index].parser)
                 self.qmlogger.warning( 'Please check your configuration file')
                 print self.sources[index].parser
                 # TODO : Create a list of found parsers and execute only this list
