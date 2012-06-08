@@ -292,9 +292,9 @@ class QueryManager:
                 self.qmlogger.info( 'Parser "%s" exists, OK!' % 
                                     self.sources[index].parser )
             else:
-                self.qmlogger.warning('Parser %s doesn\'t exist')
-                self.qmlogger.warning( 'Please check the nfquery.conf file' % 
-                                       self.sources[index].parser )
+                self.qmlogger.warning('Parser doesn\'t exist' % self.sources[index].parser)
+                self.qmlogger.warning( 'Please check your configuration file')
+                print self.sources[index].parser
                 # TODO : Create a list of found parsers and execute only this list
                 # in executeParsers ;), because executeParser gives error if it can't
                 # find a parser and crash!!!
