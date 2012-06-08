@@ -21,12 +21,13 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
         outputfile = open(output_file, "w")
     except Exception, e:
         print 'Exception'
+    	print e
         sys.exit(1)
 
     expr_list = []
     # parse the file line by line
-	# for each line we want another query,
-	# so create json dump for each ip:port-ip:port couple
+    # for each line we want another query,
+    # so create json dump for each ip:port-ip:port couple
     for line in source.readlines()[2:]:
         #data = line.split("\n")[0]
         #ip,port = data.split(':')
@@ -57,21 +58,16 @@ if __name__ == "__main__":
 
     # making parameter assignments manually for now.
 
-    #source_name = 'Amada'
-    #source_link = 'http://amada.abuse.ch/blocklist.php?download=ipblocklist'
-    #source_file = '/usr/local/nfquery/sources/amada/amadaSource.txt'
-    #output_type  = 1 
-    #output_file = '/usr/local/nfquery/sources/amada/amadaOutput.txt'
-    #
-    #fetch_source(source_link, source_file)
-    #parse_source_and_create_output(source_name, source_file, output_type, output_file)
-    
     source_name = 'DFN-Honeypot'
-    source_file = './honeypotSource.txt'
+    source_dir  = os.path.dirname(__file__)
+    source_file = source_dir + '/honeypotSource.txt'
     output_type  = 3
-    output_file = './honeypotOutput.txt'
+    output_file = source_dir + '/honeypotOutput.txt'
     
     #fetch_source(source_link, source_file)
-    parse_source_and_create_output(source_name, source_file, output_type, output_file)
+    try:
+        parse_source_and_create_output(source_name, source_file, output_type, output_file)
+    except Exception,e:
+        print e
 
 
