@@ -1,0 +1,44 @@
+[
+    {
+        "date": "2012-05-16 15:10",
+        "expr_list": [
+            {
+                "src_port": "456"
+            },
+            {
+                "src_port": "457"
+            },
+            {
+                "src_port": "8009"
+            },
+            {
+                "src_port": "3421"
+            },
+            {
+                "src_port": "2342"
+            },
+            {
+                "src_port": "345"
+            },
+            {
+                "src_port": "5609"
+            },
+            {
+                "src_port": "4500"
+            },
+            {
+                "src_port": "3200"
+            },
+            {
+                "src_port": "5432"
+            },
+            {
+                "src_port": "4122"
+            }
+        ],
+        "mandatory_keys": [
+            "src_port"
+        ],
+        "source_name": "TestPort"
+    }
+]
