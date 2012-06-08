@@ -11,7 +11,10 @@ import simplejson as json
 __all__ = ['fetch_source', 'parse_source']
 
 def fetch_source(source_link, source_file):
-    os.system("fetch -o " + source_file + " " + source_link)
+    try:
+        os.system("fetch -o " + source_file + " " + source_link)
+    except Exception, e:
+        os.system("wget " + source_link + " -O " + source_file)
 
 def parse_source_and_create_output(source_name, source_file, output_type, output_file):
     '''

@@ -9,7 +9,10 @@ import simplejson as json
 __all__ = ['fetch_source', 'parse_source']
 
 def fetch_source(source_link, source_file):
-    os.system("fetch -o " + source_file + " " + source_link)
+    try:
+        os.system("fetch -o " + source_file + " " + source_link)
+    except Exception, e:
+        os.system("wget " + source_link + " -O " + source_file)
 
 def parse_source_and_create_output(source_name, source_file, output_type, output_file):
     '''
@@ -66,9 +69,9 @@ if __name__ == "__main__":
     
     source_name = 'malc0de'
     source_link = 'http://malc0de.com/bl/IP_Blacklist.txt'
-    source_file = '/home/serdar/workspace/test/sources/malc0de/malc0deSource.txt'
+    source_file = './malc0deSource.txt'
     output_type = 1 # Ip list
-    output_file = '/home/serdar/workspace/test/sources/malc0de/malc0deOutput.txt'
+    output_file = './malc0deOutput.txt'
 
     #fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)

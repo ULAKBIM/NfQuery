@@ -67,9 +67,9 @@ if __name__ == "__main__":
     #parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
     source_name = 'demoSource'
-    source_file = '/home/serdar/workspace/test/sources/demo/demoSource.txt'
+    source_file = './demoSource.txt'
     output_type  = 3
-    output_file = '/home/serdar/workspace/test/sources/demo/demoOutput.txt'
+    output_file = './demoOutput.txt'
     
     #fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)
