@@ -163,7 +163,7 @@ class QueryManager:
         # Check lists, tihs will handled in db creation later.
         threat = self.store.find(Threat)
         if threat.is_empty():
-            db.insertThreatTypes(self.store)
+            db.insert_threats(self.store)
 
         dbsources = self.store.find(Source)
         # Maintain the table for delete operations

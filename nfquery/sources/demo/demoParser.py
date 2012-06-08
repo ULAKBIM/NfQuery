@@ -25,8 +25,8 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
 
     expr_list = []
     # parse the file line by line
-	# for each line we want another query,
-	# so create json dump for each ip:port-ip:port couple
+    # for each line we want another query,
+    # so create json dump for each ip:port-ip:port couple
     for line in source.readlines()[2:]:
         #data = line.split("\n")[0]
         #ip,port = data.split(':')
@@ -67,11 +67,15 @@ if __name__ == "__main__":
     #parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
     source_name = 'demoSource'
-    source_file = './demoSource.txt'
+    source_dir  = os.path.dirname(__file__)
+    source_file = source_dir + './demoSource.txt'
     output_type  = 3
-    output_file = './demoOutput.txt'
+    output_file = source_dir + './demoOutput.txt'
     
     #fetch_source(source_link, source_file)
-    parse_source_and_create_output(source_name, source_file, output_type, output_file)
+    try:
+        parse_source_and_create_output(source_name, source_file, output_type, output_file)
+    except Exception,e:
+        print e
 
 

@@ -63,11 +63,15 @@ if __name__ == "__main__":
     #parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
     source_name = 'TestPort'
-    source_file = '/home/serdar/workspace/test/sources/port/PortSource.txt'
+    source_dir  = os.path.dirname(__file__)
+    source_file = source_dir + '/PortSource.txt'
     output_type  = 2
-    output_file = '/home/serdar/workspace/test/sources/port/PortOutput.txt'
+    output_file = source_dir + '/PortOutput.txt'
     
     #fetch_source(source_link, source_file)
-    parse_source_and_create_output(source_name, source_file, output_type, output_file)
+    try:
+    	parse_source_and_create_output(source_name, source_file, output_type, output_file)
+    except Exception,e:
+        print e
 
 

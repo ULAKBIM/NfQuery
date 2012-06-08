@@ -84,5 +84,4 @@ if __name__ == "__main__":
     try:
         parse_source_and_create_output(source_name, source_file, output_type, output_file)
     except Exception ,e:
-        print 'asdasdas'
         print e 
