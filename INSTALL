@@ -1,0 +1,39 @@
+=================================
+Installing NfQuery Framework
+=================================
+
+Development
+-----------
+
+If you want to develop for NfQuery or use the latest code we're working on,
+you can clone and install from the github repository.
+
+        $ git clone https://github.com/ulakbim/nfquery
+
+
+Easy Install
+------------
+You can use the setuptools easy_install script to get NfQuery and other python modules on your system :
+
+        $ sudo easy_install NfQuery
+        $ sudo easy_install MySQLdb
+        $ sudo easy_install txJSON-RPC
+                    ......
+
+
+
+MySQL
+-----
+You need to install MySQL Server 5.2 or newer version. Additional instructions : 
+
+    1) Create a database named nfquery and a user with the same name whose all permissions on nfquery
+    database.
+
+    2) Import nfquery database with using nfquery.sql file placed in 'WHERE IS IT!!' 
+    by using the command : 
+            
+                    mysql -u nfquery -p nfquery < nfquery.sql
+
+    3) ....
+
+
