@@ -8,7 +8,6 @@ import resource
 import threading
 import multiprocessing
 import atexit
-from apscheduler.scheduler import Scheduler
 from datetime import date
 from config import Config, ConfigError
 
