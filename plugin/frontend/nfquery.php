@@ -22,7 +22,7 @@ function nfquery_ParseInput( $plugin_id ) {
 	#SetMessage('error', "Error set by demo plugin!");
 	#SetMessage('warning', "Warning set by demo plugin!");
 	#SetMessage('alert', "Alert set by demo plugin!");
-	SetMessage('info', "Info set by demo plugin!");
+        #SetMessage('info', "Info set by demo plugin!");
 
 } // End of demoplugin_ParseInput
 
@@ -35,7 +35,7 @@ function nfquery_ParseInput( $plugin_id ) {
  */
 function nfquery_Run( $plugin_id ) {
 
-	print '<link rel="stylesheet" href="bootstrap/css/bootstrap.css" />';
+	print '<link rel="stylesheet" href="/nfsen/css/bootstrap.css" />';
 
 	print '<div class="container">
 				<div class="row-fluid">
@@ -48,41 +48,12 @@ function nfquery_Run( $plugin_id ) {
 
 	// the command to be executed in the backend plugin
 	$command = 'nfquery::getSubscriptions';
-
-	# FAKE OPTIONS
     $opts = array();
-	// two scalar values
-    $colour1 = '#72e3fa';
-    $colour2 = '#2a6f99';
-
-    // one array
-    $colours = array ( '#12af7d', '#56fc7b');
-
-    // prepare arguments
-    $opts = array();
-    $opts['colour1'] = $colour1;
-    $opts['colour2'] = $colour2;
-    $opts['colours'] = $colours;
-	# FAKE OPTIONS
-
-	// call command in backened plugin
 	$out_list = nfsend_query($command, $opts);
 
 	print '<div class="span8">';
 	print "\n".var_dump($out_list);
-	
-	// get result
-    #if ( !is_array($out_list) ) {
-    #    SetMessage('error', "Error calling backend plugin");
-    #    return FALSE;
-	#}
-
-	print '<h2>here2</h2>';
-
-	$string = $out_list['result'];
-	print "<p>Backend reported: $string</p>\n";
-	print '</div>';
-	print '</div>';
+    print '</div>';	
 
 } // End of demoplugin_Run
 
