@@ -9,19 +9,21 @@
 				<div class="tabbable tabs-left">
 					<ul class="nav nav-tabs">
 						<li class="active"><a data-toggle="tab" href="#home">Home</a></li>
-						<li><a data-toggle="tab" href="#subscriptions">Subscription</a></li>
+						<li class="active"><a data-toggle="tab" href="#subscriptions">Subscription</a></li>
 						<li><a data-toggle="tab" href="#">Report</a></li>
 						<li><a data-toggle="tab" href="#">Settings</a></li>
 						<li><a data-toggle="tab" href="#about">About</a></li>
 					</ul>
 
 					<div class="tab-content">
+
 						<div class="tab-pane active" id="home">
 							<div class="container-fluid">
 								<?php include('welcome.php'); ?>
 							</div>
 						</div>
 						<div class="tab-pane" id="subscriptions">
+
 							<div class="container-fluid">
 								<?php include('subscriptions.php'); ?>
 							</div>
