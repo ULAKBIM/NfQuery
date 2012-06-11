@@ -10,13 +10,37 @@ __store = None
 def initialize_db(store):
 
     store.execute(
+		  "CREATE TABLE category ("					     +
+	          "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
+  		  "category varchar(20) NOT NULL,"			             +
+  	          "PRIMARY KEY (id)"			                             +
+	          ") ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8"
+		 )
+    store.execute(
+		  "CREATE TABLE type ("						     +
+		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
+		  "type varchar(40) NOT NULL,"                                       +
+		  "PRIMARY KEY (id)"                                                 +
+		  ") ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8"
+		 )
+    store.execute(
                   "CREATE TABLE prefix("                                             + 
                   "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
                   "prefix VARCHAR(100) COLLATE utf8_unicode_ci NOT NULL,"            +
                   "PRIMARY KEY (id)"                                                 +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"      
                  )
-   
+
+    store.execute(
+		"CREATE TABLE application ("					     +
+  		"id int(10) unsigned NOT NULL AUTO_INCREMENT,"			     +
+  		"version int(10) unsigned NOT NULL,"                                 +
+  		"creation_time varchar(20) NOT NULL,"                                +
+  		"PRIMARY KEY (id)"                                                   +
+		") ENGINE=InnoDB DEFAULT CHARSET=utf8"
+		)
+
+    
     store.execute(
                   "CREATE TABLE plugin("                                             + 
                   "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
@@ -63,7 +87,7 @@ def initialize_db(store):
                   "checksum VARCHAR(32) COLLATE utf8_unicode_ci NOT NULL,"           +
                   "link VARCHAR(75) COLLATE utf8_unicode_ci NOT NULL,"               +
                   "threat_id int unsigned NOT NULL,"                                 +
-                  "FOREIGN KEY (threat_id) REFERENCES threat (id),"                  +
+                  "FOREIGN KEY (threat_id) REFERENCES threat (id),"		     +
                   "FOREIGN KEY (parser_id) REFERENCES parser (id) ON UPDATE CASCADE,"+
                   "PRIMARY KEY (id)"                                                +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
@@ -76,9 +100,11 @@ def initialize_db(store):
                   "update_time VARCHAR(20),"                                         + 
                   "type SMALLINT UNSIGNED NOT NULL,"                                 + 
                   "checksum VARCHAR(32) NOT NULL,"                                   + 
-                  "creation_time VARCHAR(20) NOT NULL,"                              + 
+                  "creation_time VARCHAR(20) NOT NULL,"                              +
+		  "type_id int(10) unsigned NOT NULL,"				     +
+                  "category_id int(10) unsigned NOT NULL,"                           +
                   "PRIMARY KEY (id),"                                                +
-                  "FOREIGN KEY (source_id) REFERENCES source(id) ON DELETE CASCADE" + 
+                  "FOREIGN KEY (source_id) REFERENCES source(id) ON DELETE CASCADE"  + 
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
 
@@ -299,6 +325,7 @@ def initialize_db(store):
                   "FOREIGN KEY (plugin_id) REFERENCES plugin(id) ON DELETE CASCADE"  +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
+    
 
 
 def insert_threats(store):
@@ -315,6 +342,38 @@ def insert_threats(store):
     store.commit()
     #logger.info('Threat list is inserted into database.')
     print('Threat list is inserted into database.')
+
+
+def insert_type(store):
+
+    #import logger
+    from models import Type
+    type_list = ['0', '1', '0,2,1,3', '0,3', '0,2,3', '0,2,3', '0,1,3' ]
+
+    for name in type_list:
+        type = Type()
+        type.type = unicode(name)
+        store.add(type)
+        store.flush()
+    store.commit()
+    #logger.info('Type list is inserted into database.')
+    print('Type list is inserted into database.')
+
+
+def insert_category(store):
+
+    #import logger
+    from models import Category
+    category_list = ['validation', 'mandatory', 'optional' ]
+    for name in category_list:
+        category = Category()
+        category.category = unicode(name)
+        store.add(category)
+        store.flush()
+    store.commit()
+    #logger.info('Category list is inserted into database.')
+    print('Category list is inserted into database.')
+
 
 
 def get_store(conf=None):
@@ -342,6 +401,8 @@ def get_store(conf=None):
                     print 'Creating the tables'
                     initialize_db(__store)
                     insert_threats(__store)
+		    insert_type(__store)
+		    insert_category(__store)
                     return __store
                 else:
                     print 'Another mysql error is happened'
