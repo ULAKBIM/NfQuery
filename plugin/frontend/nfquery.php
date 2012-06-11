@@ -34,27 +34,8 @@ function nfquery_ParseInput( $plugin_id ) {
  * Its return value is ignored.
  */
 function nfquery_Run( $plugin_id ) {
-
-	print '<link rel="stylesheet" href="/nfsen/css/bootstrap.css" />';
-
-	print '<div class="container">
-				<div class="row-fluid">
-		    		<div class="hero-unit">
-		    			<h1 class="nfquery-hero-title">Welcome to NfQuery </h1>
-					</div>
-				</div>
-		   ';
-
-
-	// the command to be executed in the backend plugin
-	$command = 'nfquery::getSubscriptions';
-    $opts = array();
-	$out_list = nfsend_query($command, $opts);
-
-	print '<div class="span8">';
-	print "\n".var_dump($out_list);
-    print '</div>';	
-
+	print '<iframe id="nfqueryIFrame" src="plugins/nfquery/index.php" frameborder="0" style="height:100%;width:100%">IFrame</iframe>';
+	
 } // End of demoplugin_Run
 
 
