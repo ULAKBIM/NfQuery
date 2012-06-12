@@ -9,6 +9,14 @@ __store = None
 
 def initialize_db(store):
 
+
+    store.execute(
+		  "CREATE TABLE time ("						     +
+  		  "id int(10) unsigned NOT NULL AUTO_INCREMENT," 		     +
+ 		  "time datetime NOT NULL,"					     +
+		  "PRIMARY KEY (id)"						     +
+		  ") ENGINE=InnoDB AUTO_INCREMENT=13357 DEFAULT CHARSET=utf8;"
+		 )
     store.execute(
 		  "CREATE TABLE category ("					     +
 	          "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
@@ -65,7 +73,8 @@ def initialize_db(store):
                   "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
                   "name VARCHAR(75) COLLATE utf8_unicode_ci NOT NULL,"               +
                   "time_interval SMALLINT(6) NOT NULL,"                              +
-                  "PRIMARY KEY (id)"                                                +
+		  "checksum varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL, "      +                 
+		   "PRIMARY KEY (id)"                                                +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
 
@@ -97,17 +106,31 @@ def initialize_db(store):
                   "CREATE TABLE query ("                                             + 
                   "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         + 
                   "source_id INT UNSIGNED NOT NULL,"                                 +
-                  "update_time VARCHAR(20),"                                         + 
+		  "update_time_id int(10) unsigned DEFAULT NULL,"		     +
                   "type SMALLINT UNSIGNED NOT NULL,"                                 + 
                   "checksum VARCHAR(32) NOT NULL,"                                   + 
-                  "creation_time VARCHAR(20) NOT NULL,"                              +
-		  "type_id int(10) unsigned NOT NULL,"				     +
+		  "creation_time_id int(10) unsigned NOT NULL,"		     	     +
+	          "type_id int(10) unsigned NOT NULL,"				     +
                   "category_id int(10) unsigned NOT NULL,"                           +
                   "PRIMARY KEY (id),"                                                +
                   "FOREIGN KEY (source_id) REFERENCES source(id) ON DELETE CASCADE"  + 
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
 
+
+    store.execute(
+		  "CREATE TABLE `query_packet` ("				     +
+  		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"		     +
+  		  "validation_id int(10) unsigned NOT NULL,"			     +
+		  "query_id int(10) unsigned NOT NULL,"				     +
+		  "PRIMARY KEY (id),"                                                +
+		  "KEY validation_id (validation_id),"                               +
+		  "KEY query_id (query_id),"					     +
+		  "CONSTRAINT query_packet_ibfk_1 FOREIGN KEY (validation_id) REFERENCES query (id) ON DELETE CASCADE,"+
+		  "CONSTRAINT query_packet_ibfk_2 FOREIGN KEY (query_id) REFERENCES query (id) ON DELETE CASCADE"      +
+	     	  ") ENGINE=InnoDB AUTO_INCREMENT=15086 DEFAULT CHARSET=utf8;"	     
+
+    		 )
     store.execute(
                   "CREATE TABLE subscription("                                       + 
                   "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
@@ -119,15 +142,17 @@ def initialize_db(store):
                  )
 
     store.execute(
-                  "CREATE TABLE subscription_packet("                                + 
-                  "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
-                  "subscription_id INT UNSIGNED NOT NULL,"                           +
-                  "query_id INT UNSIGNED NOT NULL,"                                  +
-                  "tags VARCHAR(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'NULL'," + 
-                  "PRIMARY KEY (id),"                                                +
-                  "FOREIGN KEY (query_id) REFERENCES query(id) ON DELETE CASCADE,"   +
-                  "FOREIGN KEY (subscription_id) REFERENCES subscription(id) ON DELETE CASCADE" +
-                  ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
+		  "CREATE TABLE subscription_packet ("  			     +
+  		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"		     +
+		  "subscription_id int(10) unsigned NOT NULL,"			     +
+		  "query_packet_id int(10) unsigned NOT NULL,"			     +
+		  "PRIMARY KEY (id),"						     +
+		  "KEY subscription_id (subscription_id),"			     +
+		  "KEY query_packet_id (query_packet_id),"			     +
+		  "CONSTRAINT subscription_packet_ibfk_1 FOREIGN KEY (subscription_id) REFERENCES subscription (id),"+
+		  "CONSTRAINT subscription_packet_ibfk_2 FOREIGN KEY (query_packet_id) REFERENCES query_packet (id) ON DELETE CASCADE"+
+		  ") ENGINE=InnoDB AUTO_INCREMENT=35836 DEFAULT CHARSET=utf8;"
+
                  )
 
     store.execute(
@@ -327,7 +352,7 @@ def initialize_db(store):
                  )
     
 
-
+	
 def insert_threats(store):
 
     #import logger
