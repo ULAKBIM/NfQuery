@@ -8,8 +8,8 @@
 		  	  <div class="span12">
 				<div class="tabbable tabs-left">
 					<ul class="nav nav-tabs">
-						<li class="active"><a data-toggle="tab" href="#home">Home</a></li>
-						<li class="active"><a data-toggle="tab" href="#subscriptions">Subscription</a></li>
+						<li><a data-toggle="tab" href="#home">Home</a></li>
+						<li><a data-toggle="tab" href="#subscriptions">Subscription</a></li>
 						<li><a data-toggle="tab" href="#">Report</a></li>
 						<li><a data-toggle="tab" href="#">Settings</a></li>
 						<li><a data-toggle="tab" href="#about">About</a></li>

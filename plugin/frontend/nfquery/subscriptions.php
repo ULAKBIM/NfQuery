@@ -1,7 +1,3 @@
-<?php 
-	require_once('/var/www/nfsen/lookup.php');
-	require_once('/var/www/nfsen/nfsenutil.php');
-?>
 <div class="row">
 <h3>Subscription Management</h3>
 </div>
@@ -10,11 +6,8 @@
 		<table class="table table-striped table-bordered table-condensed" style="cursor:pointer">
 			<tr><th>Subscriptions</th></tr>
 			<?php
-				// the command to be executed in the backend plugin
-				$command = 'nfquery::getSubscriptions';
-				$opts = array();
-				$out_list = nfsend_query($command, $opts);
-				$subscriptions = $out_list['subscriptions'];
+				require_once('nfqueryutil.php');
+				$subscriptions = getSubscriptions();
 				foreach ($subscriptions as $subcription) {
 					echo '<tr><td>'.$subcription.'</td>';
 					echo '<td>'.'<button class="btn btn-danger subscription_toggle">Off</button>'.'</td></tr>';
