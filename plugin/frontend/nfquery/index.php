@@ -1,6 +1,7 @@
 <html>
 	<head>
 		<link rel="stylesheet" href="/nfsen/css/bootstrap.css" />
+		<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/detail.css" />
 	</head>
 	<body>
 		<div class="container-fluid">
@@ -10,6 +11,7 @@
 					<ul class="nav nav-tabs">
 						<li><a data-toggle="tab" href="#home">Home</a></li>
 						<li><a data-toggle="tab" href="#subscriptions">Subscription</a></li>
+						<li><a data-toggle="tab" href="#workspace">Workspace</a></li>
 						<li><a data-toggle="tab" href="#">Report</a></li>
 						<li><a data-toggle="tab" href="#">Settings</a></li>
 						<li><a data-toggle="tab" href="#about">About</a></li>
@@ -19,7 +21,7 @@
 
 						<div class="tab-pane active" id="home">
 							<div class="container-fluid">
-								<?php include('welcome.php'); ?>
+								<? session_start(); include('welcome.php');?>
 							</div>
 						</div>
 						<div class="tab-pane" id="subscriptions">
@@ -31,6 +33,11 @@
 						<div class="tab-pane" id="about">
 							<div class="container-fluid">
 								<?php include('about.php'); ?>
+							</div>
+						</div>
+						<div class="tab-pane" id="workspace">
+							<div class="container-fluid">
+								<?php include('workspace.php'); ?>
 							</div>
 						</div>
 					</div>

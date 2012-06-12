@@ -15,14 +15,14 @@
 			</div>
 			</div>
             	<div class="row-fluid">
-					<div class="span4">
+					<div class="span11">
 				 	<fieldset><strong>Alerts</strong>
 				</div>
 			</div>
             <div class="row-fluid">
-				<div class="span4">
+				<div class="span11">
  					<table>
-					 <?php
+						<?php
                         ?>  
                 	</table>
 
