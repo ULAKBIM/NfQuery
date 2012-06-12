@@ -15,4 +15,6 @@ $(document).ready(function() {
 	$('.subscription_toggle').click(function(){
 		subscription_toggle($(this));			
 	});
+	if (window.location.hash != "")
+		$('a[href="' + window.location.hash + '"]').click();
 });
