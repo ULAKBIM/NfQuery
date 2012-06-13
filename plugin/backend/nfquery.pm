@@ -83,6 +83,26 @@ sub getSubscriptions{
 	}	
 }
 
+
+sub getSubscriptionsDetail{
+        my $namee = shift;
+        my $socket = shift;
+        my $opts = shift;
+
+        syslog('debug', "$uri");
+        my $result = $rpc->call($uri,'get_subscription',[namee]);
+        my $r = $result->result;
+        my %args;
+
+        if (defined $result->result){
+                $args{'subscriptiondetail'} = \%{$r};
+                syslog('debug', 'Response To frontend.');
+                Nfcomm::socket_send_ok($socket, \%args);
+        }else {
+                Nfcomm::socket_send_ok($socket, \%args);
+        }
+}
+
 sub register{
 	my $result = $rpc->call( $uri, 'register', [$organization, $adm_name, $adm_mail, $adm_tel,
                                             $adm_publickey_file, $prefix_list, $plugin_ip, ]);
