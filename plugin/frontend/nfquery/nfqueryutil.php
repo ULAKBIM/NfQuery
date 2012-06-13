@@ -1,5 +1,5 @@
 <?php
-	require_once('loghandler.php');
+    require_once('loghandler.php');
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
 

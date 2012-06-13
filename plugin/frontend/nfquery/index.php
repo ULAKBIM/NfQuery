@@ -21,7 +21,7 @@
 
 						<div class="tab-pane active" id="home">
 							<div class="container-fluid">
-								<? session_start(); include('welcome.php');?>
+								<? session_start(); var_dump($_SESSION); include('welcome.php');?>
 							</div>
 						</div>
 						<div class="tab-pane" id="subscriptions">
