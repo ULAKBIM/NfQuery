@@ -3,7 +3,7 @@
 </div>
 <div class="row-fluid" style="padding-top:10px">
 	<div class="span4" id="subscription_list">
-		<table class="table table-striped table-bordered table-condensed" style="cursor:pointer">
+		<table id="subscription_table" class="table table-striped table-bordered table-condensed" style="cursor:pointer">
 			<tr><th>Subscriptions</th></tr>
 			<?php
 				require_once('nfqueryutil.php');
