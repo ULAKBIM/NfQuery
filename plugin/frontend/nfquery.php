@@ -22,7 +22,7 @@ function nfquery_ParseInput( $plugin_id ) {
 	#SetMessage('error', "Error set by demo plugin!");
 	#SetMessage('warning', "Warning set by demo plugin!");
 	#SetMessage('alert', "Alert set by demo plugin!");
-        #SetMessage('info', "Info set by demo plugin!");
+    #SetMessage('info', "Info set by demo plugin!");
 
 } // End of demoplugin_ParseInput
 
@@ -34,8 +34,13 @@ function nfquery_ParseInput( $plugin_id ) {
  * Its return value is ignored.
  */
 function nfquery_Run( $plugin_id ) {
-	print '<iframe id="nfqueryIFrame" src="plugins/nfquery/index.php" frameborder="0" style="height:100%;width:100%">IFrame</iframe>';
-	
+		#print '<iframe id="nfqueryIFrame" src="/nfsen/plugins/nfquery/index.php" frameborder="0" style="height:100%;width:100%">IFrame</iframe>';
+		
+		require('/var/www/nfsen/details.php');
+		$_SESSION['tab'] = "Details";
+		var_dump($_SESSION);
+		DisplayDetails();
+		DisplayProcessing();
 } // End of demoplugin_Run
 
 
