@@ -20,4 +20,8 @@
 		return $subscriptions;
 	}
 
+	if (isset($_POST['status'])){
+		echo "olacak gibi";
+	}
+
 ?>
