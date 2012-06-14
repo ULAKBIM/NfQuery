@@ -1,5 +1,6 @@
 		<link rel="stylesheet" href="/nfsen/css/bootstrap.css" />
 		<link rel="stylesheet" href="/nfsen/css/detail.css" />
+		<link rel="stylesheet" href="/nfsen/css/process.css" /> <!-- Override bootstrap's form elements width and height-->
 		<div class="container-fluid">
 			<div class="row-fluid">
 		  	  <div class="span12">
