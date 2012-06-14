@@ -36,6 +36,13 @@ function nfquery_ParseInput( $plugin_id ) {
  */
 function nfquery_Run( $plugin_id ) {
 		#print '<iframe id="nfqueryIFrame" src="/nfsen/plugins/nfquery/index.php" frameborder="0" style="height:100%;width:100%" scrolling="no">IFrame</iframe>';
+		if(isset($_POST['nfqueryTabName'])){
+				
+			if(!isset($_SESSION['nfquery'])){	
+				$_SESSION['nfquery'] = array();
+			}
+			$_SESSION['nfquery']['nfqueryTabName'] = $_POST['nfqueryTabName'];
+		}
 		include('nfquery/index.php');
 } // End of demoplugin_Run
 
