@@ -8,8 +8,8 @@
 			<?php
 				require_once('nfqueryutil.php');
 				$subscriptions = getSubscriptions();
-				foreach ($subscriptions as $subcription) {
-					echo '<tr><td>'.$subcription.'</td>';
+				foreach ($subscriptions as $subscription) {
+					echo '<tr><td>'.$subscription.'</td>';
 					echo '<td>'.'<button class="btn btn-danger subscription_toggle">Off</button>'.'</td></tr>';
 				}
 			?>
