@@ -13,6 +13,15 @@ function subscription_toggle(button){
 	}
 }
 
+
+function getSubscriptionDetail(name){
+	alert(name);
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
+		alert(data);
+	} 
+		
+	);
+}
 $(document).ready(function() {
 	$('.subscription_toggle').click(function(){
 		subscription_toggle($(this));			

@@ -478,7 +478,7 @@ class QueryManager:
     ###########################################################
     ### Subscription Releasing and Plugin Request Handling  ###
     ###########################################################
-    def getSubscription(self, name="Amada"):
+    def getSubscription(self, name):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         pp = pprint.PrettyPrinter(indent=4)
         self.qmlogger.debug('Getting subscription %s' % name)
