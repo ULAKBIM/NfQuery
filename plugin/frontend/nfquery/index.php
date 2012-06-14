@@ -1,9 +1,5 @@
-<html>
-	<head>
 		<link rel="stylesheet" href="/nfsen/css/bootstrap.css" />
-		<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/detail.css" />
-	</head>
-	<body>
+		<link rel="stylesheet" href="/nfsen/css/detail.css" />
 		<div class="container-fluid">
 			<div class="row-fluid">
 		  	  <div class="span12">
@@ -19,9 +15,9 @@
 
 					<div class="tab-content">
 
-						<div class="tab-pane active" id="home">
+						<div class="tab-pane" id="home">
 							<div class="container-fluid">
-								<? session_start(); var_dump($_SESSION); include('welcome.php');?>
+								<? include('welcome.php');?>
 							</div>
 						</div>
 						<div class="tab-pane" id="subscriptions">
@@ -35,7 +31,7 @@
 								<?php include('about.php'); ?>
 							</div>
 						</div>
-						<div class="tab-pane" id="workspace">
+						<div class="tab-pane active" id="workspace">
 							<div class="container-fluid">
 								<?php include('workspace.php'); ?>
 							</div>
@@ -49,5 +45,3 @@
 	<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
 	<script src="/nfsen/js/bootstrap.js"></script>
 	<script src="/nfsen/js/subscription.js"></script>
-	<body>
-</html>
