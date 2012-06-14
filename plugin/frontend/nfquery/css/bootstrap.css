@@ -1525,7 +1525,6 @@ table {
 
 .table th,
 .table td {
-  padding: 8px;
   line-height: 18px;
   text-align: left;
   vertical-align: top;
