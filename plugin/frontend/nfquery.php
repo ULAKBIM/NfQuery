@@ -16,9 +16,10 @@
  * The return value is ignored.
  */
 
+include('/var/www/nfsen/details.php');
 
 function nfquery_ParseInput( $plugin_id ) {
-
+	Process_Details_tab(0, 0);
 	#SetMessage('error', "Error set by demo plugin!");
 	#SetMessage('warning', "Warning set by demo plugin!");
 	#SetMessage('alert', "Alert set by demo plugin!");
@@ -34,13 +35,8 @@ function nfquery_ParseInput( $plugin_id ) {
  * Its return value is ignored.
  */
 function nfquery_Run( $plugin_id ) {
-		#print '<iframe id="nfqueryIFrame" src="/nfsen/plugins/nfquery/index.php" frameborder="0" style="height:100%;width:100%">IFrame</iframe>';
-		
-		require('/var/www/nfsen/details.php');
-		$_SESSION['tab'] = "Details";
-		var_dump($_SESSION);
-		DisplayDetails();
-		DisplayProcessing();
+		#print '<iframe id="nfqueryIFrame" src="/nfsen/plugins/nfquery/index.php" frameborder="0" style="height:100%;width:100%" scrolling="no">IFrame</iframe>';
+		include('nfquery/index.php');
 } // End of demoplugin_Run
 
 
