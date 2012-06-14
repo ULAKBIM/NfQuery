@@ -10,7 +10,7 @@
 				require_once('nfqueryutil.php');
 				$subscriptions = getSubscriptions();
 				foreach ($subscriptions as $subscription) {
-					echo '<tr><td>'.$subscription.'</td>';
+					echo '<tr onclick=getSubscriptionDetail("'.$subscription.'")><td>'.$subscription.'</td>';
 					echo '<td>'.'<button class="btn btn-danger subscription_toggle">Off</button>'.'</td></tr>';
 				}
 			?>
@@ -20,6 +20,10 @@
 	<div class="span7" id="subscription_details" style="max-height:150px;overflow:auto;">
 		<table class="table table-striped table-bordered table-condensed">
 			<tr><th>Details Of Selected Subscription</th></tr>
+			<?php
+			////	$details = getSubscriptionDetail('Amada');
+			//	var_dump($details);
+			?>
 		</table>
 	</div>
 </div>

@@ -15,7 +15,7 @@ use LWP::Simple;
 use JSON::RPC::LWP;
 use Config::Simple;
 use Term::ANSIColor;
-
+use JSON;
 use Sys::Syslog;
 
 #package NfQueryPlugin::Main; 
@@ -94,9 +94,11 @@ sub getSubscriptionDetail{
         my $result = $rpc->call($uri,'get_subscription',[$$opts{'name'}]);
         my $r = $result->result;
         my %args;
-
+	my $reff = \%{$r};
+	my $json = encode_json \%{$r};
+	syslog('debug', $json);
         if (defined $result->result){
-                $args{'subscriptiondetail'} = \%{$r};
+                $args{'subscriptiondetail'} = $json;
                 syslog('debug', 'Response To frontend.');
                 Nfcomm::socket_send_ok($socket, \%args);
         }else {
