@@ -44,6 +44,7 @@ my $uri;
 
 our %cmd_lookup = (
 	'getSubscriptions' => \&getSubscriptions,
+	'getSubscriptionDetail' => \&getSubscriptionDetail,
 );
 
 # prepare connection parameters
@@ -84,13 +85,13 @@ sub getSubscriptions{
 }
 
 
-sub getSubscriptionsDetail{
-        my $namee = shift;
+sub getSubscriptionDetail{
         my $socket = shift;
         my $opts = shift;
 
         syslog('debug', "$uri");
-        my $result = $rpc->call($uri,'get_subscription',[namee]);
+        syslog('debug', $$opts{'name'});
+        my $result = $rpc->call($uri,'get_subscription',[$$opts{'name'}]);
         my $r = $result->result;
         my %args;
 
