@@ -1,8 +1,10 @@
 function subscription_toggle(button){
-	if ($(button).hasClass('btn-danger')){
+	if (button.hasClass('btn-danger')){
 		button.removeClass('btn-danger');
 		button.addClass('btn-success');
 		button.text('On');
+		$.post("/nfsen/plugins/nfquery/nfqueryutil.php",
+				{status: button.text()}, function (data){alert(data);});
 		
 	}else if(button.hasClass('btn-success')){
 		button.removeClass('btn-success');
