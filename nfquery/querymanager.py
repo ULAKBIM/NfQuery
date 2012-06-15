@@ -514,7 +514,6 @@ class QueryManager:
                     query_packet[qp_query_id] = packet
                 result[subscription_id] = query_packet
                 self.qmlogger.debug('Returning details for subscription %s ' % name)
-                pp.pprint(result)
                 return result
         self.qmlogger.warning('Couldn\'t get details for subscription %s ' % name)
         return

@@ -23,7 +23,12 @@ function getSubscriptionDetail(name){
 	alert(name);
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
 		alert(data);
-		var aray = data.split(",");
+
+
+
+
+
+	/*	var aray = data.split(",");
 		var i = 0;
 		var j = 0 ;
 		for(var i = document.getElementById("detail_table").rows.length; i > 1;i--){
@@ -66,7 +71,7 @@ function getSubscriptionDetail(name){
 			cell2.innerHTML=query;
 			cell3.innerHTML=query_type;
 			cell4.innerHTML=filter;
-		}
+		}*/
 	} 
 	);
 }

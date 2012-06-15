@@ -11,7 +11,7 @@ use LWP::UserAgent;
 use JSON::RPC::LWP;
 use Config::Simple;
 use Term::ANSIColor;
-
+use JSON;
 #package NfQueryPlugin::Main; 
 
 use feature 'say';
@@ -87,7 +87,7 @@ p($result->result);
 print("\n");
 
 # get subscriptions
-my $result = $rpc->call($uri, 'get_subscription', ["Malware"]);
+my $result = $rpc->call($uri, 'get_subscription', ["Amada"]);
 print $result;
 
 #p($result->result);
@@ -95,11 +95,12 @@ print $result;
 # dereference the result array
 #p($result);
 my $r = $result->result;
-
-my $reff = \%{$r};
-
+#my $json = encode_json \%{$r};
+#my $reff = \%{$r};
+#print $json;
+print Dumper \@{$r};
 #print Dumper $new_foo_ref;
-print Dumper $reff;
+#print Dumper $reff;
 #print $size;
 if (defined $result->result) {
     my $str = "================= Subscriptions Detail for Amada =================";
