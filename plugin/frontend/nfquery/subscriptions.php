@@ -7,12 +7,20 @@
 			<tr><th>Subscriptions</th></tr>
 
 			<?php
+
 				require_once('nfqueryutil.php');
+
 				$subscriptions = getSubscriptions();
-				foreach ($subscriptions as $subscription) {
-					echo '<tr onclick=getSubscriptionDetail("'.$subscription.'")><td>'.$subscription.'</td>';
-					echo '<td>'.'<button class="btn btn-danger subscription_toggle">Off</button>'.'</td></tr>';
+				$remember = parseRememberFile();
+				for($i = 0; $i < sizeof($subscriptions); ++$i) {
+					echo '<tr onclick=getSubscriptionDetail("'.$subscriptions[$i].'")><td>'.$subscriptions[$i].'</td>';
+					if ($remember[$i+1] == 1){ 
+						echo '<td>'.'<button id="'.($i+1).'" class="btn btn-success subscription_toggle">On</button>'.'</td></tr>';
+					}else{
+						echo '<td>'.'<button id="'.($i+1).'" class="btn btn-danger subscription_toggle">Off</button>'.'</td></tr>';
+					}
 				}
+
 			?>
 
 		</table>
@@ -21,8 +29,7 @@
 		<table id="detail_table" class="table table-striped table-bordered table-condensed">
 			<tr><th>Details Of Selected Subscription</th></tr>
 			<?php
-			////	$details = getSubscriptionDetail('Amada');
-			//	var_dump($details);
+						
 			?>
 		</table>
 	</div>
