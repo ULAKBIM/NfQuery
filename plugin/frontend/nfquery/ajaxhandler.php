@@ -5,8 +5,8 @@
 	if(isset($_POST['name'])){
     	$name = $_POST['name'];
         $result = getSubscriptionDetail($name);
-		//var_dump($result);
-        echo $result;
+	echo(json_encode($result));
+        //echo $result;
     }
 	
 	if(isset($_POST['status'])){

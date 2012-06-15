@@ -94,11 +94,27 @@ sub getSubscriptionDetail{
         my $result = $rpc->call($uri,'get_subscription',[$$opts{'name'}]);
         my $r = $result->result;
         my %args;
-	my $reff = \%{$r};
+	my $reff = \%{$r};	
 	my $json = encode_json \%{$r};
+	my @chars = split('', $json);
+	my $counter = 0;
+	my $index = 0;
+	my $line = "";
+        syslog('debug', "@chars");
+	for my $char (@chars){
+	    $line = $line .$char ;
+	    if ($counter == 1000){
+		$counter = 0;
+		$args{"$index"} = $line;
+		$index = $index +1;
+        	syslog('debug', "$line");
+		$line = "";
+	    }
+	    $counter = $counter + 1 ;
+	}
 	syslog('debug', $json);
         if (defined $result->result){
-                $args{'subscriptiondetail'} = $json;
+               # $args{'subscriptiondetail'} = $json;
                 syslog('debug', 'Response To frontend.');
                 Nfcomm::socket_send_ok($socket, \%args);
         }else {
