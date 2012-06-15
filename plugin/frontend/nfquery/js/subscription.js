@@ -3,20 +3,26 @@ function subscription_toggle(button){
 		button.removeClass('btn-danger');
 		button.addClass('btn-success');
 		button.text('On');
-		$.post("/nfsen/plugins/nfquery/nfqueryutil.php",
-				{status: button.text()}, function (data){alert(data);});
-		
 	}else if(button.hasClass('btn-success')){
 		button.removeClass('btn-success');
 		button.addClass('btn-danger');
 		button.text('Off');
 	}
+	//Send button status to be persistence
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",
+		{
+			status: button.text(),
+			button_id: button.attr('id')
+		},
+	   	function(){}	
+	);
 }
 
 
 function getSubscriptionDetail(name){
 	alert(name);
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
+		alert(data);
 		var aray = data.split(",");
 		var i = 0;
 		var j = 0 ;

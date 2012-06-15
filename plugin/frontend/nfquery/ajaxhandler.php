@@ -1,11 +1,16 @@
 <?php 
     require_once('loghandler.php');
-    require_once('/var/www/nfsen/plugins/nfquery/nfqueryutil.php');
-    if($_POST['name']){
+    require_once('nfqueryutil.php');
+	
+	if(isset($_POST['name'])){
     	$name = $_POST['name'];
         $result = getSubscriptionDetail($name);
-	//var_dump($result);
+		//var_dump($result);
         echo $result;
     }
+	
+	if(isset($_POST['status'])){
+		editRememberFile();
+	}
 
 ?>

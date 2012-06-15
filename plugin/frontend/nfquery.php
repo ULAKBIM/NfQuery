@@ -43,6 +43,7 @@ function nfquery_Run( $plugin_id ) {
 			}
 			$_SESSION['nfquery']['nfqueryTabName'] = $_POST['nfqueryTabName'];
 		}
+
 		include('nfquery/index.php');
 } // End of demoplugin_Run
 
