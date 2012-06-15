@@ -57,5 +57,5 @@
 			</div>
 		</div>
 	<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
-	<script src="/nfsen/js/bootstrap.js"></script>
+	<script src="/var/www/nfsen/js/bootstrap.js"></script>
 	<script src="/nfsen/js/subscription.js"></script>

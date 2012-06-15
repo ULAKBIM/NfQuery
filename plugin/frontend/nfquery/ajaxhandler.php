@@ -4,6 +4,7 @@
     if($_POST['name']){
     	$name = $_POST['name'];
         $result = getSubscriptionDetail($name);
+	//var_dump($result);
         echo $result;
     }
 
