@@ -87,7 +87,7 @@ p($result->result);
 print("\n");
 
 # get subscriptions
-my $result = $rpc->call($uri, 'get_subscription', ["Botnet"]);
+my $result = $rpc->call($uri, 'get_subscription', ["Malware"]);
 print $result;
 
 #p($result->result);

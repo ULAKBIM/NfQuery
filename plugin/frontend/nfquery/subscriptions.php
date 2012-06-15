@@ -17,8 +17,8 @@
 
 		</table>
 	</div>
-	<div class="span7" id="subscription_details" style="max-height:150px;overflow:auto;">
-		<table class="table table-striped table-bordered table-condensed">
+	<div class="span7" id="subscription_details" style="max-height:150px;">
+		<table id="detail_table" class="table table-striped table-bordered table-condensed">
 			<tr><th>Details Of Selected Subscription</th></tr>
 			<?php
 			////	$details = getSubscriptionDetail('Amada');
