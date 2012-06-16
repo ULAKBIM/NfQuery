@@ -1,17 +1,13 @@
 function subscription_toggle(button){
-	if (button.hasClass('btn-danger')){
-		button.removeClass('btn-danger');
-		button.addClass('btn-success');
-		button.text('On');
-	}else if(button.hasClass('btn-success')){
-		button.removeClass('btn-success');
-		button.addClass('btn-danger');
-		button.text('Off');
+	var button_status = 'Off';
+	if (button.attr('checked')){
+		button_status = 'On';
 	}
+	alert(button_status);
 	//Send button status to be persistence
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",
 		{
-			status: button.text(),
+			button_status: button_status,
 			button_id: button.attr('id')
 		},
 	   	function(){}	
@@ -20,7 +16,6 @@ function subscription_toggle(button){
 
 
 function getSubscriptionDetail(name){
-	alert(name);
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
                 for(var i = document.getElementById("detail_table").rows.length; i > 1;i--){
                         document.getElementById("detail_table").deleteRow(i -1);
@@ -117,9 +112,14 @@ function getSubscriptionDetail(name){
 	);
 }
 $(document).ready(function() {
-	$('.subscription_toggle').click(function(){
-		subscription_toggle($(this));			
-	});
+
+	$('.subscription_toggle').iphoneStyle({
+		checkedLabel: 'On',
+		uncheckedLabel: 'Off',
+		onChange: function(elem, value){
+			subscription_toggle(elem);
+		}
+	});  
 
 	$('.nfqueryNav').click(function(){
 		var tabName = $(this).text();

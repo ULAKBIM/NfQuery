@@ -1,6 +1,9 @@
 		<link rel="stylesheet" href="/nfsen/css/bootstrap.css" />
 		<link rel="stylesheet" href="/nfsen/css/detail.css" />
 		<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/process.css" /> <!-- Override bootstrap's form elements width and height-->
+		<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
+		<script src="/nfsen/js/bootstrap.js"></script>
+		<script src="/nfsen/js/subscription.js"></script>
 		<div class="container-fluid">
 			<div class="row-fluid">
 		  	  <div class="span12">
@@ -56,6 +59,3 @@
 			  </div>
 			</div>
 		</div>
-	<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
-	<script src="/var/www/nfsen/js/bootstrap.js"></script>
-	<script src="/nfsen/js/subscription.js"></script>
