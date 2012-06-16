@@ -22,7 +22,48 @@ function subscription_toggle(button){
 function getSubscriptionDetail(name){
 	alert(name);
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
-		alert(data);
+                for(var i = document.getElementById("detail_table").rows.length; i > 1;i--){
+                        document.getElementById("detail_table").deleteRow(i -1);
+                }
+
+		var json = $.parseJSON(data);
+		var counter = 0;
+		for(i in json){
+			var table=document.getElementById("detail_table");
+            		var row = table.insertRow(1);
+            		var cell1 = row.insertCell(0);
+            		var cell2 = row.insertCell(1);
+           		var cell3 = row.insertCell(2);
+            		var cell4 = row.insertCell(3);
+            		cell1.innerHTML="Category";
+            		cell2.innerHTML="Query";
+            		cell3.innerHTML="Query Type";
+            		cell4.innerHTML="Filter";
+			var r = 1;
+			for (j in json[i]){
+				for(k in json[i][j]){
+					category_id = json[i][j][k]["category_id"];
+					query_id = json[i][j][k]["query_id"];
+					query_type = json[i][j][k]["query_type"];
+					filter = json[i][j][k]["filter"];
+					r = r+1;
+					var row = table.insertRow(r);
+   					var cell1 = row.insertCell(0);
+            				var cell2 = row.insertCell(1);
+            				var cell3 = row.insertCell(2);
+            				var cell4 = row.insertCell(3);
+            				cell1.innerHTML=category_id;
+            				cell2.innerHTML=query_id;
+            				cell3.innerHTML=query_type;
+            				cell4.innerHTML=filter;
+					counter = counter +1;
+					if (counter>10)break;
+					
+				}
+				if (counter>10)break;
+			}
+			if (counter>10)break;
+		}
 
 
 

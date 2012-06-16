@@ -101,19 +101,22 @@ sub getSubscriptionDetail{
 	my $index = 0;
 	my $line = "";
         syslog('debug', "@chars");
+        syslog('debug', "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 	for my $char (@chars){
 	    $line = $line .$char ;
 	    if ($counter == 1000){
 		$counter = 0;
 		$args{"$index"} = $line;
+		
 		$index = $index +1;
-        	syslog('debug', "$line");
+        	##syslog('debug', "$line");
+        	syslog('debug', "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 		$line = "";
 	    }
 	    $counter = $counter + 1 ;
 	}
-	syslog('debug', $json);
-        if (defined $result->result){
+        $args{"$index"} = $line;
+	if (defined $result->result){
                # $args{'subscriptiondetail'} = $json;
                 syslog('debug', 'Response To frontend.');
                 Nfcomm::socket_send_ok($socket, \%args);

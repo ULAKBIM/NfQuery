@@ -17,11 +17,16 @@
 		$opts['name'] = $name;
 		$out_list = nfsend_query($command, $opts);
 		$subscriptiondetail = "";
-		foreach($out_list as $line){
+		for($i=0;$i<sizeof($out_list);$i++){
+			$index="".$i;
+			$line = $out_list[$index];
+			$subscriptiondetail = $subscriptiondetail.$line;
+		}
+		/*foreach($out_list as $line){
 			$subscriptiondetail = $subscriptiondetail."".$line;
 			
 		}
-		
+		*/
 	        //$p=1;	
 		//$subscriptiondetail = $subscriptiondetail."".$out_list["0"]."".$out_list["1"]."".$out_list["2"]."".$out_list["3"]."".$out_list["4"];
 		return $subscriptiondetail;
