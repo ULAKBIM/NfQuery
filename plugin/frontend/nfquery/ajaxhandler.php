@@ -9,7 +9,7 @@
         	//echo $result;
     }
 	
-	if(isset($_POST['status'])){
+	if(isset($_POST['button_status'])){
 		editRememberFile();
 	}
 

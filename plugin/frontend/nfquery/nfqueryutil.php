@@ -39,7 +39,7 @@
 		while (!feof($file)){
 			$line = fgets($file);
 			list($id, $status) = explode('=', $line);
-			$remember[$id] = $status;
+			$remember[$id] = substr($status, 0, strlen($status) - 1);
 		}
 		fclose($file);
 
@@ -53,9 +53,9 @@
 		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf","w");
 		
 		$button_id = $_POST['button_id'];
-		$button_status = $_POST['status'];
+		$button_status = $_POST['button_status'];
 
-		for($i = 0; $i < sizeof($remember); $i++){
+		for($i = 1; $i < sizeof($remember); $i++){
 			if ($i != $button_id)
 				$status = $remember[$i];
 			else
