@@ -3,7 +3,6 @@ function subscription_toggle(button){
 	if (button.attr('checked')){
 		button_status = 'On';
 	}
-	alert(button_status);
 	//Send button status to be persistence
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",
 		{

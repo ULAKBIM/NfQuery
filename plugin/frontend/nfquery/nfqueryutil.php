@@ -54,14 +54,12 @@
 		
 		$button_id = $_POST['button_id'];
 		$button_status = $_POST['button_status'];
-
+		$remember[$button_id] = (strcmp($button_status, "On") == 0) ? 1 : 0;
+	
 		for($i = 1; $i < sizeof($remember); $i++){
-			if ($i != $button_id)
-				$status = $remember[$i];
-			else
-				$status = (strcmp($button_status, "On") == 0) ? 1 : 0; 
-			fwrite($file, "$i=$status\n");
+			fwrite($file, "$i=$remember[$i]\n");
 		}
+
 		fclose($file);
 	}
 
