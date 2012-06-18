@@ -26,13 +26,20 @@
 			?>
 		</table>
 	</div>
-	<div class="span7" id="subscription_details" style="max-height:150px;">
-		<table id="detail_table" class="table table-striped table-bordered table-condensed">
-			<tr><th>Details Of Selected Subscription</th></tr>
-		<!--	<?php/*
-				$detail = getSubscriptionDetail("Amada");
-				print $detail;				*/
-			?>-->
+	<div class="span7" id="subscription_details">
+		<table id="detail_table" class="table table-striped table-bordered">
 		</table>
+		<div id="accordion2" class="accordion">
+			<div class="accordion-group">
+				<div id="accordion_div_id" class="accordion-heading">
+				</div>
+				<div id="collapseOne" class="accordion-body in collapse" style="height: auto;">
+					<div class="accordion-inner"> 
+						<table id="query_table" class="table table-striped table-bordered table-condensed">
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
