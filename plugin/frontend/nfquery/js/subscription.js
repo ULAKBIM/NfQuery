@@ -23,10 +23,22 @@ function getSubscriptionDetail(name){
                         document.getElementById("query_table").deleteRow(i -1);
                 }
 		$("#anchor_id").remove();
-		$("#accordion2").css('visibility', 'visible');
+		$("#accordion2").css('visibility', 'hidden');
 		var json = $.parseJSON(data);
 		var counter = 0;
 		for(i in json){
+			$("#accordion2").css('visibility', 'visible');
+			var mydiv=document.getElementById("accordion_div_id");
+			var element = document.createElement('a');
+			element.setAttribute("class","accordion-toggle");
+			element.setAttribute("id","anchor_id");
+			element.href = "#collapseOne";
+			element.innerHTML = "Queries";
+			element.setAttribute("data-toggle","collapse");
+			element.setAttribute("data-parent","#accordion2");
+			mydiv.appendChild(element);
+			
+	
 			var detail_table=document.getElementById("detail_table");
 			var query_table=document.getElementById("query_table");
 			var detail_row = detail_table.insertRow(0);
@@ -92,16 +104,6 @@ function getSubscriptionDetail(name){
 			if (counter>10)break;
 		}
 
-
-		var mydiv=document.getElementById("accordion_div_id");
-		var element = document.createElement('a');
-		element.setAttribute("class","accordion-toggle");
-		element.setAttribute("id","anchor_id");
-		element.href = "#collapseOne";
-		element.innerHTML = "Queries";
-		element.setAttribute("data-toggle","collapse");
-		element.setAttribute("data-parent","#accordion2");
-		mydiv.appendChild(element);
 	} 
 	);
 }
