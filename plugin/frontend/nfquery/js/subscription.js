@@ -33,7 +33,7 @@ function getSubscriptionDetail(name){
 			element.setAttribute("class","accordion-toggle");
 			element.setAttribute("id","anchor_id");
 			element.href = "#collapseOne";
-			element.innerHTML = "Queries";
+			element.innerHTML = "<i class='icon-plus'></i>Queries";
 			element.setAttribute("data-toggle","collapse");
 			element.setAttribute("data-parent","#accordion2");
 			mydiv.appendChild(element);
@@ -107,6 +107,7 @@ function getSubscriptionDetail(name){
 	} 
 	);
 }
+
 $(document).ready(function() {
 
 	$('.subscription_toggle').iphoneStyle({

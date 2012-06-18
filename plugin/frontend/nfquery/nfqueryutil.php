@@ -2,7 +2,7 @@
     #include('loghandler.php');
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
-	
+
 	function getSubscriptions(){
 		$command = 'nfquery::getSubscriptions';
 		$opts = array();
@@ -61,6 +61,20 @@
 		}
 
 		fclose($file);
+	}
+	
+	function getSubscriptedSubscription(){
+		$remember = parseRememberFile();
+		$subscriptions = getSubscriptions();
+		$subscripted = array();
+
+		for($i=1; $i < sizeof($remember); $i++){
+			if (strcmp($remember[$i], "1") == 0){
+				array_push($subscripted, $subscriptions[$i - 1]);
+			}
+		}
+
+		return $subscripted;
 	}
 
 ?>
