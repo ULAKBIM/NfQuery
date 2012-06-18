@@ -29,7 +29,7 @@
 	<div class="span7" id="subscription_details">
 		<table id="detail_table" class="table table-striped table-bordered">
 		</table>
-		<div id="accordion2" class="accordion">
+		<div id="accordion2" class="accordion" style="visibility:hidden">
 			<div class="accordion-group">
 				<div id="accordion_div_id" class="accordion-heading">
 				</div>
