@@ -503,12 +503,17 @@ class QueryManager:
                         if query.category_id == 1:
                             query_packet_id = query.id
                         query_type = self.store.find(Type.type, query.type_id == Type.id).one()
+                        source = self.store.find(Source, Source.id == query.source_id).one()
+		        category = self.store.find(Category,Category.id == query.category_id).one()	
                         #print query_type
                         packet[index] = {   
                                          'query_id' : query.id, 
                                          'query_type' : query_type,
                                          'category_id' : query.category_id,
-                                         'filter' : query_filter
+                                         'filter' : query_filter,
+                                         'category_name' : category.category,
+                                         'source_name' : source.name,
+                                         'link' : source.link
                                         }
                         index += 1
                     query_packet[qp_query_id] = packet
