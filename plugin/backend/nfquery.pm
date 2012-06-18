@@ -45,6 +45,7 @@ my $uri;
 our %cmd_lookup = (
 	'getSubscriptions' => \&getSubscriptions,
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
+	'getMyAlerts' => \&getMyAlerts,
 );
 
 # prepare connection parameters
@@ -67,23 +68,43 @@ sub get_connection {
 sub getSubscriptions{
 	my $socket = shift;
 	my $opts = shift;
-
 	# get subscriptions
 	syslog('debug', "$uri");
 	my $result = $rpc->call($uri, 'get_subscriptions', []);
 	
 	my $r = $result->result;
+	syslog('debug',"$r");
 	my %args;
 
 	if (defined $result->result) {
 		$args{'subscriptions'} = \@{$r};
-		syslog('debug', 'Response To frontend.');
+		syslog('debug', 'Response To frontend. - GETSUBSCRIPTION');
 		Nfcomm::socket_send_ok($socket, \%args);
 	}else {
 		Nfcomm::socket_send_ok($socket, \%args);
 	}	
 }
 
+sub getMyAlerts{
+	my $socket = shift;
+	my $opts = shift;
+	my $host = '193.149.94.217';
+	
+	syslog('debug',"$uri");
+	my $result = $rpc->call($uri,'get_my_alerts',[$host]);
+	my $r = $result->result;
+        my %args;
+	if (defined $result->result) {
+                $args{'alerts'} = \@{$r};
+                syslog('debug', 'Response To frontend. - GETMYALERTS');
+                Nfcomm::socket_send_ok($socket, \%args);
+        }else {
+                Nfcomm::socket_send_ok($socket, \%args);
+        }       
+
+
+
+}
 
 sub getSubscriptionDetail{
         my $socket = shift;
@@ -100,8 +121,6 @@ sub getSubscriptionDetail{
 	my $counter = 0;
 	my $index = 0;
 	my $line = "";
-        syslog('debug', "@chars");
-        syslog('debug', "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 	for my $char (@chars){
 	    $line = $line .$char ;
 	    if ($counter == 1000){
@@ -110,7 +129,6 @@ sub getSubscriptionDetail{
 		
 		$index = $index +1;
         	##syslog('debug', "$line");
-        	syslog('debug', "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 		$line = "";
 	    }
 	    $counter = $counter + 1 ;
@@ -118,7 +136,7 @@ sub getSubscriptionDetail{
         $args{"$index"} = $line;
 	if (defined $result->result){
                # $args{'subscriptiondetail'} = $json;
-                syslog('debug', 'Response To frontend.');
+                syslog('debug', 'Response To frontend. - GETSUBSCRIPTIONDETAIL');
                 Nfcomm::socket_send_ok($socket, \%args);
         }else {
                 Nfcomm::socket_send_ok($socket, \%args);
