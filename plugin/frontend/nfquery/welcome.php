@@ -15,6 +15,16 @@
 <div class="row-fluid">
 	<div class="span11">
 	 	<fieldset><strong>Alerts</strong>
+
+		 <?php
+
+                       require_once('nfqueryutil.php');
+		       $myalerts = getMyAlerts();
+		       var_dump($myalerts);
+		?>
+		<script type="text/javascript" language="JavaScript">
+			getAlerts();
+		</script>
 	</div>
 </div>
 <div class="row-fluid">

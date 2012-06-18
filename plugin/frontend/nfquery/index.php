@@ -3,6 +3,7 @@
 		<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/process.css" /> <!-- Override bootstrap's form elements width and height-->
 		<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
 		<script src="/nfsen/js/bootstrap.js"></script>
+		<script src="/nfsen/js/welcome.js"></script>
 		<script src="/nfsen/js/subscription.js"></script>
 		<div class="container-fluid">
 			<div class="row-fluid">
