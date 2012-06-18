@@ -48,24 +48,27 @@ def initialize_db(store):
 		") ENGINE=InnoDB DEFAULT CHARSET=utf8"
 		)
 
-    
+   
+
     store.execute(
-                  "CREATE TABLE plugin("                                             + 
-                  "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
-                  "organization VARCHAR(30) COLLATE utf8_unicode_ci NOT NULL,"       +
-                  "adm_name VARCHAR(30) COLLATE utf8_unicode_ci NOT NULL,"           +
-                  "adm_mail VARCHAR(30) COLLATE utf8_unicode_ci NOT NULL,"           +
-                  "adm_tel VARCHAR(20) COLLATE utf8_unicode_ci NOT NULL,"            +
-                  "adm_publickey_file VARCHAR(50) COLLATE utf8_unicode_ci NOT NULL," +
-                  "prefix_id INT UNSIGNED NOT NULL,"                                 +
-                  "plugin_ip VARCHAR(20) COLLATE utf8_unicode_ci NOT NULL,"          +
-                  "checksum VARCHAR(32) COLLATE utf8_unicode_ci NOT NULL,"           +
-                  "registered TINYINT NOT NULL,"                                     +
-                  "PRIMARY KEY (id),"                                                +
-                  "UNIQUE KEY plugin_ip (plugin_ip),"                                +
-                  "FOREIGN KEY (prefix_id) REFERENCES prefix(id)"                    +
-                  ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
-                 )
+		"CREATE TABLE plugin ("						     +
+ 		"id int(10) unsigned NOT NULL AUTO_INCREMENT,"			     +
+  		"organization varchar(30) COLLATE utf8_unicode_ci NOT NULL,"         +
+  		"adm_name varchar(30) COLLATE utf8_unicode_ci NOT NULL,"             +
+  		"adm_mail varchar(30) COLLATE utf8_unicode_ci NOT NULL,"             +
+  		"adm_tel varchar(20) COLLATE utf8_unicode_ci NOT NULL,"              +
+  		"adm_publickey_file varchar(50) COLLATE utf8_unicode_ci NOT NULL,"   +
+  		"prefix_id int(10) unsigned NOT NULL,"                               +
+  		"plugin_ip varchar(20) COLLATE utf8_unicode_ci NOT NULL,"            +
+  		"checksum varchar(32) COLLATE utf8_unicode_ci NOT NULL,"             +
+  		"registered tinyint(1) NOT NULL,"                                    +
+  		"PRIMARY KEY (id),"                                                  +
+  		"UNIQUE KEY plugin_ip (plugin_ip),"                                  +
+  		"KEY prefix_id (prefix_id),"                                         +
+  		"CONSTRAINT plugin_ibfk_1 FOREIGN KEY (prefix_id) REFERENCES prefix (id)"+
+		") ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"
+
+	         ) 
 
 
     store.execute(
@@ -117,6 +120,20 @@ def initialize_db(store):
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
 
+
+    store.execute(
+		  "CREATE TABLE alert ("					     +
+  		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
+  		  "alert_id int(10) unsigned NOT NULL,"                              +
+  		  "query_id int(10) unsigned NOT NULL,"                              +
+  		  "`plugin_id int(10) unsigned NOT NULL,"                            +
+  		  "PRIMARY KEY (id),"                                                +
+  		  "KEY query_id (query_id),"                                         +
+  		  "KEY plugin_id (plugin_id),"                                       +
+  		  "CONSTRAINT alert_ibfk_1 FOREIGN KEY (query_id) REFERENCES query (id) ON DELETE CASCADE,"+
+  		  "CONSTRAINT alert_ibfk_2 FOREIGN KEY (plugin_id) REFERENCES plugin (id)"+
+		  ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
+		)
 
     store.execute(
 		  "CREATE TABLE `query_packet` ("				     +
