@@ -21,7 +21,7 @@
 				echo '<option>'.$s.'</option>';
 			}
 			echo '</select>';
-
+			echo '</br>';
 			echo '<a id="runQueries" class="btn btn-primary">Run !</a>'
 		?>  
 	</div>

@@ -76,5 +76,8 @@
 
 		return $subscripted;
 	}
+	
+	function runSubscriptionQueries($subscription){
 
+	}
 ?>

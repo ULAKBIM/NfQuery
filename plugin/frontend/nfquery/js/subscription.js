@@ -108,6 +108,11 @@ function getSubscriptionDetail(name){
 	);
 }
 
+function runQueries(){
+	var subscription = $('#subscripted').val();
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {run:1, subscription:subscription}, function(data){});
+}
+
 $(document).ready(function() {
 
 	$('.subscription_toggle').iphoneStyle({
@@ -123,5 +128,8 @@ $(document).ready(function() {
 		$('#nfqueryTab').val(tabName);
 		$('#navigationForm').submit();
 	});
+
 	$(".collapse").collapse();
+	$('#runQueries').click(runQueries);
+
 });

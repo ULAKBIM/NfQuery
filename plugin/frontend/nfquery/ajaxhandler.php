@@ -12,5 +12,9 @@
 	if(isset($_POST['button_status'])){
 		editRememberFile();
 	}
+	
+	if(isset($_POST['run'])){
+		runSubscriptionQueries($_POST['subscription']);
+	}
 
 ?>
