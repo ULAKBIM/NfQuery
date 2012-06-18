@@ -3,6 +3,14 @@
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
 
+	function getMyAlerts(){
+		$command = 'nfquery::getMyAlerts';
+		$opts = array();
+		$out_list = nfsend_query($command, $opts);
+		$alerts = $out_list['alerts'];
+		return $alerts;
+	}
+
 	function getSubscriptions(){
 		$command = 'nfquery::getSubscriptions';
 		$opts = array();

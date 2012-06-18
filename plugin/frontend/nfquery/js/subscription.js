@@ -14,6 +14,7 @@ function subscription_toggle(button){
 }
 
 
+
 function getSubscriptionDetail(name){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
                 for(var i = document.getElementById("detail_table").rows.length; i > 0;i--){
