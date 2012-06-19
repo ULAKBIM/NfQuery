@@ -15,7 +15,7 @@
 				$subscriptions = getSubscriptions();
 				$remember = parseRememberFile();
 				for($i = 0; $i < sizeof($subscriptions); ++$i) {
-					echo '<tr onclick=getSubscriptionDetail("'.$subscriptions[$i].'")><td>'.$subscriptions[$i].'</td>';
+					echo '<tr onclick=getSubscriptionDetail2("'.$subscriptions[$i].'")><td>'.$subscriptions[$i].'</td>';
 					if ($remember[$i+1] == 1){ 
 						echo '<td>'.'<input type="checkbox" checked="checked" id="'.($i+1).'" class="subscription_toggle"/>'.'</td></tr>';
 					}else{
@@ -32,12 +32,12 @@
 		</table>
 		</div>
 		<div id="accordion2" class="accordion" style="visibility:hidden">
-			<div class="accordion-group">
+			<div id="accordion_group1" class="accordion-group">
 				<div id="accordion_div_id" class="accordion-heading">
 				</div>
 				<div id="collapseOne" class="accordion-body in collapse" style="height: auto;">
-					<div class="accordion-inner"> 
-						<table id="query_table" class="table table-striped table-bordered table-condensed">
+					<div class="accordion-inner" id="accordion_table"> 
+						<table id="query_table" class="table table-striped">
 						</table>
 					</div>
 				</div>
