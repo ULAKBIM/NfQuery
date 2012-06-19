@@ -15,6 +15,93 @@ function subscription_toggle(button){
 
 
 
+
+
+
+
+
+function getSubscriptionDetail2(name){
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
+		var json = $.parseJSON(data);
+		var counter = 0;
+                var details_div = document.getElementById("detail_subs");
+		$("#query_table").empty();
+	
+		$("#query_table").append("<tr><td><div id='accordion_group2' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
+					 "<a class='accordion-toggle' href='#validationDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
+					 "Validation </a></div><div id='validationDiv' class='accordion-body in collapse' style='height: auto;'>"+
+                    			 "<div class='accordion-inner'><table id='validation_table' class='table table-striped'></table></div></div></div></td></tr>"+
+				         "<tr><td><div id='accordion_group3' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
+					 "<a class='accordion-toggle' href='#mandatoryDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
+					 "Mandatory </a></div><div id='mandatoryDiv' class='accordion-body in collapse' style='height: auto;'>"+
+                    			 "<div class='accordion-inner'><table id='mandatory_table' class='table table-striped'></table></div></div></div></td></tr>"+
+				         "<tr><td><div id='accordion_group4' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
+					 "<a class='accordion-toggle' href='#optionalDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
+					 "Optional </a></div><div id='optionalDiv' class='accordion-body in collapse' style='height: auto;'>"+
+                    			 "<div class='accordion-inner'><table id='optional_table' class='table table-striped'></table></div></div></div></td></tr>");
+
+		if(document.getElementById("desc_subs_id") != null) {
+			var divelement = document.getElementById('desc_subs_id');
+			details_div.removeChild(divelement);
+			$("#desc_subs_id").remove();
+		}
+		$("#anchor_id").remove();
+		for(i in json){
+			
+			$("#accordion2").css('visibility', 'visible');
+			$("#accordion_div_id").attr("class","accordion-toggle")
+			$("#accordion_div_id").append("<a id='anchor_id' class='accordion-toggle' href='#collapseOne' data-parent='#accordion2'"+
+							"data-toggle='collapse'><b>+ Queries</b> </a>");
+			$("#validation_table").append("<tr><td><b>Query Id</b></td><td><b>Query Type</b></td><td><b>Filter</b></td></tr>")
+			
+			var r = 1;
+			for (j in json[i]){
+				for(k in json[i][j]){
+					category_name = json[i][j][k]["category_name"];
+					query_id = json[i][j][k]["query_id"];
+					query_type = json[i][j][k]["query_type"];
+					filter = json[i][j][k]["filter"];
+					source_name = json[i][j][k]["source_name"];
+					source_link = json[i][j][k]["link"];
+					r = r+1;
+					if(category_name == "validation"){
+						$("#validation_table").append("<tr><td>"+query_id+"</td><td>"+query_type+"</td><td>"+filter+"</td></tr>")
+					}
+					if(category_name == "mandatory"){
+						$("#mandatory_table").append("<tr><td>"+query_id+"</td><td>"+query_type+"</td><td>"+filter+"</td></tr>")
+					}
+					if(category_name == "optional"){
+						$("#optional_table").append("<tr><td>"+query_id+"</td><td>"+query_type+"</td><td>"+filter+"</td></tr>")
+					}
+					if(r<3){
+						var divelement = document.createElement('div');
+						divelement.id = "desc_subs_id";
+                        			details_div.appendChild(divelement);	
+                                                divelement.innerHTML = "<h3><u><b>Details Of " +name+"</b></u></h3></br><h4><b>Source Name : " +
+                                                                        " "+source_name+"</b></h4></br><h4><b>Source Link"+"   : " +
+                                                                        " <a href="+source_link+">"+source_link+"</a></b></h4></br>";
+                                                divelement.setAttribute("class","alert alert-info");
+
+						var query_table=document.getElementById("query_table");
+						
+					}
+				}
+			}
+		}
+
+	} 
+	);
+}
+
+
+
+
+
+
+
+
+
+
 function getSubscriptionDetail(name){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
                 /*for(var i = document.getElementById("detail_table").rows.length; i > 0;i--){
@@ -75,6 +162,7 @@ function getSubscriptionDetail(name){
 				
 			var r = 1;
 			for (j in json[i]){
+				
 				for(k in json[i][j]){
 					category_name = json[i][j][k]["category_name"];
 					query_id = json[i][j][k]["query_id"];
