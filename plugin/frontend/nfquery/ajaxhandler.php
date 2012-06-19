@@ -19,8 +19,8 @@
 		editRememberFile();
 	}
 	
-	if(isset($_POST['run'])){
-		runSubscriptionQueries($_POST['subscription']);
+	if(isset($_POST['runQueries'])){
+		runSubscriptionQueries($_POST['subscriptions']);
 	}
 
 ?>
