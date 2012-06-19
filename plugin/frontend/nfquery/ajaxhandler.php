@@ -3,8 +3,8 @@
     require_once('nfqueryutil.php');
 
 	if(isset($_POST['getAlerts'])){
-		$result = getAlerts();
-		var_dump($result);
+		$result = getSubscriptions();
+		print($result);
 	}
 
 	

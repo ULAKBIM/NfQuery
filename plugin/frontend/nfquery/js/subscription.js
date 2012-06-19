@@ -17,13 +17,20 @@ function subscription_toggle(button){
 
 function getSubscriptionDetail(name){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
-                for(var i = document.getElementById("detail_table").rows.length; i > 0;i--){
+                /*for(var i = document.getElementById("detail_table").rows.length; i > 0;i--){
                         document.getElementById("detail_table").deleteRow(i -1);
-                }
+                }*/
                 for(var i = document.getElementById("query_table").rows.length; i > 0;i--){
                         document.getElementById("query_table").deleteRow(i -1);
                 }
 		$("#anchor_id").remove();
+		$("#desc_subs_id").remove();
+                
+		var divelement = document.createElement('div');
+		divelement.id = "desc_subs_id";
+
+
+
 		$("#accordion2").css('visibility', 'hidden');
 		var json = $.parseJSON(data);
 		var counter = 0;
@@ -40,18 +47,16 @@ function getSubscriptionDetail(name){
 			mydiv.appendChild(element);
 			
 	
-			var detail_table=document.getElementById("detail_table");
+			//var detail_table=document.getElementById("detail_table");
 			var query_table=document.getElementById("query_table");
-			var detail_row = detail_table.insertRow(0);
-			var detail_cell = detail_row.insertCell(0);
+			//var detail_row = detail_table.insertRow(0);
+			/*var detail_cell = detail_row.insertCell(0);
 			detail_cell.innerHTML = "<b>Details Of " + name + "</b>";
             	        detail_row = detail_table.insertRow(1);
-            		var detail_cell2 = detail_row.insertCell(0);
-            		var detail_cell3 = detail_row.insertCell(1);
-            		var detail_cell4 = detail_row.insertCell(2);
-            		detail_cell2.innerHTML="<b>Category Name</b>";
+            		var detail_cell3 = detail_row.insertCell(0);
+            		var detail_cell4 = detail_row.insertCell(1);
             		detail_cell3.innerHTML="<b>Source Name</b>";
-            		detail_cell4.innerHTML="<b>Source Link</b>";
+            		detail_cell4.innerHTML="<b>Source Link</b>";*/
 
 
 
@@ -63,7 +68,7 @@ function getSubscriptionDetail(name){
 			var cell2 = query_row.insertCell(1);
 			var cell3 = query_row.insertCell(2);
 			var cell4 = query_row.insertCell(3);
-		        cell1.innerHTML = "<b>Category Name</b>";
+		        cell1.innerHTML = "<b>Category</b>";
 		        cell2.innerHTML = "<b>Query Id</b>";
 		        cell3.innerHTML = "<b>Query Type</b>";
 		        cell4.innerHTML = "<b>Filter</b>";
@@ -79,13 +84,17 @@ function getSubscriptionDetail(name){
 					source_link = json[i][j][k]["link"];
 					r = r+1;
 					if(r<3){
-						var detail_row = detail_table.insertRow(r);
-   						var cell1 = detail_row.insertCell(0);
-            					var cell2 = detail_row.insertCell(1);
-            					var cell3 = detail_row.insertCell(2);
-            					cell1.innerHTML = category_name;
+						var details_div = document.getElementById("detail_subs");
+						divelement.innerHTML = "<h3><u><b>Details Of " +name+"</b></u></h3></br><h4><b>Source Name : " +
+									" "+source_name+"</b></h4></br><h4><b>Source Link"+"   : " +
+									" <a href="+source_link+">"+source_link+"</a></b></h4></br>";
+						details_div.appendChild(divelement);
+						divelement.setAttribute("class","alert alert-info");
+						/*var detail_row = detail_table.insertRow(r);
+            					var cell2 = detail_row.insertCell(0);
+            					var cell3 = detail_row.insertCell(1);
             					cell2.innerHTML = source_name;
-						cell3.innerHTML = source_link;
+						cell3.innerHTML = source_link;*/
 					}
 					var query_row = query_table.insertRow(r);
 
