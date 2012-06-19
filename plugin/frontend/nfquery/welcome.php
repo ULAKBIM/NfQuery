@@ -30,7 +30,7 @@
 		       var_dump($myalerts);*/
 		?>
 		<script type="text/javascript" language="JavaScript">
-			getAlerts();
+			//getAlerts();
 		</script>
 		</div>
 	</div>

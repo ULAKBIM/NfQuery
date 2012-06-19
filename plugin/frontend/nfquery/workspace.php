@@ -9,37 +9,54 @@
 
 <div class="row-fluid">
 	<h3>Run Queries</h3>
-	<div class="span4">
+	<div class="span5">
 		<?php
 			require_once('nfqueryutil.php');
 			
 			$subscripted = getSubscriptedSubscription();
 			$squeries = getSubscriptionQueries($subscripted);
+			echo '<div id="queryDiv">';
 			if ($subscripted){
-				echo '<table id="query_table" class="table table-striped table-bordered table-condensed">';
-				echo '<tr><th>Subscriptions</th></tr>';
-			}
-
-			foreach($subscripted as $s){
-				echo '<tr><td data-toggle="collapse" style="cursor:pointer;" data-target="#'.$s.'">'.$s.'</td><td><input type="checkbox" name="'.$s.'" class="toggle" class="query_toggle">Include Optional Queries</input></td></tr>';
-				echo '<tr><td colspan=2><div id='.$s.' class="collapse in" style="max-height:250px;overflow:auto">';
-				if ($squeries[$s]){
-					echo '<table style="width:100%">';
-					foreach($squeries[$s] as $k1=>$package){
-						foreach($package as $index=>$query){
-							echo '<tr class="amada_queries"><td><input type="checkbox" class="filter_enabled '.$query['category_name'].'" name="'.$query['query_id'].'"/></td><td class="filter">'.$query['filter'].'</td></tr>';
+				echo '<div id="accordion" class="accordion">';
+				foreach($subscripted as $s){
+					echo '<div class="accordion-group">';
+					echo '<div class="accordion-heading">';
+					echo '<table><tr>';
+					echo '<td><input type=checkbox class="markAllMandatory" name="'.$s.'"/></td>';
+					echo '<td><a href="#'.$s.'" data-parent="#accordion" data-toggle="collapse" class="accordion-toggle">'.$s.' </a></td>';
+					echo '</tr></table>';
+					echo '</div>';
+						echo '<div id="'.$s.'" class="accordion-body collapse in subscriptionBody">';
+						echo '<div class="accordion-inner filters">';
+					if ($squeries[$s]){
+						foreach($squeries[$s] as $k1=>$package){	
+							$has_query = false;
+							foreach($package as $index=>$query){
+							  if (strcmp($query['category_name'], 'mandatory') == 0){
+								$has_query = true;
+								echo '<input type=checkbox class="mandatory_filter" name="'.$query['query_id'].'">';
+								echo '<span data-toggle="collapse" data-target="#optional'.$query['query_id'].'">'.$query['filter'].'</span></input>';
+								echo '<div style="padding-left:20px; "id=optional'.$query['query_id'].' class="collapse in">';
+							  }elseif(strcmp($query['category_name'], 'optional') == 0){
+								echo '<input type=checkbox class="optional_filter" name="'.$query['query_id'].'">';
+								echo '<span>"'.$query['filter'].'</span></input>';
+								echo '<br>';
+							  }
+							}
+							if ($has_query)
+								echo '</div>';
 						}
+					}else{
+						echo 'No queries found...';
 					}
-					echo '</table>';
-					echo '</div></td></tr>';
-				}else{
-					echo '<div class="alert alert-info">No Queries Found.</div>';
-				}
+						echo '</div>';
+						echo '</div>';
+					echo '</div>';
+			 	}
+				echo '</div>';
+			}else{
 			}
-
-			if ($subscripted){
-				echo '</table>';
-			}
+			echo '</div>';
 			echo '<a id="runQueries" class="btn btn-primary">Run !</a>'
 		?>  
 	</div>

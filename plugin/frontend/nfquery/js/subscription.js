@@ -13,13 +13,6 @@ function subscription_toggle(button){
 	);
 }
 
-
-
-
-
-
-
-
 function getSubscriptionDetail2(name){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
 		var json = $.parseJSON(data);
@@ -213,12 +206,12 @@ function runQueries(){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {run:1, subscriptions: subscriptions}, function(data){ alert(data); });
 }
 
-function markQueries(button, category){
+function markMandatoryQueries(button, category){
 	var subscriptionName = button.attr('name');
-	if(button.attr('checked') && button.hasClass(category)){
-		$('#' + subscriptionName).find('.filter_enabled').attr('checked', true);
-	}else if(!button.attr('checked') && button.hasClass('category')){
-		$('#' + subscriptionName).find('.filter_enabled').attr('checked', false);
+	if(button.attr('checked')){
+		$('#' + subscriptionName).find('.mandatory_filter').attr('checked', true);
+	}else if(!button.attr('checked')){
+		$('#' + subscriptionName).find('.mandatory_filter').attr('checked', false);
 	}
 }
 
@@ -247,8 +240,8 @@ $(document).ready(function() {
 		}
 	});  
 
-	$('.toggle').click(function() {
-		markOptionalQueries($(this), 'optional');
+	$('.markAllMandatory').click(function() {
+		markMandatoryQueries($(this), 'optional');
 	}); 
 
 	$('.nfqueryNav').click(function(){
