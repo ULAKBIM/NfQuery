@@ -4,7 +4,7 @@
 
 	if(isset($_POST['getAlerts'])){
 		$result = getAlerts();
-		echo($result);
+		var_dump($result);
 	}
 
 	
