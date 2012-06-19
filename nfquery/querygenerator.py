@@ -810,7 +810,7 @@ class QueryGenerator:
                 #print 'query id : %d' % query.id
                 #print 'validation_query:', filter
                 #filter_packet[query.id] = str(filter)
-                return str(filter)
+                return str(filter[0])
 
         #return filter_packet
 
