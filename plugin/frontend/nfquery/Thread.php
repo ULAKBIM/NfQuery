@@ -66,7 +66,6 @@ class Thread {
     	if( $_runnable !== null ) {
         	$this->setRunnable( $_runnable );
 		}
-		session_start();
     }
     
     /**
