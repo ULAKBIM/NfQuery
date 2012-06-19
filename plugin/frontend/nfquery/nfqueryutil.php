@@ -2,6 +2,7 @@
     #include('loghandler.php');
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
+	require_once('Thread.php');
 
 	function getMyAlerts(){
 		$command = 'nfquery::getSubscriptions';
@@ -84,8 +85,72 @@
 
 		return $subscripted;
 	}
-	
-	function runSubscriptionQueries($subscription){
+
+	function compileArgs($filter){
+		$cmd_opts = array();
+
+		$args = '';
+
+    	// From the argument checks, we know at least one source is selected
+    	// multiple sources
+    	if ( $_SESSION['tleft'] == $_SESSION['tright'] ) {
+        	// a single 5 min timeslice
+       		 $tslot1 = UNIX2ISO($_SESSION['tleft']);
+        	$subdirs = SubdirHierarchy($_SESSION['tleft']);
+        	if ( strlen($subdirs) == 0 )
+           	 	$args .= " -r nfcapd.$tslot1";
+        	else	
+            	$args .= " -r $subdirs/nfcapd.$tslot1";
+
+    	} else {
+        	// several 5 min timeslices
+        	$tslot1 = UNIX2ISO($_SESSION['tleft']);
+        	$subdirs1 = SubdirHierarchy($_SESSION['tleft']);
+        	$tslot2 = UNIX2ISO($_SESSION['tright']);
+        	$subdirs2 = SubdirHierarchy($_SESSION['tright']);
+        	if ( strlen($subdirs1) == 0 )
+         	  	 $args .= " -R nfcapd.$tslot1:nfcapd.$tslot2";
+        	else
+            	$args .= " -R $subdirs1/nfcapd.$tslot1:$subdirs2/nfcapd.$tslot2";
+    	}
+		
+		$args = $args.' -a';
+		$args = "-T $args";
+		
+		$cmd_opts['filter'] = $filter;
+		$cmd_opts['args']    = $args;
+		$cmd_opts['type']    = ($_SESSION['profileinfo']['type'] & 4) > 0 ? 'shadow' : 'real';
+        $cmd_opts['profile'] = $_SESSION['profileswitch'];
+		$cmd_opts['srcselector'] = "upstream1";
+		return $cmd_opts;
 
 	}
+	
+	function runQuery($cmd_opts){
+			
+		$file = fopen("/tmp/".$cmd_opts['filter'][0], 'a');
+		fwrite($file, "serhat");
+		$cmd_out = nfsend_query("run-nfdump", $cmd_opts);
+		$json = json_encode($cmd_out);
+		fwrite($file, $json);
+		fclose($file);
+	}	
+	
+
+	function getSubscriptionQueries($subscriptions){
+		
+	    $squeries = array();	
+		foreach($subscriptions as $subscription){
+			$json = getSubscriptionDetail($subscription);
+			$details = json_decode($json, true);
+
+			foreach($details as $k1=>$v1){
+					$squeries[$subscription] = $v1;
+			}
+		}
+
+		return $squeries;
+	}
+
+
 ?>

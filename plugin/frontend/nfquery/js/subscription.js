@@ -119,8 +119,34 @@ function getSubscriptionDetail(name){
 }
 
 function runQueries(){
-	var subscription = $('#subscripted').val();
-	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {run:1, subscription:subscription}, function(data){});
+	var subscriptions = $('#subscripted').val() || [];
+	subscriptions = subscriptions.join(',');
+	alert(subscriptions);
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {run:1, subscriptions: subscriptions}, function(data){ alert(data); });
+}
+
+function markQueries(button, category){
+	var subscriptionName = button.attr('name');
+	if(button.attr('checked') && button.hasClass(category)){
+		$('#' + subscriptionName).find('.filter_enabled').attr('checked', true);
+	}else if(!button.attr('checked') && button.hasClass('category')){
+		$('#' + subscriptionName).find('.filter_enabled').attr('checked', false);
+	}
+}
+
+function getFilters(){
+	queryMap = {};
+	$('#query_table .collapse').each(function(){
+		subscriptionName = $(this).attr('id');
+		queryMap[subscriptionName] = [];
+		$(this).find('.filter_enabled').each(function(){
+			if($(this).attr('checked')){
+				queryMap[subscriptionName].push($(this).attr('name'));
+			}
+		});
+	});
+	alert(queryMap['Amada'].length);
+	//TODO send them to the server.
 }
 
 $(document).ready(function() {
@@ -133,6 +159,10 @@ $(document).ready(function() {
 		}
 	});  
 
+	$('.toggle').click(function() {
+		markOptionalQueries($(this), 'optional');
+	}); 
+
 	$('.nfqueryNav').click(function(){
 		var tabName = $(this).text();
 		$('#nfqueryTab').val(tabName);
@@ -140,6 +170,6 @@ $(document).ready(function() {
 	});
 
 	$(".collapse").collapse();
-	$('#runQueries').click(runQueries);
+	$('#runQueries').click(getFilters);
 
 });
