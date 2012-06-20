@@ -22,14 +22,14 @@ def initialize_db(store):
 	          "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
   		  "category varchar(20) NOT NULL,"			             +
   	          "PRIMARY KEY (id)"			                             +
-	          ") ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8"
+	          ") ENGINE=InnoDB  DEFAULT CHARSET=utf8"
 		 )
     store.execute(
 		  "CREATE TABLE type ("						     +
 		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
 		  "type varchar(40) NOT NULL,"                                       +
 		  "PRIMARY KEY (id)"                                                 +
-		  ") ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8"
+		  ") ENGINE=InnoDB DEFAULT CHARSET=utf8"
 		 )
     store.execute(
                   "CREATE TABLE prefix("                                             + 
@@ -126,17 +126,17 @@ def initialize_db(store):
   		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
   		  "alert_id int(10) unsigned NOT NULL,"                              +
   		  "query_id int(10) unsigned NOT NULL,"                              +
-  		  "`plugin_id int(10) unsigned NOT NULL,"                            +
+  		  "plugin_id int(10) unsigned NOT NULL,"                            +
   		  "PRIMARY KEY (id),"                                                +
   		  "KEY query_id (query_id),"                                         +
   		  "KEY plugin_id (plugin_id),"                                       +
   		  "CONSTRAINT alert_ibfk_1 FOREIGN KEY (query_id) REFERENCES query (id) ON DELETE CASCADE,"+
   		  "CONSTRAINT alert_ibfk_2 FOREIGN KEY (plugin_id) REFERENCES plugin (id)"+
-		  ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
+                  ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 		)
 
     store.execute(
-		  "CREATE TABLE `query_packet` ("				     +
+		  "CREATE TABLE query_packet ("				     +
   		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"		     +
   		  "validation_id int(10) unsigned NOT NULL,"			     +
 		  "query_id int(10) unsigned NOT NULL,"				     +
@@ -145,7 +145,7 @@ def initialize_db(store):
 		  "KEY query_id (query_id),"					     +
 		  "CONSTRAINT query_packet_ibfk_1 FOREIGN KEY (validation_id) REFERENCES query (id) ON DELETE CASCADE,"+
 		  "CONSTRAINT query_packet_ibfk_2 FOREIGN KEY (query_id) REFERENCES query (id) ON DELETE CASCADE"      +
-	     	  ") ENGINE=InnoDB AUTO_INCREMENT=15086 DEFAULT CHARSET=utf8;"	     
+	     	  ")ENGINE=InnoDB AUTO_INCREMENT=15086 DEFAULT CHARSET=utf8"	     
 
     		 )
     store.execute(

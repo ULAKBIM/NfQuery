@@ -46,7 +46,6 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         """
         raise jsonrpc.Fault(123, "The fault procedure is faulty.")
 
-
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
@@ -81,6 +80,10 @@ class jsonRPCServer(jsonrpc.JSONRPC):
                 return message
                 #return self.jsonrpc_get_subscriptions()
 
+    def jsonrpc_get_query_filter(self,query_id):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('returning query filter')
+        return self.queryManager.getFilter(query_id)
 
 
     def jsonrpc_get_subscription_detail(self, subscription):
