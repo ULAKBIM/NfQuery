@@ -86,7 +86,7 @@
 		return $subscripted;
 	}
 
-	function compileArgs($filter){
+	function compileArgs(){
 		$cmd_opts = array();
 
 		$args = '';
@@ -117,40 +117,44 @@
 		$args = $args.' -a';
 		$args = "-T $args";
 		
-		$cmd_opts['filter'] = $filter;
 		$cmd_opts['args']    = $args;
 		$cmd_opts['type']    = ($_SESSION['profileinfo']['type'] & 4) > 0 ? 'shadow' : 'real';
         $cmd_opts['profile'] = $_SESSION['profileswitch'];
-		$cmd_opts['srcselector'] = "upstream1";
 		return $cmd_opts;
 
 	}
 	
-	function runQuery($cmd_opts){
-			
-		$file = fopen("/tmp/".$cmd_opts['filter'][0], 'a');
-		fwrite($file, "serhat");
-		$cmd_out = nfsend_query("run-nfdump", $cmd_opts);
-		$json = json_encode($cmd_out);
-		fwrite($file, $json);
-		fclose($file);
-	}	
-	
+	function runQueries($queries){
+		$opts = array();
+		$json = json_encode($queries);
+		$cargs = compileArgs();
+
+		$opts['queries'] = $json;
+		
+		foreach($cargs  as $key=>$value){
+			$opts[$key] = $value;
+		}
+		var_dump($opts);
+		$response = nfsend_query('nfquery::runQueries', $opts);
+
+		 //TODO check response and show whats happening there 
+		return true;
+	}
 
 	function getSubscriptionQueries($subscriptions){
-		
-	    $squeries = array();	
-		foreach($subscriptions as $subscription){
-			$json = getSubscriptionDetail($subscription);
-			$details = json_decode($json, true);
 
-			foreach($details as $k1=>$v1){
-					$squeries[$subscription] = $v1;
-			}
-		}
+        $squeries = array();
+        foreach($subscriptions as $subscription){
+            $json = getSubscriptionDetail($subscription);
+            $details = json_decode($json, true);
 
-		return $squeries;
-	}
+            foreach($details as $k1=>$v1){
+                    $squeries[$subscription] = $v1;
+            }
+        }
+
+        return $squeries;
+    }
 
 
 ?>

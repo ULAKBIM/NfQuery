@@ -223,25 +223,27 @@ function markMandatoryQueries(button, category){
 
 function getFilters(){
 	queryMap = {};
+	queryMap['queries'] = {};
 	$('#queryDiv .accordion-body').each(function(){
 		subscriptionName = $(this).attr('id');
-		queryMap[subscriptionName] = {};
-		queryMap[subscriptionName]['mandatory'] = []
-		queryMap[subscriptionName]['optional'] = []
+		queryMap['queries'][subscriptionName] = {};
+		queryMap['queries'][subscriptionName]['mandatory'] = []
+		queryMap['queries'][subscriptionName]['optional'] = []
 		$(this).find('.mandatory_filter').each(function(){
 			if($(this).attr('checked')){
-				queryMap[subscriptionName]['mandatory'].push($(this).attr('name'));
+				queryMap['queries'][subscriptionName]['mandatory'].push($(this).attr('name'));
 			}
 		});
 
 		$(this).find('.optional_filter').each(function(){
 			if($(this).attr('checked')){
-				queryMap[subscriptionName]['optional'].push($(this).attr('name'));
+				queryMap['queries'][subscriptionName]['optional'].push($(this).attr('name'));
 			}
 		});
 	});
-	alert(queryMap['DFN-Honeypot']['optional'].length);
-	//TODO send them to the server.
+	//send them to the server.
+	queryMap['source'] = $('#flowSource').val();
+	$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap}, function(data){alert(data);});
 }
 
 $(document).ready(function() {
@@ -263,6 +265,9 @@ $(document).ready(function() {
 		$('#nfqueryTab').val(tabName);
 		$('#navigationForm').submit();
 	});
+	
+	//At least one flow source must be selected.Set First One Default here.
+	$("#flowSource option:first").attr('selected','selected');
 
 	$(".collapse").collapse();
 	$('#runQueries').click(getFilters);

@@ -20,7 +20,8 @@
 	}
 	
 	if(isset($_POST['runQueries'])){
-		runSubscriptionQueries($_POST['subscriptions']);
+		session_start();
+		runQueries($_POST['runQueries']);
 	}
 
 ?>
