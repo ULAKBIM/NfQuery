@@ -20,10 +20,9 @@ function getSubscriptionDetail2(name){
                 var details_div = document.getElementById("detail_subs");
 		$("#query_table").empty();
 	
-		$("#query_table").append("<tr><td><div id='accordion_div_id' class='accordion-heading'>"+
-					 "<a href='#mandatoryDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
-					 "Mandatory </a></div><div id='mandatoryDiv' class='accordion-body collapse in' style='height: auto;'>"+
-                    			 "<div class='accordion-inner'><table id='mandatory_table' class='table table-striped'></table></div></div></td></tr>");
+		$("#query_table").append("<tr><td><span class='label label-info' style='font-size:16px;border-radius: 3px 3px 3px 3px;cursor:pointer'"+
+					" data-toggle='collapse'"+" data-target='#mandatory_div'><i class='icon-plus'></i>Mandatory</span>"+
+					"<div style='margin-top:5px;' id='mandatory_div' class='collapse'><table id='mandatory_table' class='table table-striped'></table></div></td></tr>");
 					/*<tr><td><div id='accordion_group2' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
 					 "<a class='accordion-toggle' href='#validationDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
 					 "Validation </a></div><div id='validationDiv' class='accordion-body in collapse' style='height: auto;'>"+
@@ -64,12 +63,13 @@ function getSubscriptionDetail2(name){
 					}*/
 					if(category_name == "mandatory"){
 						$("#mandatory_table").append("<tr><td>"+query_id+"</td><td>"+query_type+"</td><td><span class='label label-warning'"+
-													" style='font-size:12px;border-radius: 3px 3px 3px 3px;cursor:pointer' data-toggle='collapse'"+
-													" data-target='#optional"+j+"'><i class='icon-plus'></i>"+filter+"</span>"+
-													"<div style='padding-left:30px; margin-top:5px' id='optional"+j+"' class='collapse in'></div></td></tr>");
+								" style='font-size:12px;border-radius: 3px 3px 3px 3px;cursor:pointer' data-toggle='collapse'"+
+								" data-target='#optional"+j+"'><i class='icon-plus'></i>"+filter+"</span>"+
+								"<div style='padding-left:30px; margin-top:5px' id='optional"+j+"' class='collapse'></div></td></tr>");
 					}
 					if(category_name == "optional"){
-						$("#optional"+j).append("<span class='label label-success' style='font-size:12px;border-radius: 3px 3px 3px 3px;'>"+filter+"</span></br>");
+						$("#optional"+j).append("<span class='label label-success' style='font-size:12px;"+
+									"border-radius: 3px 3px 3px 3px;'>"+filter+"</span></br>");
 					}
 					if(r<3){
 						var divelement = document.createElement('div');
