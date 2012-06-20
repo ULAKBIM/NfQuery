@@ -28,11 +28,11 @@
 	</div>
 	<div class="span7" id="subscription_details">
 		<div id="detail_subs">
-		<table id="detail_table" class="table table-striped table-bordered">
+		<table id="detail_table" class="table">
 		</table>
 		</div>
 		<div id="accordion2" class="accordion" style="visibility:hidden">
-			<div id="accordion_group1" class="accordion-group">
+			<div id="accordion_group1" >
 				<div id="accordion_div_id" class="accordion-heading">
 				</div>
 				<div id="collapseOne" class="accordion-body in collapse" style="height: auto;">

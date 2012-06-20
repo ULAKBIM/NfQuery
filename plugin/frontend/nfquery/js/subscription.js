@@ -20,18 +20,20 @@ function getSubscriptionDetail2(name){
                 var details_div = document.getElementById("detail_subs");
 		$("#query_table").empty();
 	
-		$("#query_table").append("<tr><td><div id='accordion_group2' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
+		$("#query_table").append("<tr><td><div id='accordion_div_id' class='accordion-heading'>"+
+					 "<a href='#mandatoryDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
+					 "Mandatory </a></div><div id='mandatoryDiv' class='accordion-body collapse in' style='height: auto;'>"+
+                    			 "<div class='accordion-inner'><table id='mandatory_table' class='table table-striped'></table></div></div></td></tr>");
+					/*<tr><td><div id='accordion_group2' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
 					 "<a class='accordion-toggle' href='#validationDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
 					 "Validation </a></div><div id='validationDiv' class='accordion-body in collapse' style='height: auto;'>"+
                     			 "<div class='accordion-inner'><table id='validation_table' class='table table-striped'></table></div></div></div></td></tr>"+
-				         "<tr><td><div id='accordion_group3' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
-					 "<a class='accordion-toggle' href='#mandatoryDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
-					 "Mandatory </a></div><div id='mandatoryDiv' class='accordion-body in collapse' style='height: auto;'>"+
-                    			 "<div class='accordion-inner'><table id='mandatory_table' class='table table-striped'></table></div></div></div></td></tr>"+
-				         "<tr><td><div id='accordion_group4' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
+				         
+*/
+				        /* "<tr><td><div id='accordion_group4' class='accordion-group'><div id='accordion_div_id' class='accordion-heading'>"+
 					 "<a class='accordion-toggle' href='#optionalDiv' data-parent='#accordion_table' data-toggle='collapse'>"+
 					 "Optional </a></div><div id='optionalDiv' class='accordion-body in collapse' style='height: auto;'>"+
-                    			 "<div class='accordion-inner'><table id='optional_table' class='table table-striped'></table></div></div></div></td></tr>");
+                    			 "<div class='accordion-inner'><table id='optional_table' class='table table-striped'></table></div></div></div></td></tr>"*/
 
 		if(document.getElementById("desc_subs_id") != null) {
 			var divelement = document.getElementById('desc_subs_id');
@@ -43,9 +45,9 @@ function getSubscriptionDetail2(name){
 			
 			$("#accordion2").css('visibility', 'visible');
 			$("#accordion_div_id").attr("class","accordion-toggle")
-			$("#accordion_div_id").append("<a id='anchor_id' class='accordion-toggle' href='#collapseOne' data-parent='#accordion2'"+
+			$("#accordion_div_id").append("<a id='anchor_id' class=' btn btn-large btn-primary' href='#collapseOne' data-parent='#accordion2'"+
 							"data-toggle='collapse'><b>+ Queries</b> </a>");
-			$("#validation_table").append("<tr><td><b>Query Id</b></td><td><b>Query Type</b></td><td><b>Filter</b></td></tr>")
+			$("#mandatory_table").append("<tr><td><b>Query Id</b></td><td><b>Query Type</b></td><td><b>Filter</b></td></tr>")
 			
 			var r = 1;
 			for (j in json[i]){
@@ -57,14 +59,17 @@ function getSubscriptionDetail2(name){
 					source_name = json[i][j][k]["source_name"];
 					source_link = json[i][j][k]["link"];
 					r = r+1;
-					if(category_name == "validation"){
+					/*if(category_name == "validation"){
 						$("#validation_table").append("<tr><td>"+query_id+"</td><td>"+query_type+"</td><td>"+filter+"</td></tr>")
-					}
+					}*/
 					if(category_name == "mandatory"){
-						$("#mandatory_table").append("<tr><td>"+query_id+"</td><td>"+query_type+"</td><td>"+filter+"</td></tr>")
+						$("#mandatory_table").append("<tr><td>"+query_id+"</td><td>"+query_type+"</td><td><span class='label label-warning'"+
+													" style='font-size:12px;border-radius: 3px 3px 3px 3px;cursor:pointer' data-toggle='collapse'"+
+													" data-target='#optional"+j+"'><i class='icon-plus'></i>"+filter+"</span>"+
+													"<div style='padding-left:30px; margin-top:5px' id='optional"+j+"' class='collapse in'></div></td></tr>");
 					}
 					if(category_name == "optional"){
-						$("#optional_table").append("<tr><td>"+query_id+"</td><td>"+query_type+"</td><td>"+filter+"</td></tr>")
+						$("#optional"+j).append("<span class='label label-success' style='font-size:12px;border-radius: 3px 3px 3px 3px;'>"+filter+"</span></br>");
 					}
 					if(r<3){
 						var divelement = document.createElement('div');
