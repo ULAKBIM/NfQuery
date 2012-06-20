@@ -2,6 +2,7 @@
 
 package nfquery;
 use NfConf;
+use NfProfile;
 
 use strict;
 use warnings;
@@ -16,6 +17,7 @@ use JSON::RPC::LWP;
 use Config::Simple;
 use Term::ANSIColor;
 use JSON;
+use JSON::Parse 'json_to_perl';
 use Sys::Syslog;
 
 #package NfQueryPlugin::Main; 
@@ -46,6 +48,7 @@ our %cmd_lookup = (
 	'getSubscriptions' => \&getSubscriptions,
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
+	'runQueries' => \&runQueries,
 );
 
 # prepare connection parameters
@@ -65,13 +68,57 @@ sub get_connection {
 
 }
 
+sub runQueries{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+	
+	my $queries = json_to_perl($$opts{'queries'});
+	my %queries = %{$queries};
+
+	my $nfdump = "$NfConf::PREFIX/nfdump";
+	my $profile = $$opts{'profile'};
+	my @source = @{$queries{'source'}};
+	my $strSource = join(':', @source);
+	my %filters = %{$queries{'queries'}};
+
+	$profile = substr $profile, 2;
+	my $flowFiles = "$NfConf::PROFILEDATADIR/$profile/$strSource";
+	for(my $key1 (keys %filters)){
+		my $subs_name = $key1;
+		my %category = %{$filter{$key1}}
+		foreach my $query_id (@{$category{'mandatory'}}){
+			my $filter = &getFilter($query_id);
+			#TODO run
+		}
+		foreach my $query_id (@{$category{'optional'}}){
+			#TODO run my $filter = &getFilter($query_id);
+		}
+	
+	}
+    my %a = %{$filters{'DFN-Honeypot'}};
+	my @b = @{$a{'optional'}};
+	my $str = join(":", @b);
+	
+
+	syslog('debug', 'Response To frontend. - RUNQUERIES');
+	syslog('debug', "$str" );
+	
+
+	Nfcomm::socket_send_ok($socket, \%args);
+
+}
+
 sub getFilter{
-        my $result = $rpc->call($uri,'get_query_filter',[10]);
+	my $query_id = shift;
+    my $result = $rpc->call($uri,'get_query_filter',[$query_id]);
 	syslog('debug', 'Response. - GETFILTER');
 	my $r = $result->result;
 	syslog('debug',$r);
+	return $r;
 
 }
+
 sub getSubscriptions{
 	my $socket = shift;
 	my $opts = shift;
@@ -116,20 +163,22 @@ sub getMyAlerts{
 }
 
 sub getSubscriptionDetail{
-        my $socket = shift;
-        my $opts = shift;
+    my $socket = shift;
+    my $opts = shift;
 
-        syslog('debug', "$uri");
-        syslog('debug', $$opts{'name'});
-        my $result = $rpc->call($uri,'get_subscription',[$$opts{'name'}]);
-        my $r = $result->result;
-        my %args;
+    syslog('debug', "$uri");
+    syslog('debug', $$opts{'name'});
+    my $result = $rpc->call($uri,'get_subscription',[$$opts{'name'}]);
+    my $r = $result->result;
+    my %args;
 	my $reff = \%{$r};	
 	my $json = encode_json \%{$r};
 	my @chars = split('', $json);
 	my $counter = 0;
 	my $index = 0;
 	my $line = "";
+	#Send part by part json string.
+	#Frontend expects key=value and max line size 1024.
 	for my $char (@chars){
 	    $line = $line .$char ;
 	    if ($counter == 1000){
