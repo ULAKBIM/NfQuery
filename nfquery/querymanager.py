@@ -470,6 +470,17 @@ class QueryManager:
                     else:
                         raise Exception, 'QueryPacket couldn\'t be empty'
         self.store.commit()
+	
+
+
+
+    def getFilter(self, query_id):
+        self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
+        pp = pprint.PrettyPrinter(indent=4)
+        self.qmlogger.debug('Getting filter, query_id %d' % query_id)
+        query = self.store.find(Query, Query.id == query_id).one()
+        query_filter = self.QGenerator.createQueryFilter([query])
+	return query_filter
 
    
 

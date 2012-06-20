@@ -65,6 +65,13 @@ sub get_connection {
 
 }
 
+sub getFilter{
+        my $result = $rpc->call($uri,'get_query_filter',[10]);
+	syslog('debug', 'Response. - GETFILTER');
+	my $r = $result->result;
+	syslog('debug',$r);
+
+}
 sub getSubscriptions{
 	my $socket = shift;
 	my $opts = shift;
@@ -75,7 +82,8 @@ sub getSubscriptions{
 	my $r = $result->result;
 	syslog('debug',"$r");
 	my %args;
-
+	&getFilter;
+	syslog('debug', 'Response. - GETFILTER');
 	if (defined $result->result) {
 		$args{'subscriptions'} = \@{$r};
 		syslog('debug', 'Response To frontend. - GETSUBSCRIPTION');
@@ -84,6 +92,7 @@ sub getSubscriptions{
 		Nfcomm::socket_send_ok($socket, \%args);
 	}	
 }
+
 
 sub getMyAlerts{
 	my $socket = shift;
