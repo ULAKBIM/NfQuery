@@ -217,16 +217,24 @@ function markMandatoryQueries(button, category){
 
 function getFilters(){
 	queryMap = {};
-	$('#query_table .collapse').each(function(){
+	$('#queryDiv .accordion-body').each(function(){
 		subscriptionName = $(this).attr('id');
-		queryMap[subscriptionName] = [];
-		$(this).find('.filter_enabled').each(function(){
+		queryMap[subscriptionName] = {};
+		queryMap[subscriptionName]['mandatory'] = []
+		queryMap[subscriptionName]['optional'] = []
+		$(this).find('.mandatory_filter').each(function(){
 			if($(this).attr('checked')){
-				queryMap[subscriptionName].push($(this).attr('name'));
+				queryMap[subscriptionName]['mandatory'].push($(this).attr('name'));
+			}
+		});
+
+		$(this).find('.optional_filter').each(function(){
+			if($(this).attr('checked')){
+				queryMap[subscriptionName]['optional'].push($(this).attr('name'));
 			}
 		});
 	});
-	alert(queryMap['Amada'].length);
+	alert(queryMap['DFN-Honeypot']['optional'].length);
 	//TODO send them to the server.
 }
 
