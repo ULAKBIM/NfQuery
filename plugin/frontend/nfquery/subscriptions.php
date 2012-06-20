@@ -4,7 +4,7 @@
 <h3>Subscription Management</h3>
 </div>
 <div class="row-fluid" style="padding-top:10px">
-	<div class="span4" id="subscription_list">
+	<div class="span4" style="padding-top:20px" id="subscription_list">
 		<table id="subscription_table" class="table table-striped table-bordered table-condensed" style="cursor:pointer">
 			<tr><th>Subscriptions</th><th>Status</th></tr>
 
