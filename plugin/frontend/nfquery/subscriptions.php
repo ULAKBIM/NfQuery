@@ -4,7 +4,7 @@
 <h3>Subscription Management</h3>
 </div>
 <div class="row-fluid" style="padding-top:10px">
-	<div class="span4" style="padding-top:20px" id="subscription_list">
+	<div class="span4" style="padding-top:10px" id="subscription_list">
 		<table id="subscription_table" class="table table-striped table-bordered table-condensed" style="cursor:pointer">
 			<tr><th>Subscriptions</th><th>Status</th></tr>
 
@@ -15,7 +15,7 @@
 				$subscriptions = getSubscriptions();
 				$remember = parseRememberFile();
 				for($i = 0; $i < sizeof($subscriptions); ++$i) {
-					echo '<tr onclick=getSubscriptionDetail2("'.$subscriptions[$i].'")><td>'.$subscriptions[$i].'</td>';
+					echo '<tr onclick=getSubscriptionDetail3("'.$subscriptions[$i].'")><td>'.$subscriptions[$i].'</td>';
 					if ($remember[$i+1] == 1){ 
 						echo '<td>'.'<input type="checkbox" checked="checked" id="'.($i+1).'" class="subscription_toggle"/>'.'</td></tr>';
 					}else{
@@ -26,10 +26,9 @@
 			?>
 		</table>
 	</div>
-	<div class="span7" id="subscription_details">
+	<div class="span7" id="subscription_details" style="padding-top:10px">
+		<!--  SubscriptionDetail2()
 		<div id="detail_subs">
-		<table id="detail_table" class="table">
-		</table>
 		</div>
 		<div id="accordion2" class="accordion" style="visibility:hidden">
 			<div id="accordion_group1" >
@@ -43,8 +42,11 @@
 				</div>
 			</div>
 		</div>
+		-->
+	
+		<div id="subscription_desc">
+		</div>
+		<div id="queries">
+		</div>
 	</div>
 </div>
-<div class="row-fluid">
-	
-</div> 

@@ -13,6 +13,60 @@ function subscription_toggle(button){
 	);
 }
 
+
+
+
+
+
+
+
+
+
+function getSubscriptionDetail3(name){
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
+		var json = $.parseJSON(data);
+		var counter = 0;
+		$("#subscription_desc").empty();
+		$("#subscription_desc").attr("class","");
+		for(i in json){
+			var r = 1;
+			for (j in json[i]){
+				for(k in json[i][j]){
+					category_name = json[i][j][k]["category_name"];
+					query_id = json[i][j][k]["query_id"];
+					query_type = json[i][j][k]["query_type"];
+					filter = json[i][j][k]["filter"];
+					source_name = json[i][j][k]["source_name"];
+					source_link = json[i][j][k]["link"];
+					r = r+1;
+					if(r<3){
+						$("#queries").append("<table id='mandatory_table' class='table'></table>");
+						$("#subscription_desc").attr("class","alert alert-info");
+						$("#subscription_desc").append("<h3><u><b>Details Of " +name+"</b></u></h3></br><h4><b>Source Name :  "+
+										source_name+"</b></h4></br><h4><b>Source Link"+"   :  <a href="+
+										source_link+">"+source_link+"</a></b></h4></br>");
+						
+						
+
+					}
+					if(category_name == "mandatory"){	
+					    var mandatory_table_row = "<tr><td>"+query_id+"</td><td>"+query_type+"</td><td>"+filter+"</td></tr>";
+					    $("#mandatory_table").append(mandatory_table_row);
+						
+					}
+					//$("#queries").append("<span class='table'>"+query_id+" "+query_type+" "+filter+"</span></br>");
+				}
+			}
+		}	
+	} 
+	);
+}
+
+
+
+
+
+
 function getSubscriptionDetail2(name){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
 		var json = $.parseJSON(data);
