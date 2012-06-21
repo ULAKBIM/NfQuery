@@ -21,6 +21,7 @@ use JSON::Parse 'json_to_perl';
 use Sys::Syslog;
 use IPC::Shareable;
 
+
 #package NfQueryPlugin::Main; 
 
 use feature 'say';
@@ -28,7 +29,15 @@ use feature 'say';
 my $cfg;
 my $rpc;
 
+#Shared memory options
 my %running_subscriptions;
+my $glue = 'running';
+my %options = (
+	create => 'yes',
+	mode => 0644,
+	exclusive => 0,
+	destroy => 'yes'
+);
 
 # assign values
 my $organization;
@@ -52,6 +61,7 @@ our %cmd_lookup = (
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
 	'runQueries' => \&runQueries,
+	'checkQueries' => \&runQueries,
 );
 
 # prepare connection parameters
@@ -71,6 +81,50 @@ sub get_connection {
 
 }
 
+sub checkPIDRunning{
+	my $pid = shift;
+	my $pid_running = kill 0, $pid;
+	return $pid_running;
+}
+
+sub checkQueries{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+	
+	$args{'subscriptions'} = [];
+
+	foreach my $subscription (keys %running_subscriptions){
+		push $args{'subscriptions'}, $subscription;
+		$args{"$subscription-mandatory"} = [];
+		$args{"$subscription-optional"} = [];
+
+		$args{"$subscription-mandatory-status"} = [];
+		$args{"$subscription-optional-status"} = [];
+
+		my %mandatory_queries = @{$running_subscriptions{$subscription}{'mandatory'}};
+		my %optional_queries = @{$running_subscriptions{$subscription}{'optional'}};
+		my @query_statuses;
+
+		foreach $query_id (keys %mandatory_queries){
+			my $pid = $mandatory_queries{$query_id};
+			my $pid_running = &checkPIDRunning($pid);
+			push $args{"$subscription-mandatory"}, $query_id;
+			if ($pid_running){
+				push $args{"$subscription-mandatory-status"}, 1;
+			}else{
+				push $args{"$subscription-mandatory-status"}, 0;
+			}
+
+		}
+	}
+
+	Nfcomm::socket_send_ok($socket, \%args);
+	return;
+}
+
+#Share running_subscriptions hash with all other child process. So they can put pid in it.
+tie %running_subscriptions, 'IPC::Shareable', $glue, {%options};
 sub runQueries{
 	my $socket = shift;
 	my $opts = shift;
@@ -79,6 +133,7 @@ sub runQueries{
 	my $queries = json_to_perl($$opts{'queries'});
 	my %queries = %{$queries};
 
+	#Get parameters to the run queries.
 	my $profile = $$opts{'profile'};
 	my @source = @{$queries{'source'}};
 	my $strSource = join(':', @source);
@@ -86,20 +141,20 @@ sub runQueries{
 	my $nfdump_args = $$opts{'args'};
 	$profile = substr $profile, 2;
 
+	#Find path to the nfdump and flow files.
 	my $nfdump = "$NfConf::PREFIX/nfdump";
 	my $flowFiles = "$NfConf::PROFILEDATADIR/$profile/$strSource";
 	
-
 	my @filterKeys = keys %filters;
-	
-    my %a = %{$filters{'DFN-Honeypot'}};
-	my @b = @{$a{'optional'}};
-	my $str = join(":", @b);
-
-	syslog('debug', "$organization");
 	foreach my $subscription_name (@filterKeys){
 		my %category = %{$filters{$subscription_name}};
-		$running_subscriptions{$subscription_name} = {};
+		
+		#Check $subscription name is already running.
+		if (!$running_subscriptions{$subscription_name}){
+			$running_subscriptions{$subscription_name} = {};
+			$running_subscriptions{$subscription_name}{'mandatory'} = {};
+			$running_subscriptions{$subscription_name}{'optional'} = {};
+		}
 
 		foreach my $query_id (@{$category{'mandatory'}}){
 			my $filter = &getFilter($query_id);
@@ -107,17 +162,21 @@ sub runQueries{
 			
 			my $pid = fork();
 			if ($pid == 0){
+				#TODO 
+				&runNfdump($command);
 				my $nfdump_pid = open(OUT, "$command |");
 				syslog('debug', "PID: $nfdump_pid COMMAND:$command");
-			    $running_subscriptions{$subscription_name}{$query_id} = $nfdump_pid;			
+			    $running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
 				syslog('debug', "Mandatory");
 				syslog('debug', Dumper %running_subscriptions);
 			    	
-				open FILE, ">", "/tmp/nfquery/$nfdump_pid";
+				open FILE, ">", "/tmp/$nfdump_pid";
 				while (defined(my $line = <OUT>)){
 					print FILE $line;
 				}
 				close FILE;
+				my $json = encode_json \%running_subscriptions;	
+				syslog('debug', "$json");
 				exit(0);
 			}	
 		}
@@ -128,24 +187,26 @@ sub runQueries{
 			
 			my $pid = fork();
 			if ($pid == 0){
+				#TODO
 				my $nfdump_pid = open(OUT, "$command |");
 				syslog('debug', "PID: $nfdump_pid COMMAND:$command");
-			    $running_subscriptions{$subscription_name}{$query_id} = $nfdump_pid;			
+			    $running_subscriptions{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
 				syslog('debug', "Optional");
-				syslog('debug', Dumper $running_subscriptions{'mandatory'});
+				syslog('debug', Dumper %running_subscriptions);
 				
-				open FILE, ">", "/tmp/nfquery/$nfdump_pid";
+				open FILE, ">", "/tmp/$nfdump_pid";
 				while (defined(my $line = <OUT>)){
 					print FILE $line;
 				}
 				close FILE;
+				my $json = encode_json \%running_subscriptions;	
+				syslog('debug', "$json");
 				exit(0);
 			}	
 		}
 	
 	}
-	
-
+		
 	syslog('debug', 'Response To frontend. - RUNQUERIES');
 	
 
@@ -252,7 +313,6 @@ sub register{
 sub Init {
 
 	$cfg = $NfConf::PluginConf{'nfquery'}; 
-
 	# assign values
 	$organization = $$cfg{'organization'};
 	syslog('debug', "$organization");
@@ -271,8 +331,7 @@ sub Init {
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
     	
 	$rpc = &get_connection($qs_ip, $qs_port);
-	
-	tie %running_subscriptions, 'IPC::Shareable', 'key', {create => 1};
+    IPC::Shareable->clean_up_all;	
 	
 	return 1;
 }
