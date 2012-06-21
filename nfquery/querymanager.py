@@ -475,6 +475,7 @@ class QueryManager:
 
 
     def getFilter(self, query_id):
+	query_id = int(query_id)
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         pp = pprint.PrettyPrinter(indent=4)
         self.qmlogger.debug('Getting filter, query_id %d' % query_id)
@@ -491,6 +492,7 @@ class QueryManager:
     ###########################################################
     def getSubscription(self, name):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.qmlogger.debug('subscription_name = %s' % name)
         pp = pprint.PrettyPrinter(indent=4)
         self.qmlogger.debug('Getting subscription %s' % name)
         subscription_id = self.store.find(Subscription.id, Subscription.name == unicode(name)).one()
