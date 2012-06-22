@@ -1,3 +1,5 @@
+var timerId;
+
 function subscription_toggle(button){
 	var button_status = 'Off';
 	if (button.attr('checked')){
@@ -283,9 +285,10 @@ function getSubscriptionDetail(name){
 
 
 function checkQueries(){
-	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {checkQueries:"checkQueries"}, function(data){ 
-		$("#queryStatusDiv").append(data);
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {checkQueries:"checkQueries"}, function(data){
+		$("#queryStatusDiv").html(data);
 	});
+	setTimeout(checkQueries, 2500);
 }
 function runQueries(){
 	var subscriptions = $('#subscripted').val() || [];
