@@ -106,7 +106,7 @@ sub checkQueries{
 		my %optional_queries = @{$running_subscriptions{$subscription}{'optional'}};
 		my @query_statuses;
 
-		foreach $query_id (keys %mandatory_queries){
+		foreach my $query_id (keys %mandatory_queries){
 			my $pid = $mandatory_queries{$query_id};
 			my $pid_running = &checkPIDRunning($pid);
 			push $args{"$subscription-mandatory"}, $query_id;
@@ -114,6 +114,18 @@ sub checkQueries{
 				push $args{"$subscription-mandatory-status"}, 1;
 			}else{
 				push $args{"$subscription-mandatory-status"}, 0;
+			}
+
+		}
+
+		foreach my $query_id (keys %mandatory_queries){
+			my $pid = $mandatory_queries{$query_id};
+			my $pid_running = &checkPIDRunning($pid);
+			push $args{"$subscription-optional"}, $query_id;
+			if ($pid_running){
+				push $args{"$subscription-optional-status"}, 1;
+			}else{
+				push $args{"$subscription-optional-status"}, 0;
 			}
 
 		}
@@ -163,7 +175,6 @@ sub runQueries{
 			my $pid = fork();
 			if ($pid == 0){
 				#TODO 
-				&runNfdump($command);
 				my $nfdump_pid = open(OUT, "$command |");
 				syslog('debug', "PID: $nfdump_pid COMMAND:$command");
 			    $running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
