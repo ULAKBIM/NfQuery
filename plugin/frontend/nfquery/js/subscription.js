@@ -48,9 +48,9 @@ function getSubscriptionDetail3(name){
 					     $("#mydiv").attr("data-target","#queries");
 					     $("#mydiv").attr("data-toggle","collapse");
 					     $("#mydiv").attr("class","alert");
-					     $("#queries").attr("class","alert");
 					     $("#queries").attr("class","collapse");
-					     if(category_name == "validation"){	
+					     $("#queries").attr("class","alert alert-info2");
+					     if(category_name == "mandatory"){	
 						$("#queries").append("<table id='mandatory_table' class='table table-condensed'></table>");
 					     	$("#mandatory_table").append("<thead><tr><th><h3>Mandatory</h3></th></tr></thead>");
 					     	$("#mydiv").append("<b><center><h3>&darr; Queries</h3></center></b>");
@@ -65,7 +65,7 @@ function getSubscriptionDetail3(name){
 						
 
 					}
-					if(category_name == "validation"){	
+					if(category_name == "mandatory"){	
 					    var mandatory_table_row = "<tr><td>"+query_id+"</td><td>"+query_type+"</td><td data-toggle='collapse'"+
 									"data-target='#optional"+j+"'><b>&darr; "+filter+"</b><div id='optional"+j+
 									"'class='collapse' ></td></tr>";
@@ -83,7 +83,6 @@ function getSubscriptionDetail3(name){
 	} 
 	);
 }
-
 
 
 
@@ -281,11 +280,19 @@ function getSubscriptionDetail(name){
 	);
 }
 
+
+
+function checkQueries(){
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {checkQueries:"checkQueries"}, function(data){ 
+		$("#queryStatusDiv").append(data);
+	});
+}
 function runQueries(){
 	var subscriptions = $('#subscripted').val() || [];
 	subscriptions = subscriptions.join(',');
-	alert(subscriptions);
-	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {run:1, subscriptions: subscriptions}, function(data){ alert(data); });
+	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {run:1, subscriptions: subscriptions}, function(data){ 
+		alert(data);
+	 });
 }
 
 function markMandatoryQueries(button, category){
@@ -319,7 +326,7 @@ function getFilters(){
 	});
 	//send them to the server.
 	queryMap['source'] = $('#flowSource').val();
-	$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap}, function(data){alert(data);});
+	$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap}, function(data){alert("asd");});
 	
 	$('#nfqueryTab').val('Running');
 	$('#navigationForm').submit();

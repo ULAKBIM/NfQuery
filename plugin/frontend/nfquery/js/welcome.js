@@ -1,6 +1,10 @@
 
 
 
+function getQueryStatus(){
+	$("#progres").append("<div class='bar' style='width: 90%;'></div>");
+}
+
 function getMyAlerts(){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ geAtlerat: "getAlerts"},function(data){
 		alert(data[0]);

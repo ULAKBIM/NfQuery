@@ -49,7 +49,7 @@
 		<div id="show_queries">
 			<div id="mydiv">
 			</div>
-			<div id="queries" class="alert">
+			<div id="queries">
 			</div>
 		</div>
 	</div>

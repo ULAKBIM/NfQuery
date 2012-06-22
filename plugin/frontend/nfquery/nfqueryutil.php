@@ -12,6 +12,28 @@
 		return $alerts;
 	}
 
+	function checkQueries(){
+		$command = 'nfquery::checkQueries';
+		$opts = array();
+		$out_list = nfsend_query($command, $opts);
+		$subscriptions = $out_list['subscriptions'];
+		$result="<table class='table' id='checkQueryTable'><thead><tr><th>Subscription</th><th>Status</th></tr></thead><tbody>";
+		foreach($subscriptions as $subs){
+			$running_count=0;
+			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
+			$counter = array_count_values($out_list[$subs."-mandatory"]);
+			$running_count = $running_count+$counter[1];
+			$counter = array_count_values($out_list[$subs."-optional"]);
+			$running_count = $running_count+$counter[1];
+			$totalQuery = sizeof($out_list[$subs."-optional"])+sizeof($out_list[$subs."-mandatory"]);
+			$p = $running_count*100/$totalQuery;
+			$result = $result."<tr><td>".$subs."</td><td><div class='progress progress-striped active'> <div class='bar'".
+    					"style='width:".$p."%;'></div></div></td></tr>";
+		
+		}
+		return $result;
+	}
+
 	function getSubscriptions(){
 		$command = 'nfquery::getSubscriptions';
 		$opts = array();
