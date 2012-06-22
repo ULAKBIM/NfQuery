@@ -20,7 +20,7 @@ use JSON;
 use JSON::Parse 'json_to_perl';
 use Sys::Syslog;
 use IPC::Shareable;
-
+use Proc::ProcessTable;
 
 #package NfQueryPlugin::Main; 
 
@@ -61,7 +61,7 @@ our %cmd_lookup = (
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
 	'runQueries' => \&runQueries,
-	'checkQueries' => \&runQueries,
+	'checkQueries' => \&checkQueries,
 );
 
 # prepare connection parameters
@@ -81,10 +81,18 @@ sub get_connection {
 
 }
 
-sub checkPIDRunning{
-	my $pid = shift;
-	my $pid_running = kill 0, $pid;
-	return $pid_running;
+sub checkPIDState{
+	my $nfdumpPid = shift;
+	my $state;
+
+	my $t = new Proc::ProcessTable;
+	foreach my $process (@{$t->$table}){
+		if ($nfdumpPid == $process->pid){
+			$state = $process->state;
+			
+		}
+	}
+	return $state;
 }
 
 sub checkQueries{
@@ -108,10 +116,10 @@ sub checkQueries{
 
 		foreach my $query_id (keys %mandatory_queries){
 			my $pid = $mandatory_queries{$query_id};
-			my $pid_running = &checkPIDRunning($pid);
+			my $pid_state = &checkPIDState($pid);
 			push $args{"$subscription-mandatory"}, $query_id;
-			if ($pid_running){
-				push $args{"$subscription-mandatory-status"}, 1;
+			if ($pid_state){
+				push $args{"$subscription-mandatory-status"}, $pid_state;
 			}else{
 				push $args{"$subscription-mandatory-status"}, 0;
 			}
@@ -149,7 +157,7 @@ sub runQueries{
 	my $profile = $$opts{'profile'};
 	my @source = @{$queries{'source'}};
 	my $strSource = join(':', @source);
-	my %filters = %{$queries{'queries'}};
+	my %filters = %{$queries{'queries'}};#TODO check here any queries exist.
 	my $nfdump_args = $$opts{'args'};
 	$profile = substr $profile, 2;
 
@@ -162,11 +170,13 @@ sub runQueries{
 		my %category = %{$filters{$subscription_name}};
 		
 		#Check $subscription name is already running.
-		if (!$running_subscriptions{$subscription_name}){
-			$running_subscriptions{$subscription_name} = {};
-			$running_subscriptions{$subscription_name}{'mandatory'} = {};
-			$running_subscriptions{$subscription_name}{'optional'} = {};
+		if ($running_subscriptions{$subscription_name}){
+			syslog('debug', "$subscription_name is already running.");
+			next;
 		}
+		$running_subscriptions{$subscription_name} = {};
+		$running_subscriptions{$subscription_name}{'mandatory'} = {};
+		$running_subscriptions{$subscription_name}{'optional'} = {};
 
 		foreach my $query_id (@{$category{'mandatory'}}){
 			my $filter = &getFilter($query_id);
@@ -176,10 +186,7 @@ sub runQueries{
 			if ($pid == 0){
 				#TODO 
 				my $nfdump_pid = open(OUT, "$command |");
-				syslog('debug', "PID: $nfdump_pid COMMAND:$command");
 			    $running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
-				syslog('debug', "Mandatory");
-				syslog('debug', Dumper %running_subscriptions);
 			    	
 				open FILE, ">", "/tmp/$nfdump_pid";
 				while (defined(my $line = <OUT>)){
@@ -200,10 +207,7 @@ sub runQueries{
 			if ($pid == 0){
 				#TODO
 				my $nfdump_pid = open(OUT, "$command |");
-				syslog('debug', "PID: $nfdump_pid COMMAND:$command");
 			    $running_subscriptions{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
-				syslog('debug', "Optional");
-				syslog('debug', Dumper %running_subscriptions);
 				
 				open FILE, ">", "/tmp/$nfdump_pid";
 				while (defined(my $line = <OUT>)){
@@ -219,8 +223,6 @@ sub runQueries{
 	}
 		
 	syslog('debug', 'Response To frontend. - RUNQUERIES');
-	
-
 	Nfcomm::socket_send_ok($socket, \%args);
 
 }
@@ -272,9 +274,6 @@ sub getMyAlerts{
         }else {
                 Nfcomm::socket_send_ok($socket, \%args);
         }       
-
-
-
 }
 
 sub getSubscriptionDetail{
