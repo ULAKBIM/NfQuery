@@ -28,7 +28,7 @@
 			$totalQuery = sizeof($out_list[$subs."-optional"])+sizeof($out_list[$subs."-mandatory"]);
 			$p = $running_count*100/$totalQuery;
 			$result = $result."<tr><td>".$subs."</td><td><div class='progress progress-striped active'> <div class='bar'".
-    					"style='width:".$p."%;'></div></div></td></tr>";
+    					"style='width:".$p."%;'>%".$p."</div></div></td></tr>";
 		
 		}
 		return $result;
