@@ -170,7 +170,7 @@ sub checkQueries{
 		if ($finished){
 			#if all queries of subscription finished remove from running subscription.
 			#TODO ParseOutput files.
-			delete ($running_subscriptions{$subscription});
+			#delete ($running_subscriptions{$subscription});
 		}
 	}
 	
@@ -187,7 +187,6 @@ sub runQueries{
 	
 	my $queries = json_to_perl($$opts{'queries'});
 	my %queries = %{$queries};
-
 	#Get parameters to the run queries.
 	my $profile = $$opts{'profile'};
 	my @source = @{$queries{'source'}};
@@ -219,8 +218,10 @@ sub runQueries{
 			
 			my $pid = fork();
 			if ($pid == 0){
-				#TODO 
+				#TODO
+				syslog('debug', 'DENEME'); 
 				my $nfdump_pid = open(OUT, "$command |");
+				syslog('debug', 'DENEME'); 
 			    $running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
 			    	
 				open FILE, ">", "/tmp/$nfdump_pid";
@@ -241,7 +242,9 @@ sub runQueries{
 			my $pid = fork();
 			if ($pid == 0){
 				#TODO
+				syslog('debug', 'DENEME'); 
 				my $nfdump_pid = open(OUT, "$command |");
+				syslog('debug', 'DENEME'); 
 			    $running_subscriptions{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
 				
 				open FILE, ">", "/tmp/$nfdump_pid";
