@@ -5,6 +5,11 @@
 </div>
 <div class="row-fluid">
  		<div class="span4">
+			<div id="progres" class="progress progress-striped active">
+			</div>
+			<script type="text/javascript" language="JavaScript">
+                        	setInterval("getQueryStatus()",1000);
+	                </script>
    			<table data-spy="scroll" data-offset="0" class="table table-striped table-bordered table-condensed">
           		<?php
              	?>
