@@ -46,7 +46,11 @@
 	
 		<div id="subscription_desc">
 		</div>
-		<div id="queries">
+		<div id="show_queries">
+			<div id="mydiv">
+			</div>
+			<div id="queries" class="alert">
+			</div>
 		</div>
 	</div>
 </div>

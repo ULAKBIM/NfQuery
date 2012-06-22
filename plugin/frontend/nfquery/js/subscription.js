@@ -27,7 +27,12 @@ function getSubscriptionDetail3(name){
 		var json = $.parseJSON(data);
 		var counter = 0;
 		$("#subscription_desc").empty();
+		$("#mydiv").empty();
 		$("#subscription_desc").attr("class","");
+		$("#mydiv").attr("class","");
+		$("#queries").attr("class","");
+		if($("#mandatory_table")!=null)
+ 			$("#mandatory_table").empty();
 		for(i in json){
 			var r = 1;
 			for (j in json[i]){
@@ -40,19 +45,36 @@ function getSubscriptionDetail3(name){
 					source_link = json[i][j][k]["link"];
 					r = r+1;
 					if(r<3){
-						$("#queries").append("<table id='mandatory_table' class='table'></table>");
-						$("#subscription_desc").attr("class","alert alert-info");
-						$("#subscription_desc").append("<h3><u><b>Details Of " +name+"</b></u></h3></br><h4><b>Source Name :  "+
+					     $("#mydiv").attr("data-target","#queries");
+					     $("#mydiv").attr("data-toggle","collapse");
+					     $("#mydiv").attr("class","alert");
+					     $("#queries").attr("class","alert");
+					     $("#queries").attr("class","collapse");
+					     if(category_name == "validation"){	
+						$("#queries").append("<table id='mandatory_table' class='table table-condensed'></table>");
+					     	$("#mandatory_table").append("<thead><tr><th><h3>Mandatory</h3></th></tr></thead>");
+					     	$("#mydiv").append("<b><center><h3>&darr; Queries</h3></center></b>");
+					    	$("#mandatory_table").append("<thead><tr><th>Query Id</t><th>Query Type</th><th>Filter"+
+										"</th></tr></thead><tbody>");
+					     }
+					     $("#subscription_desc").attr("class","alert alert-info");
+					     $("#subscription_desc").append("<h3><u><b>Details Of " +name+"</b></u></h3></br><h4><b>Source Name :  "+
 										source_name+"</b></h4></br><h4><b>Source Link"+"   :  <a href="+
 										source_link+">"+source_link+"</a></b></h4></br>");
 						
 						
 
 					}
-					if(category_name == "mandatory"){	
-					    var mandatory_table_row = "<tr><td>"+query_id+"</td><td>"+query_type+"</td><td>"+filter+"</td></tr>";
+					if(category_name == "validation"){	
+					    var mandatory_table_row = "<tr><td>"+query_id+"</td><td>"+query_type+"</td><td data-toggle='collapse'"+
+									"data-target='#optional"+j+"'><b>&darr; "+filter+"</b><div id='optional"+j+
+									"'class='collapse' ></td></tr>";
 					    $("#mandatory_table").append(mandatory_table_row);
 						
+					}
+					if(category_name == "optional"){
+						$("#optional"+j).append("<br><span  class='label' style='margin-left:30px;font-size:12px;"+
+                                                                        "border-radius: 3px 3px 3px 3px;'>&#176; "+filter+"</span></br>");
 					}
 					//$("#queries").append("<span class='table'>"+query_id+" "+query_type+" "+filter+"</span></br>");
 				}
