@@ -26,6 +26,7 @@
 							<li class="<?php if (strcmp($tabName, "Home") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav ">Home</a></li>
 							<li class="<?php if (strcmp($tabName, "Subscription") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav">Subscription</a></li>
 							<li class="<?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav">Workspace</a></li>
+							<li class="<?php if (strcmp($tabName, "Running") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav">Running</a></li>
 							<li class="<?php if (strcmp($tabName, "Report") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav">Report</a></li>
 							<li class="<?php if (strcmp($tabName, "Settings") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav">Settings</a></li>
 							<li class="<?php if (strcmp($tabName, "About") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav">About</a></li>
@@ -52,6 +53,11 @@
 						<div class="tab-pane <?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>" id="workspace">
 							<div class="container-fluid">
 								<?php include('workspace.php'); ?>
+							</div>
+						</div>
+						<div class="tab-pane <?php if (strcmp($tabName, "Running") == 0) echo "active"?>" id="running">
+							<div class="container-fluid">
+								<?php include('running.php'); ?>
 							</div>
 						</div>
 					</div>
