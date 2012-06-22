@@ -64,6 +64,33 @@ our %cmd_lookup = (
 	'checkQueries' => \&checkQueries,
 );
 
+#Initialize plugin.
+sub Init {
+
+	$cfg = $NfConf::PluginConf{'nfquery'}; 
+	# assign values
+	$organization = $$cfg{'organization'};
+	syslog('debug', "$organization");
+	$adm_name = $$cfg{'adm_name'};
+	$adm_mail = $$cfg{'adm_mail'};
+	$adm_tel  = $$cfg{'adm_tel'};
+	$adm_publickey_file = $$cfg{'adm_publickey_file'};     # not using for the time.
+
+	# plugin info                                                                                           
+	$prefix_list = $$cfg{'prefix_list'};
+	$plugin_ip = $$cfg{'plugin_ip'};
+
+	# Query Server info                                                                                           
+	$qs_ip = $$cfg{'queryserver_ip'};
+	$qs_port = $$cfg{'queryserver_port'};
+	$uri = 'https://' . $qs_ip . ':' . $qs_port;
+    	
+	$rpc = &get_connection($qs_ip, $qs_port);
+    IPC::Shareable->clean_up_all;	
+	
+	return 1;
+}
+
 # prepare connection parameters
 sub get_connection {
 
@@ -86,10 +113,9 @@ sub checkPIDState{
 	my $state;
 
 	my $t = new Proc::ProcessTable;
-	foreach my $process (@{$t->$table}){
+	foreach my $process (@{$t->table}){
 		if ($nfdumpPid == $process->pid){
-			$state = $process->state;
-			
+			$state = $process->state;			
 		}
 	}
 	return $state;
@@ -110,9 +136,10 @@ sub checkQueries{
 		$args{"$subscription-mandatory-status"} = [];
 		$args{"$subscription-optional-status"} = [];
 
-		my %mandatory_queries = @{$running_subscriptions{$subscription}{'mandatory'}};
-		my %optional_queries = @{$running_subscriptions{$subscription}{'optional'}};
+		my %mandatory_queries = %{$running_subscriptions{$subscription}{'mandatory'}};
+		my %optional_queries = %{$running_subscriptions{$subscription}{'optional'}};
 		my @query_statuses;
+		my $finished = 1;
 
 		foreach my $query_id (keys %mandatory_queries){
 			my $pid = $mandatory_queries{$query_id};
@@ -120,6 +147,7 @@ sub checkQueries{
 			push $args{"$subscription-mandatory"}, $query_id;
 			if ($pid_state){
 				push $args{"$subscription-mandatory-status"}, $pid_state;
+				$finished = 0;
 			}else{
 				push $args{"$subscription-mandatory-status"}, 0;
 			}
@@ -128,17 +156,24 @@ sub checkQueries{
 
 		foreach my $query_id (keys %mandatory_queries){
 			my $pid = $mandatory_queries{$query_id};
-			my $pid_running = &checkPIDRunning($pid);
+			my $pid_state = &checkPIDState($pid);
 			push $args{"$subscription-optional"}, $query_id;
-			if ($pid_running){
-				push $args{"$subscription-optional-status"}, 1;
+			if ($pid_state){
+				push $args{"$subscription-optional-status"}, $pid_state;
+				$finished = 0;
 			}else{
 				push $args{"$subscription-optional-status"}, 0;
 			}
 
 		}
-	}
 
+		if ($finished){
+			#if all queries of subscription finished remove from running subscription.
+			#TODO ParseOutput files.
+			delete ($running_subscriptions{$subscription});
+		}
+	}
+	
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
 }
@@ -237,6 +272,14 @@ sub getFilter{
 
 }
 
+sub getPrefixes{
+    my $result = $rpc->call($uri,'get_prefixes',[$plugin_ip]);
+	syslog('debug', 'Response. - GETPREFIXES');
+	my $r = $result->result;
+	syslog('debug',$r);
+	return $r;
+}
+
 sub getSubscriptions{
 	my $socket = shift;
 	my $opts = shift;
@@ -320,37 +363,7 @@ sub register{
                                             $adm_publickey_file, $prefix_list, $plugin_ip, ]);
 }
 
-sub Init {
-
-	$cfg = $NfConf::PluginConf{'nfquery'}; 
-	# assign values
-	$organization = $$cfg{'organization'};
-	syslog('debug', "$organization");
-	$adm_name = $$cfg{'adm_name'};
-	$adm_mail = $$cfg{'adm_mail'};
-	$adm_tel  = $$cfg{'adm_tel'};
-	$adm_publickey_file = $$cfg{'adm_publickey_file'};     # not using for the time.
-
-	# plugin info                                                                                           
-	$prefix_list = $$cfg{'prefix_list'};
-	$plugin_ip = $$cfg{'plugin_ip'};
-
-	# Query Server info                                                                                           
-	$qs_ip = $$cfg{'queryserver_ip'};
-	$qs_port = $$cfg{'queryserver_port'};
-	$uri = 'https://' . $qs_ip . ':' . $qs_port;
-    	
-	$rpc = &get_connection($qs_ip, $qs_port);
-    IPC::Shareable->clean_up_all;	
-	
-	return 1;
-}
 
 sub run{
 }
-
-
-
-
-
 
