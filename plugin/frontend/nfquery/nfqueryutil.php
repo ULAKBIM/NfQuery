@@ -21,10 +21,10 @@
 		foreach($subscriptions as $subs){
 			$running_count=0;
 			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
-			$counter = array_count_values($out_list[$subs."-mandatory"]);
-			$running_count = $running_count+$counter[1];
-			$counter = array_count_values($out_list[$subs."-optional"]);
-			$running_count = $running_count+$counter[1];
+			$counter = array_count_values($out_list[$subs."-mandatory-status"]);
+			$running_count = $running_count+$counter['0'];
+			$counter = array_count_values($out_list[$subs."-optional-status"]);
+			$running_count = $running_count+$counter['0'];
 			$totalQuery = sizeof($out_list[$subs."-optional"])+sizeof($out_list[$subs."-mandatory"]);
 			$p = $running_count*100/$totalQuery;
 			$result = $result."<tr><td>".$subs."</td><td><div class='progress progress-striped active'> <div class='bar'".
