@@ -21,7 +21,7 @@ def parse_source_and_create_output(source_name, source_file, output_type, output
         outputfile = open(output_file, "w")
     except Exception, e:
         print 'Exception'
-    	print e
+        print e
         sys.exit(1)
 
     expr_list = []
@@ -60,6 +60,7 @@ if __name__ == "__main__":
 
     source_name = 'DFN-Honeypot'
     source_dir  = os.path.dirname(__file__)
+    print source_dir
     source_file = source_dir + '/honeypotSource.txt'
     output_type  = 3
     output_file = source_dir + '/honeypotOutput.txt'

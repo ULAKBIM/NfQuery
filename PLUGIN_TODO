@@ -1,0 +1,29 @@
+=====================
+		#TODO
+=====================
+
+2012-06-25 serhat <demircan.serhat@gmail.com> 
+-------------------------------------------------------------------------------
+	
+	* Queryserver cache mevzusu. Şu an için queryserver a sorgu yapıldığında
+	sonucun tekrar tekrar üretilmesi (Örneğin her query için her seferinde 
+	createQueryFilter metodunun çalışması) zaman alıyor ve arayüzde buna bağlı 
+    olarak geç yükleniyor. Bu sorunun üstesinden gelinmeli.
+	
+	* Workspace sekmesinde gösterilen querylerin mandatory veye optional
+	olduğunun anlaşılabilmesi için yanına bunu belirten icon konulması(M, O).
+	Aynı zamanda bu iconların üzerine gelindiğinde bir popover ile bu query 
+	hakkında bilgi verilmesi.
+
+	* Çalışan queryler sonucu oluşan çıktının sonucunun subscriptiona ait tüm 
+	querylerin çalışması bittiğinde ekranda görüntülenmesi.
+
+	* Nfdump üzerinde farklı boyutlardaki flowlar üzerinde farklı sayıda query
+	çalıştırarak nfdumpın nasıl çalıştığını gözlemlemek buna bağlı olarakta 
+	pluginde nfdumpın nasıl çalışacağına karar verilmesi.
+	
+	* INSTALL dosyasının güncellenmesi :
+    	- database yapılandırması hakkında kullanıcıya verilecek bilgiler.
+        - frontend ve QueryServer ' ın bağımlılıklarının güncellenmesi.
+
+-------------------------------------------------------------------------------
