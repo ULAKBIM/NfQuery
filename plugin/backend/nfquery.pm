@@ -220,7 +220,7 @@ sub runQueries{
 			if ($pid == 0){
 				#TODO
 				syslog('debug', 'DENEME'); 
-				my $nfdump_pid = open(OUT, "$command |");
+				my $nfdump_pid = open(OUT, "nice -n 7 $command |");
 				syslog('debug', 'DENEME'); 
 			    $running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
 			    	
@@ -243,7 +243,7 @@ sub runQueries{
 			if ($pid == 0){
 				#TODO
 				syslog('debug', 'DENEME'); 
-				my $nfdump_pid = open(OUT, "$command |");
+				my $nfdump_pid = open(OUT, " nice -n 7 $command |");
 				syslog('debug', 'DENEME'); 
 			    $running_subscriptions{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
 				
