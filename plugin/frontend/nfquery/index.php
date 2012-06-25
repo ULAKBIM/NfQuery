@@ -9,7 +9,7 @@
 		<div class="container-fluid">
 			<div class="row-fluid">
 			  <div class="span2">
-					<h2>Nfquery</h2>
+					<img src="/nfsen/plugins/nfquery/img/logo2.png">
 					<ul class="nav nav-list">
 						<form method="post" action="/nfsen/nfsen.php" id="navigationForm"> 
 							<input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
@@ -24,13 +24,13 @@
 									}
 								?>
 						</form>
-							<li class="<?php if (strcmp($tabName, "Home") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav "><i class="icon-home"></i>Home</a></li>
-							<li class="<?php if (strcmp($tabName, "Subscription") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-book"></i>Subscription</a></li>
-							<li class="<?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-pencil"></i>Workspace</a></li>
-							<li class="<?php if (strcmp($tabName, "Running") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-info-sign"></i>Running</a></li>
-							<li class="<?php if (strcmp($tabName, "Report") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-bullhorn"></i>Report</a></li>
-							<li class="<?php if (strcmp($tabName, "Settings") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-wrench"></i>Settings</a></li>
-							<li class="<?php if (strcmp($tabName, "About") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-align-justify"></i>About</a></li>
+							<li class="navItem <?php if (strcmp($tabName, "Home") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav "><i class="icon-home"></i>Home</a></li>
+							<li class="navItem <?php if (strcmp($tabName, "Subscription") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-book"></i>Subscription</a></li>
+							<li class="navItem <?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-pencil"></i>Workspace</a></li>
+							<li class="navItem <?php if (strcmp($tabName, "Running") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-info-sign"></i>Running</a></li>
+							<li class="navItem <?php if (strcmp($tabName, "Report") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-bullhorn"></i>Report</a></li>
+							<li class="navItem <?php if (strcmp($tabName, "Settings") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-wrench"></i>Settings</a></li>
+							<li class="navItem <?php if (strcmp($tabName, "About") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-align-justify"></i>About</a></li>
 					</ul>
 				</div>
 					<div class="tab-content span10">
