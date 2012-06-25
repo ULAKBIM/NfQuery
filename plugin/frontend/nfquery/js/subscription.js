@@ -361,5 +361,14 @@ $(document).ready(function() {
 
 	$(".collapse").collapse();
 	$('#runQueries').click(getFilters);
+	
+	$('.mandatory_query_popover').popover({
+		title: "Mandatory Query",
+		content: "Click Here to See Optional Queries Of This Mandatory Query"
+	});
 
+	$('.optional_query_popover').popover({
+		title: "Optional Query",
+		content: "This is optional query."
+	});
 });
