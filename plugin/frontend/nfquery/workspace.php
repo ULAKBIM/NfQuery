@@ -36,8 +36,8 @@
 							  if (strcmp($query['category_name'], 'mandatory') == 0){
 								$has_query = true;
 								echo '<input type=checkbox class="mandatory_filter" name="'.$query['query_id'].'" >';
-								echo '<span class="mandatory_query" style="border-radius: 3px 3px 3px 3px;cursor:pointer" data-toggle="collapse" data-target="#optional'.$query['query_id'].'"><i class="icon-chevron-down"></i>'.$query['filter'].'</span><span class="mandatory_query_popover badge badge-warning">M</span></input>';
-								echo '<div style="padding-left:30px;" id=optional'.$query['query_id'].' class="collapse in">';
+								echo '<span class="mandatory_query" style="border-radius: 3px 3px 3px 3px;cursor:pointer" data-toggle="collapse" data-target="#optional'.$query['query_id'].$s.'"><i class="icon-chevron-down"></i>'.$query['filter'].'</span><span class="mandatory_query_popover badge badge-warning">M</span></input>';
+								echo '<div style="padding-left:30px;" id=optional'.$query['query_id'].$s.' class="collapse in">';
 							  }elseif(strcmp($query['category_name'], 'optional') == 0){
 								echo '<input type=checkbox  class="optional_filter" name="'.$query['query_id'].'">';
 								echo '<span class="optional_query" style="border-radius: 3px 3px 3px 3px;">'.$query['filter'].'</span><span class="optional_query_popover badge badge-success">O</span></input>';
