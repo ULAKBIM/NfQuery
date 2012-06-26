@@ -1,11 +1,12 @@
-		<link rel="stylesheet" href="/nfsen/css/bootstrap.css" />
+		<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/bootstrap.css" />
 		<link rel="stylesheet" href="/nfsen/css/detail.css" />
 		<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/query.css" />
 		<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/process.css" /> <!-- Override bootstrap's form elements width and height-->
 		<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
-		<script src="/nfsen/js/bootstrap.js"></script>
-		<script src="/nfsen/js/welcome.js"></script>
-		<script src="/nfsen/js/subscription.js"></script>
+		<script src="/nfsen/plugins/nfquery/js/bootstrap.js"></script>
+		<script src="/nfsen/plugins/nfquery/js/welcome.js"></script>
+		<script src="/nfsen/plugins/nfquery/js/subscription.js"></script>
+		<script src="/nfsen/plugins/nfquery/js/iphone-style-checkboxes.js"></script>
 		<div class="container-fluid">
 			<div class="row-fluid">
 			  <div class="span2">
@@ -37,28 +38,28 @@
 
 						<div class="tab-pane <?php if (strcmp($tabName, "Home") == 0) echo "active"?>" id="home">
 							<div class="container-fluid">
-								<? include('welcome.php');?>
+								<?php if (strcmp($tabName, "Home") == 0) include('welcome.php');?>
 							</div>
 						</div>
 						<div class="tab-pane <?php if (strcmp($tabName, "Subscription") == 0) echo "active"?>" id="subscription">
 
 							<div class="container-fluid">
-								<?php include('subscriptions.php'); ?>
+								<?php if (strcmp($tabName, "Subscription") == 0) include('subscriptions.php'); ?>
 							</div>
 						</div>
 						<div class="tab-pane <?php if (strcmp($tabName, "About") == 0) echo "active"?>" id="about">
 							<div class="container-fluid">
-								<?php include('about.php'); ?>
+								<?php if (strcmp($tabName, "About") == 0) include('about.php'); ?>
 							</div>
 						</div>
 						<div class="tab-pane <?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>" id="workspace">
 							<div class="container-fluid">
-								<?php include('workspace.php'); ?>
+								<?php if (strcmp($tabName, "Workspace") == 0) include('workspace.php'); ?>
 							</div>
 						</div>
 						<div class="tab-pane <?php if (strcmp($tabName, "Running") == 0) echo "active"?>" id="running">
 							<div class="container-fluid">
-								<?php include('running.php'); ?>
+								<?php if (strcmp($tabName, "Running") == 0)include('running.php'); ?>
 							</div>
 						</div>
 					</div>
