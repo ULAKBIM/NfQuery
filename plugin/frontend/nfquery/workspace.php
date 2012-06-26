@@ -2,10 +2,10 @@
 	<div class="span11">
 		<?php
 			DisplayDetails();
-			#DisplayProcessing();
         ?>  
 	</div>
 </div>
+
 <div class="row-fluid">
 	<div class="span6">
 		<div class="row-fluid">
@@ -56,9 +56,11 @@
 			 	}
 				echo '</div>';
 			}else{
+				echo '<div class="alert alert-warning">';
+				echo 'You have not subscripted any subscription yet. Go subscription tab and subscribe.';
+				echo '</div>';
 			}
 			echo '</div>';
-			echo '<a id="runQueries" class="btn btn-primary">Run !</a>'
 		?>  
 	</div>
 	<div class="span3">
@@ -71,5 +73,6 @@
 			}
 			echo '</select>';
 		?>
+		<a id="runQueries" class="btn btn-large btn-primary">Run !</a>
 	</div>
 </div>

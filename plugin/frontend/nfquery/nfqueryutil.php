@@ -16,6 +16,12 @@
 		$command = 'nfquery::checkQueries';
 		$opts = array();
 		$out_list = nfsend_query($command, $opts);
+
+		if (!$out_list['subscriptions']){ #if no query is active return alert.
+			$result = '<div class="alert">No query is running.</div>';
+			return $result;
+		}
+
 		$subscriptions = $out_list['subscriptions'];
 		$result="<table class='table' id='checkQueryTable'><thead><tr><th>Subscription</th><th>Status</th></tr></thead><tbody>";
 		foreach($subscriptions as $subs){
@@ -159,7 +165,6 @@
 		var_dump($opts);
 		$response = nfsend_query('nfquery::runQueries', $opts);
 
-		 //TODO check response and show whats happening there 
 		return true;
 	}
 
