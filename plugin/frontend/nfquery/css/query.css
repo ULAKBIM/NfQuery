@@ -24,8 +24,7 @@
     border-color: #82CFFA #E7F2FB #96C4EA;
     border-style: solid;
     border-width: 1px;
-    height: 16px;
-    padding: 18px 40px 18px 54px;
+    height: 10px;
 	padding-bottom: 30px;
 }
 
@@ -34,5 +33,10 @@
 
 .navItem {
 	padding-bottom: 5px;
+}
+
+.filters{
+	max-height: 200px;
+	overflow: auto;
 }
 

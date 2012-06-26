@@ -7,10 +7,10 @@
 	</div>
 </div>
 <div class="row-fluid">
-	<h3>Run Queries</h3>
-</div>
-<div class="row-fluid">
 	<div class="span6">
+		<div class="row-fluid">
+			<h3>Run Queries</h3>
+		</div>
 		<?php
 			require_once('nfqueryutil.php');
 			
@@ -24,7 +24,7 @@
 					echo '<div class="accordion-heading">';
 					echo '<table class="accordion-heading-table"><tr>';
 					echo '<td><input type=checkbox class="markAllMandatory" name="'.$s.'"/></td>';
-					echo '<td><a href="#'.$s.'" data-parent="#accordion" data-toggle="collapse" class="accordion-toggle"><i class="icon-chevron-down"></i>'.$s.' </a></td>';
+					echo '<td class="upDown"><a href="#'.$s.'" data-parent="#accordion" data-toggle="collapse" class="accordion-toggle"><i class="icon-chevron-down"></i>'.$s.' </a></td>';
 					echo '</tr></table>';
 					echo '</div>';
 						echo '<div id="'.$s.'" style="padding-left:30px;" class="accordion-body collapse in subscriptionBody">';
@@ -64,7 +64,7 @@
 	<div class="span3">
 		<?php
 
-			echo '<label>'.'Select Flow Source: '.'</label>';		
+			echo '<h3>'.'Select Flow Source: '.'</h3>';		
 			echo '<select id="flowSource" multiple="multiple">';
 			foreach($_SESSION['profileinfo']['channel'] as $channel=>$details){
 				echo '<option>'.$channel.'</option>';
