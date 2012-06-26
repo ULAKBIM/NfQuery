@@ -54,6 +54,10 @@ my $plugin_ip;
 my $qs_ip;
 my $qs_port;
 my $uri;
+
+#output dirctory
+my $output_dir;
+
 #communication functions
 
 our %cmd_lookup = (
@@ -62,6 +66,7 @@ our %cmd_lookup = (
 	'getMyAlerts' => \&getMyAlerts,
 	'runQueries' => \&runQueries,
 	'checkQueries' => \&checkQueries,
+	'getOutputOfSubscription' => \&getOutputOfSubscription,
 );
 
 #Initialize plugin.
@@ -75,6 +80,7 @@ sub Init {
 	$adm_mail = $$cfg{'adm_mail'};
 	$adm_tel  = $$cfg{'adm_tel'};
 	$adm_publickey_file = $$cfg{'adm_publickey_file'};     # not using for the time.
+	$output_dir = $$cfg{'output_dir'};
 
 	# plugin info                                                                                           
 	$prefix_list = $$cfg{'prefix_list'};
@@ -110,14 +116,16 @@ sub get_connection {
 
 sub checkPIDState{
 	my $nfdumpPid = shift;
-	my $state;
-
-	my $t = new Proc::ProcessTable;
-	foreach my $process (@{$t->table}){
-		if ($nfdumpPid == $process->pid){
-			$state = $process->state;			
-		}
-	}
+	my $state = kill 0, $nfdumpPid;
+#	my $t = new Proc::ProcessTable;
+#	foreach my $process (@{$t->table}){
+#		my $current_pid = $process->pid;
+#		my $current_pid_state = $process->state;
+#		if ($nfdumpPid == $current_pid){
+#			syslog('debug', "EQUAL $current_pid -> $current_pid_state");	
+#			$state = $process->state;			
+#		}
+#	}
 	return $state;
 }
 
@@ -176,6 +184,49 @@ sub checkQueries{
 	
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
+}
+
+sub getOutputOfPid{
+	my $pid = shift;
+	
+	my $content = '';
+	open my $fh, "<", "$output_dir/$pid";
+	{
+		local $/;
+		$content = <$fh>;
+	}
+	close $fh;
+
+	return $content;
+}
+
+sub getOutputOfSubscription{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+
+	my $subscriptionName = $$opts{'subscriptionName'};
+	my %output;	
+
+	my %mandatory_queries = %{$running_subscriptions{$subscriptionName}{'mandatory'}};
+	my %optional_queries = %{$running_subscriptions{$subscriptionName}{'optional'}};
+	
+	foreach my $query_id ( keys %mandatory_queries ){
+		my $pid = $mandatory_queries{$query_id};
+		my $output = &getOutputOfPid($pid);
+		$args{$query_id} = $output;
+	}
+
+	foreach my $query_id ( keys %optional_queries ){
+		my $pid = $optional_queries{$query_id};
+		my $output = &getOutputOfPid($pid);
+		$args{$query_id} = $output;
+	}
+		
+	syslog('debug', 'Response To frontend. GETOUTPUTT');
+	Nfcomm::socket_send_ok($socket, \%args);
+	return;
+
 }
 
 #Share running_subscriptions hash with all other child process. So they can put pid in it.
