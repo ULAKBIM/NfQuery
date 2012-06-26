@@ -2,7 +2,6 @@
     #include('loghandler.php');
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
-	require_once('Thread.php');
 
 	function getMyAlerts(){
 		$command = 'nfquery::getSubscriptions';
@@ -10,6 +9,14 @@
 		$out_list = nfsend_query($command, $opts);
 		$alerts = $out_list['subscriptions'];
 		return $alerts;
+	}
+	
+	function getOutputOfSubscription($subscriptionName){
+		$command = 'nfquery::getOutputOfSubscription';
+		$opts = array();
+		$opts['subscriptionName'] = $subscriptionName;
+		$out_list = nfsend_query($command, $opts);
+		var_dump($out_list);
 	}
 
 	function checkQueries(){
@@ -33,9 +40,16 @@
 			$running_count = $running_count+$counter['0'];
 			$totalQuery = sizeof($out_list[$subs."-optional"])+sizeof($out_list[$subs."-mandatory"]);
 			$p = $running_count*100/$totalQuery;
+
 			$result = $result."<tr><td>".$subs."</td><td><div class='progress progress-striped active'> <div class='bar'".
-    					"style='width:".$p."%;'>%".$p."</div></div></td></tr>";
-		
+					"style='width:".$p."%;'>%".$p."</div></div></td>";
+
+			#Check all queries are finished or not. if finished put button to show result of queries.
+			if ( $running_count == (sizeof($out_list[$subs."-mandatory"]) + sizeof($out_list[$subs."-optional"])) ){
+				$result = $result.'<td>'.'<a class="btn btn-success pull-right showOutput" onClick=showOutput("'.$subs.'") id ="'.$subs.'">Show Output</a>'.'</td>';
+			}
+			
+			$result = $result."</tr>";
 		}
 		return $result;
 	}

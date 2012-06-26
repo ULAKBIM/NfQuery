@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/style.css" type="text/css"/>
+<script src="/nfsen/plugins/nfquery/js/running.js"></script>
 
 <div class="row-fluid">
 	<div class="span4">
@@ -13,22 +13,7 @@
     </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
 <script type="text/javascript" language="JavaScript">
 	checkQueries();
 </script>
 
-<?php
-	
-
-?>
