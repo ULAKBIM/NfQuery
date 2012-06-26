@@ -15,15 +15,6 @@ function subscription_toggle(button){
 	);
 }
 
-
-
-
-
-
-
-
-
-
 function getSubscriptionDetail3(name){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
 		var json = $.parseJSON(data);
@@ -336,6 +327,17 @@ function getFilters(){
 
 }
 
+function changeCollapseIcon(column){
+	var icon = column.find('i');
+	if (icon.hasClass('icon-chevron-down')){
+		icon.removeClass('icon-chevron-down');
+		icon.addClass('icon-chevron-up');
+	}else{
+		icon.removeClass('icon-chevron-up');
+		icon.addClass('icon-chevron-down');
+	}
+}
+
 $(document).ready(function() {
 
 	$('.subscription_toggle').iphoneStyle({
@@ -370,5 +372,9 @@ $(document).ready(function() {
 	$('.optional_query_popover').popover({
 		title: "Optional Query",
 		content: "This is optional query."
+	});
+
+	$('.upDown').click(function (){
+		changeCollapseIcon($(this));
 	});
 });
