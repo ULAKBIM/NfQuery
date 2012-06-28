@@ -8,7 +8,7 @@
                  	<img src="/nfsen/plugins/nfquery/img/logo2.png">
 		</div>
 		<div class="span8 ">
-			<div class="alert alert-inforegister">
+			<div class="alert alert-inforegister ">
 				<legend><b>Organization</b></legend>
 				<div class="alert alert-info2 ">
 					<div class="row-fluid">
@@ -47,7 +47,7 @@
 					</div>
 					<div id="admin_mail_div" class="span5">
 						<center>
-					    <input id="id_admin_email" type="text" style="height:25px;"title="AdminMail" >
+					    <input id="id_admin_email" type="text" style="height:25px;"title="AdminMail" class="required" />
 					</div>
 					</div>
 
@@ -58,7 +58,7 @@
 						<center>
 					    <label for="id_adm_phone"><b>PHONE NUMBER</b></label>
 					</div>
-					<div class="span5">
+					<div id="id_admphone_div" class="span5">
 						<center>
 					    <input id="id_admin_phone" type="text" style="height:25px;"title="AdminPhone" >
 					</div>
@@ -74,7 +74,7 @@
 						<center>
 					    <label for="id_pluginip"><b>PLUGIN IP</b></label>
 					</div>
-					<div class="span5">
+					<div id="id_plugin_div" class="span5">
 						<center>
 					    <input id="id_plugin_ip"  type="text" style="height:25px;"title="PluginIP" >
 					</div>
@@ -84,7 +84,7 @@
 						<center>
 					    <label for="id_prefixlist"><b>PREFIX LIST</b></label>
 					</div>
-					<div class="span5">
+					<div id="id_prefix_div" class="span5">
 						<center>
 					    <input id="id_prefix" type="text" style="height:25px;"title="Prefix" >
 					</div>
@@ -94,7 +94,7 @@
 						<center>
 					    <label for="id_queryserver"><b>QUERYSERVER IP</b></label>
 					</div>
-					<div class="span5">
+					<div id="id_queryserver_div" class="span5">
 						<center>
 					    <input id="id_queryserverip" type="text" style="height:25px;"title="QuseryServerIP" >
 					</div>
@@ -104,13 +104,14 @@
 						<center>
 					    <label for="id_querysport"><b>QUERYSERVER PORT</b></label>
 					</div>
-					<div class="span5">
+					<div id="id_qsport_div" class="span5">
 						<center>
 					    <input id="id_queryserverport" type="text" style="height:25px;"title="QuseryServerPort" >
 					</div>
 					</div>
 				</div>
 			</div>
+	<center><div id="warning"></div></center>
 	<center><div class="alert alert-success"><button id="register" onclick="register()" class="btn btn-primary"> Register</button></div></center>
 		</div>
 	</div>

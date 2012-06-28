@@ -3,6 +3,14 @@
     require_once('nfqueryutil.php');
 
 
+	if(isset($_POST['map'])){
+		$map = $_POST['map'];
+		$json = json_encode($map);
+		$fp = fopen('/home/ahmetcan/nfquery/plugin/backend/plugin.conf.pm', 'w');
+		fwrite($fp, $json);
+		fclose($fp);
+		header("Location: /var/www/nfsen/plugins/nfquery/index.php");
+	}
 
 	if(isset($_POST['getAlerts'])){
 		$result = getSubscriptions();

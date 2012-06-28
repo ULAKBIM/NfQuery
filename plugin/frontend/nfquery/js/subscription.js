@@ -42,9 +42,9 @@ function getSubscriptionDetail3(name){
 					     $("#mydiv").attr("data-toggle","collapse");
 					     $("#mydiv").attr("class","alert");
 					     $("#queries").attr("class","collapse");
-					     $("#queries").attr("class","alert alert-info2");
+					     //$("#queries").attr("class","alert alert-info2");
 					     if(category_name == "mandatory"){	
-						$("#queries").append("<table id='mandatory_table' class='table table-condensed'></table>");
+						$("#queries").append("<table id='mandatory_table' class='table table-striped table-condensed'></table>");
 					     	$("#mandatory_table").append("<thead><tr><th><h3>Mandatory</h3></th></tr></thead>");
 					     	$("#mydiv").append("<b><center><h3>&darr; Queries</h3></center></b>");
 					    	$("#mandatory_table").append("<thead><tr><th>Query Id</t><th>Query Type</th><th>Filter"+
