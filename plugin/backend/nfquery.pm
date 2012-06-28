@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 
 package nfquery;
-use NfConf;
 use NfProfile;
 
 use strict;
@@ -21,6 +20,7 @@ use JSON::Parse 'json_to_perl';
 use Sys::Syslog;
 use IPC::Shareable;
 use Proc::ProcessTable;
+use Config::Simple;
 
 #package NfQueryPlugin::Main; 
 
@@ -74,26 +74,39 @@ our %cmd_lookup = (
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
 );
 
+sub ParseConfigFile {
+
+    my $config_file = shift;
+    my %Config;
+
+    Config::Simple->import_from($config_file, \%Config);
+
+    my $cfg = new Config::Simple($config_file);
+
+    return $cfg;
+}
+
+
 #Initialize plugin.
 sub Init {
 
-	$cfg = $NfConf::PluginConf{'nfquery'}; 
-	# assign values
-	$organization = $$cfg{'organization'};
+	my $cfg = &ParseConfigFile('/home/ahmetcan/nfquery/plugin/backend/plugin.conf.pm');
+
+	
+	$organization = $cfg->param ("organization");
 	syslog('debug', "$organization");
-	$adm_name = $$cfg{'adm_name'};
-	$adm_mail = $$cfg{'adm_mail'};
-	$adm_tel  = $$cfg{'adm_tel'};
-	$adm_publickey_file = $$cfg{'adm_publickey_file'};     # not using for the time.
-	$output_dir = $$cfg{'output_dir'};
+	$adm_name =$cfg->param('adm_name');
+	$adm_mail =$cfg->param('adm_mail');
+	$adm_tel  =$cfg->param('adm_tel');
+	$adm_publickey_file = $cfg->param('adm_publickey_file');     # not using for the time.
 
 	# plugin info                                                                                           
-	$prefix_list = $$cfg{'prefix_list'};
-	$plugin_ip = $$cfg{'plugin_ip'};
+	$prefix_list = $cfg->param('prefix_list');
+	$plugin_ip = $cfg->param('plugin_ip');
 
 	# Query Server info                                                                                           
-	$qs_ip = $$cfg{'queryserver_ip'};
-	$qs_port = $$cfg{'queryserver_port'};
+	$qs_ip = $cfg->param('queryserver_ip');
+	$qs_port = $cfg->param('queryserver_port');
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
     	
 	$rpc = &get_connection($qs_ip, $qs_port);
