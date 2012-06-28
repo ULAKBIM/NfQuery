@@ -11,6 +11,7 @@ use LWP::UserAgent;
 use JSON::RPC::LWP;
 use Config::Simple;
 use Term::ANSIColor;
+use Sys::Syslog;
 
 #package NfQueryPlugin::Main; 
 
@@ -50,6 +51,7 @@ my $cfg = &ParseConfigFile('plugin.conf.pm');
 
 # assign values
 my $organization = $cfg->param('organization');
+syslog('debug',$organization);
 my $adm_name = $cfg->param('adm_name');
 my $adm_mail = $cfg->param('adm_mail');
 my $adm_tel  = $cfg->param('adm_tel');
