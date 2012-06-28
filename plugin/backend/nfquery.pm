@@ -341,7 +341,7 @@ sub getStatisticsOfSubscription{
 
 
 	#TODO Keep all results in a data structure.	
-
+	$outputTable{$subscriptionName} = \%output;
 	syslog('debug', 'Response To frontend. GETSTATISTICS');
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
@@ -354,7 +354,7 @@ sub getOutputOfSubscription{
 
 	my $subscriptionName = $$opts{'subscriptionName'};
 
-	my %output = &parseOutputsOfSubscription($subscriptionName);	
+	my %output = %{$outputTable{$subscriptionName}};	
 	my $json = encode_json \%output;
 	
 	%args = &divideJsonToParts($json);	
