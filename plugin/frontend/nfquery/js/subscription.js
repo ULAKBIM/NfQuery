@@ -77,12 +77,6 @@ function getSubscriptionDetail3(name){
 	);
 }
 
-function checkQueries(){
-	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {checkQueries:"checkQueries"}, function(data){
-		$("#queryStatusDiv").html(data);
-	});
-	setTimeout(checkQueries, 2500);
-}
 function runQueries(){
 	var subscriptions = $('#subscripted').val() || [];
 	subscriptions = subscriptions.join(',');
