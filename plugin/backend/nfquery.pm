@@ -90,7 +90,7 @@ sub ParseConfigFile {
 #Initialize plugin.
 sub Init {
 
-	my $cfg = &ParseConfigFile('/home/ahmetcan/nfquery/plugin/backend/plugin.conf.pm');
+	my $cfg = &ParseConfigFile('/home/serhat/nfquery/plugin/backend/plugin.conf.pm');
 
 	
 	$organization = $cfg->param ("organization");
@@ -103,12 +103,13 @@ sub Init {
 	# plugin info                                                                                           
 	$prefix_list = $cfg->param('prefix_list');
 	$plugin_ip = $cfg->param('plugin_ip');
-
+	$output_dir = $cfg->param('output_dir');
 	# Query Server info                                                                                           
 	$qs_ip = $cfg->param('queryserver_ip');
 	$qs_port = $cfg->param('queryserver_port');
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
-    	
+    
+		
 	$rpc = &get_connection($qs_ip, $qs_port);
     IPC::Shareable->clean_up_all;	
 	
@@ -271,7 +272,7 @@ sub getTotalFlows{
 		my $lines = $output->{$query_id};
 		foreach my $hash (@{$lines}){
 			$total_flows = $total_flows + int($hash->{'flows'});
-			$total_packets = $total_packets + int($hash->{'bytes'});
+			$total_packets = $total_packets + int($hash->{'packets'});
 			$total_bytes = $total_bytes + int($hash->{'bytes'});
 		}
 	}
@@ -333,6 +334,7 @@ sub getStatisticsOfSubscription{
 	
 	
 	$args{'matched'} = @matched_queries;
+	$args{'total_query'} = scalar (keys %output);
 	$args{'total_flows'} = $total_flows;
 	$args{'total_bytes'} = $total_bytes;
 	$args{'total_packets'} = $total_packets;
