@@ -188,16 +188,36 @@ sub checkQueries{
 
 sub getOutputOfPid{
 	my $pid = shift;
+    my @output;
+	my $summary;
 	
-	my $content = '';
 	open my $fh, "<", "$output_dir/$pid";
-	{
-		local $/;
-		$content = <$fh>;
+
+	foreach my $line (<$fh>){
+
+		chomp($line);
+		my @vars = split(/ +/, $line);
+
+		if ($vars[0] =~ /[[:alpha:]]/ || !$line){
+			next;
+		}elsif ($vars[0] =~ /^Summary/ || $summary){
+			$summary = 1;
+		}else{
+			my %table;
+			$table{'date'} = $vars[0];
+			$table{'flow_start'} = $vars[1];
+			$table{'duration'} = $vars[2];
+			$table{'proto'} = $vars[3];
+			$table{'srcip_port'} = $vars[5];
+			$table{'dstip_port'} = $vars[8];
+			$table{'packets'} = $vars[9];
+			$table{'bytes'} = $vars[10];
+			$table{'flows'} = $vars[11];
+			push @output, \%table;
+		}
 	}
 	close $fh;
-
-	return $content;
+	return @output;
 }
 
 sub getOutputOfSubscription{
@@ -213,15 +233,37 @@ sub getOutputOfSubscription{
 	
 	foreach my $query_id ( keys %mandatory_queries ){
 		my $pid = $mandatory_queries{$query_id};
-		my $output = &getOutputOfPid($pid);
-		$args{$query_id} = $output;
+		my @output = &getOutputOfPid($pid);
+		$output{$query_id} = \@output;
 	}
 
 	foreach my $query_id ( keys %optional_queries ){
 		my $pid = $optional_queries{$query_id};
-		my $output = &getOutputOfPid($pid);
-		$args{$query_id} = $output;
+		my @output = &getOutputOfPid($pid);
+		$output{$query_id} = \@output;
 	}
+
+	my $json = encode_json \%output;
+	syslog('debug', "$json");
+
+	my @chars = split('', $json);
+	my $counter = 0;
+	my $index = 0;
+	my $line = "";
+	#Send part by part json string.
+	#Because frontend expects key=value and max line size 1024.
+	for my $char (@chars){
+	    $line = $line .$char ;
+	    if ($counter == 1000){
+		$counter = 0;
+		$args{"$index"} = $line;
+		syslog('debug', "$line");	
+		$index = $index +1;
+		$line = "";
+	    }
+	    $counter = $counter + 1 ;
+	}
+    $args{"$index"} = $line;
 		
 	syslog('debug', 'Response To frontend. GETOUTPUTT');
 	Nfcomm::socket_send_ok($socket, \%args);
@@ -266,7 +308,7 @@ sub runQueries{
 		foreach my $query_id (@{$category{'mandatory'}}){
 			my $filter = &getFilter($query_id);
 			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
-			
+			syslog('debug', "$command");		
 			my $pid = fork();
 			if ($pid == 0){
 				#TODO
@@ -389,7 +431,7 @@ sub getSubscriptionDetail{
 	my $index = 0;
 	my $line = "";
 	#Send part by part json string.
-	#Frontend expects key=value and max line size 1024.
+	#Because frontend expects key=value and max line size 1024.
 	for my $char (@chars){
 	    $line = $line .$char ;
 	    if ($counter == 1000){
@@ -402,14 +444,13 @@ sub getSubscriptionDetail{
 	    }
 	    $counter = $counter + 1 ;
 	}
-        $args{"$index"} = $line;
+    $args{"$index"} = $line;
 	if (defined $result->result){
-               # $args{'subscriptiondetail'} = $json;
-                syslog('debug', 'Response To frontend. - GETSUBSCRIPTIONDETAIL');
-                Nfcomm::socket_send_ok($socket, \%args);
-        }else {
-                Nfcomm::socket_send_ok($socket, \%args);
-        }
+        syslog('debug', 'Response To frontend. - GETSUBSCRIPTIONDETAIL');
+   		Nfcomm::socket_send_ok($socket, \%args);
+    }else {
+        Nfcomm::socket_send_ok($socket, \%args);
+    }
 }
 
 sub register{
