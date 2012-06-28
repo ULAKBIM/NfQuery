@@ -17,13 +17,15 @@
 		$opts = array();
 		$opts['subscriptionName'] = $subscriptionName;
 		$out_list = nfsend_query($command, $opts);
-		echo '<div>';
-		echo 'Matched Queries: '.$out_list['matched'].'</br>';
-		echo 'Total Query: '.$out_list['total_query'].'</br>';
-		echo 'Total Flow: '.$out_list['total_flows'].'</br>';
-		echo 'Total Byte: '.$out_list['total_bytes'].'</br>';
-		echo 'Total Packet: '.$out_list['total_packets'].'</br>';
-		echo '<button class="btn btn-warning" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Show Output</button>';
+		echo '<div class="alert alert-info">';
+		echo '<table>';
+		echo '<tr><td class="outputInfoLabel"><strong>Matched Queries </strong></td><td>'.$out_list['matched'].'</td></tr>';
+		echo '<tr><td class="outputInfoLabel"><strong>Total Query </strong></td><td>'.$out_list['total_query'].'</td></tr>';
+		echo '<tr><td class="outputInfoLabel"><strong>Total Flow </strong></td><td>'.$out_list['total_flows'].'</td></tr>';
+		echo '<tr><td class="outputInfoLabel"><strong>Total Byte </strong></td><td>'.$out_list['total_bytes'].'</td></tr>';
+		echo '<tr><td class="outputInfoLabel"><strong>Total Packet </strong></td><td>'.$out_list['total_packets'].'</td></tr>';
+		echo '</table>';
+		echo '<button class="btn btn-inverse" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Show Output</button>';
 		echo '</div>';
 		echo '<div id="'.$subscriptionName.'OutputTable" class="collapse">';
 			getOutputOfSubscription($subscriptionName);
@@ -46,7 +48,8 @@
 
 		echo '<table class="table table-striped table-bordered table-condensed">';
 		echo '<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
-
+		
+		$colorList = array("#3399FF", "#FCF8E3", "#C6F6C3");
 		foreach ($output as $query_id=>$result){
 			foreach ($result as $table){
 				echo '<tr>';				
@@ -59,9 +62,11 @@
 				echo '<td>'.$table['packets'].'</td>';
 				echo '<td>'.$table['bytes'].'</td>';
 				echo '<td>'.$table['flows'].'</td>';
-				echo '<td>'.$query_id.'</td>';
+				echo '<td style="background:'.$colorList[0].'">'.$query_id.'</td>';
 				echo '</tr>';
 			}
+			$color = array_shift($colorList);
+			array_push($colorList, $color);
 		}
 
 		echo '</table>';
