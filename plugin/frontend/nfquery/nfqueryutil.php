@@ -2,7 +2,8 @@
     #include('loghandler.php');
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
-
+	
+	
 	function getMyAlerts(){
 		$command = 'nfquery::getSubscriptions';
 		$opts = array();
@@ -11,6 +12,15 @@
 		return $alerts;
 	}
 	
+	function getStatisticsOfSubscription($subscriptionName){
+		$command = 'nfquery::getStatisticsOfSubscription';
+		$opts = array();
+		$opts['subscriptionName'] = $subscriptionName;
+		$out_list = nfsend_query($command, $opts);
+		
+		$output_html = getOutputOfSubscription($subscriptionName);
+	}
+
 	function getOutputOfSubscription($subscriptionName){
 		$command = 'nfquery::getOutputOfSubscription';
 		$opts = array();
@@ -24,30 +34,27 @@
 		}
 		$output = json_decode($output, true);
 
-		$html = '<table class="table table-striped table-bordered table-condensed">';
-		$html = $html.'<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
+		echo '<table class="table table-striped table-bordered table-condensed">';
+		echo '<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
 
 		foreach ($output as $query_id=>$result){
-
 			foreach ($result as $table){
-				$html = $html.'<tr>';				
-				$html = $html.'<td>'.$table['date'].'</td>';
-				$html = $html.'<td>'.$table['flow_start'].'</td>';
-				$html = $html.'<td>'.$table['duration'].'</td>';
-				$html = $html.'<td>'.$table['proto'].'</td>';
-				$html = $html.'<td>'.$table['srcip_port'].'</td>';
-				$html = $html.'<td>'.$table['dstip_port'].'</td>';
-				$html = $html.'<td>'.$table['packets'].'</td>';
-				$html = $html.'<td>'.$table['bytes'].'</td>';
-				$html = $html.'<td>'.$table['flows'].'</td>';
-				$html = $html.'<td>'.$query_id.'</td>';
-				$html = $html.'</tr>';				
+				echo '<tr>';				
+				echo '<td>'.$table['date'].'</td>';
+				echo '<td>'.$table['flow_start'].'</td>';
+				echo '<td>'.$table['duration'].'</td>';
+				echo '<td>'.$table['proto'].'</td>';
+				echo '<td>'.$table['srcip_port'].'</td>';
+				echo '<td>'.$table['dstip_port'].'</td>';
+				echo '<td>'.$table['packets'].'</td>';
+				echo '<td>'.$table['bytes'].'</td>';
+				echo '<td>'.$table['flows'].'</td>';
+				echo '<td>'.$query_id.'</td>';
+				echo '</tr>';
 			}
-
 		}
 
-		$html = $html.'</table>';
-		echo $html;
+		echo '</table>';
 	}
 	
 	function checkQueryStatus(){
@@ -101,10 +108,10 @@
 					"style='width:".$p."%;' id='".$subs."Bar'>%".$p."</div></div></td>";
 
 			#Check all queries are finished or not. if finished put button to show result of queries.
-			if ( $running_count == (sizeof($out_list[$subs."-mandatory"]) + sizeof($out_list[$subs."-optional"])) ){
-				$result = $result.'<td>'.'<a class="accordion-toggle btn btn-success pull-right showOutput" href="#'.$subs.'Collapse" onClick=showOutput("'.$subs.'") id ="'.$subs.'" data-parent="#accordion2" data-toggle="collapse" >Show Output</a>'.'</td>';
+			if ( $p == 100 ){
+				$result = $result.'<td>'.'<a class="accordion-toggle btn btn-success pull-right showStatistics" href="#'.$subs.'Collapse" onClick=showStatistics("'.$subs.'") id ="'.$subs.'" data-parent="#accordion2" data-toggle="collapse" >Show Statistics</a>'.'</td>';
 			}else{
-				$result = $result.'<td>'.'<a class="btn btn-disabled pull-right showOutput"  id="'.$subs.'Output" disabled="disabled" >Show Output</a>'.'</td>';
+				$result = $result.'<td>'.'<a class="btn btn-disabled pull-right showStatistics"  id="'.$subs.'Output" disabled="disabled" >Show Statistics</a>'.'</td>';
 			}
 			
 			$result = $result."</tr>";
@@ -112,7 +119,7 @@
 			$result = $result.'</div>';
 			$result = $result.'</div>';
 
-			$result = $result.'<div id="'.$subs.'Collapse" class="accordion-body collapse in">';
+			$result = $result.'<div id="'.$subs.'Collapse" class="accordion-body collapse in outputAll">';
 			$result = $result.'<div id="'.$subs.'CollapseInner" class="accordion-inner">';
 			$result = $result."Serhat";
 			$result = $result.'</div>';
