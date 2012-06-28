@@ -25,7 +25,7 @@
 		runQueries($_POST['runQueries']);
 	}
 	if(isset($_GET['getStatisticsOfSubscription'])){
-		getOutputOfSubscription($_GET['subscriptionName']);
+		getStatisticsOfSubscription($_GET['subscriptionName']);
 	}
 	if(isset($_GET['getOutputOfSubscription'])){
 		getOutputOfSubscription($_GET['subscriptionName']);

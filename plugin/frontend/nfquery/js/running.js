@@ -10,12 +10,16 @@ function showOutput(subscriptionName){
 }
 
 function showStatistics(subscriptionName){
+	if ($("#" + subscriptionName + "CollapseInner").hasClass('filled'))
+		return;
+	$("#" + subscriptionName + "CollapseInner").html('<center><img src="/nfsen/plugins/nfquery/img/loading.gif" class="loading">Content Loading...</center>');
 	$.get('/nfsen/plugins/nfquery/ajaxhandler.php', 
 		{getStatisticsOfSubscription: 1,
 		 subscriptionName: subscriptionName
 		},
 	   	function (data){
 			$("#" + subscriptionName + "CollapseInner").html(data);
+			$("#" + subscriptionName + "CollapseInner").addClass('filled');
 		}
 	);
 }

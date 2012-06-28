@@ -17,8 +17,18 @@
 		$opts = array();
 		$opts['subscriptionName'] = $subscriptionName;
 		$out_list = nfsend_query($command, $opts);
+		echo '<div>';
+		echo 'Matched Queries: '.$out_list['matched'].'</br>';
+		echo 'Total Query: '.$out_list['total_query'].'</br>';
+		echo 'Total Flow: '.$out_list['total_flows'].'</br>';
+		echo 'Total Byte: '.$out_list['total_bytes'].'</br>';
+		echo 'Total Packet: '.$out_list['total_packets'].'</br>';
+		echo '<button class="btn btn-warning" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Show Output</button>';
+		echo '</div>';
+		echo '<div id="'.$subscriptionName.'OutputTable" class="collapse">';
+			getOutputOfSubscription($subscriptionName);
+		echo '</div>';
 		
-		$output_html = getOutputOfSubscription($subscriptionName);
 	}
 
 	function getOutputOfSubscription($subscriptionName){
@@ -120,7 +130,7 @@
 			$result = $result.'</div>';
 
 			$result = $result.'<div id="'.$subs.'Collapse" class="accordion-body collapse in outputAll">';
-			$result = $result.'<div id="'.$subs.'CollapseInner" class="accordion-inner">';
+			$result = $result.'<div id="'.$subs.'CollapseInner" class="accordion-inner outputs">';
 			$result = $result."Serhat";
 			$result = $result.'</div>';
 			$result = $result.'</div>';
