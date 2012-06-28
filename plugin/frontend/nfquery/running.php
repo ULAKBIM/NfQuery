@@ -7,13 +7,20 @@
 </div>
 
 <div class="row-fluid">
-	<div class="span8 offset6 alert-info2">
+	<div class="span10">
 		<div  id="queryStatusDiv">
+			<?php
+				require_once('nfqueryutil.php');
+				
+				$result = checkQueries();
+				echo $result;
+			?>
 		</div>
     </div>
 </div>
 
-<script type="text/javascript" language="JavaScript">
-	checkQueries();
+<script type="text/javascript">
+	checkQueryStatus();
 </script>
+
 

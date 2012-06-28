@@ -16,7 +16,60 @@
 		$opts = array();
 		$opts['subscriptionName'] = $subscriptionName;
 		$out_list = nfsend_query($command, $opts);
-		var_dump($out_list);
+		$output = "";
+		for($i=0;$i<sizeof($out_list);$i++){
+			$index="".$i;
+			$line = $out_list[$index];
+			$output = $output.$line;
+		}
+		$output = json_decode($output, true);
+
+		$html = '<table class="table table-striped table-bordered table-condensed">';
+		$html = $html.'<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
+
+		foreach ($output as $query_id=>$result){
+
+			foreach ($result as $table){
+				$html = $html.'<tr>';				
+				$html = $html.'<td>'.$table['date'].'</td>';
+				$html = $html.'<td>'.$table['flow_start'].'</td>';
+				$html = $html.'<td>'.$table['duration'].'</td>';
+				$html = $html.'<td>'.$table['proto'].'</td>';
+				$html = $html.'<td>'.$table['srcip_port'].'</td>';
+				$html = $html.'<td>'.$table['dstip_port'].'</td>';
+				$html = $html.'<td>'.$table['packets'].'</td>';
+				$html = $html.'<td>'.$table['bytes'].'</td>';
+				$html = $html.'<td>'.$table['flows'].'</td>';
+				$html = $html.'<td>'.$query_id.'</td>';
+				$html = $html.'</tr>';				
+			}
+
+		}
+
+		$html = $html.'</table>';
+		echo $html;
+	}
+	
+	function checkQueryStatus(){
+		$command = 'nfquery::checkQueries';
+		$opts = array();
+		$out_list = nfsend_query($command, $opts);
+		
+		$output = array();
+
+		$subscriptions = $out_list['subscriptions'];
+		foreach($subscriptions as $subs){
+			$running_count=0;
+			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
+			$counter = array_count_values($out_list[$subs."-mandatory-status"]);
+			$running_count = $running_count+$counter['0'];
+			$counter = array_count_values($out_list[$subs."-optional-status"]);
+			$running_count = $running_count+$counter['0'];
+			$totalQuery = sizeof($out_list[$subs."-optional"])+sizeof($out_list[$subs."-mandatory"]);
+			$p = $running_count*100/$totalQuery;
+			$output[$subs] = $p;
+		}
+		echo json_encode($output);
 	}
 
 	function checkQueries(){
@@ -30,8 +83,11 @@
 		}
 
 		$subscriptions = $out_list['subscriptions'];
-		$result="<table class='table' id='checkQueryTable'><thead><tr><th>Subscription</th><th>Status</th></tr></thead><tbody>";
+		$result = '<div id="accordion2" class="accordion">';
 		foreach($subscriptions as $subs){
+			$result = $result.'<div class="accordion-group">';
+			$result = $result.'<div class="accordion-heading">';
+			$result = $result."<table class='table' id='checkQueryTable'>";
 			$running_count=0;
 			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
 			$counter = array_count_values($out_list[$subs."-mandatory-status"]);
@@ -42,15 +98,27 @@
 			$p = $running_count*100/$totalQuery;
 
 			$result = $result."<tr><td>".$subs."</td><td><div class='progress progress-striped active'> <div class='bar'".
-					"style='width:".$p."%;'>%".$p."</div></div></td>";
+					"style='width:".$p."%;' id='".$subs."Bar'>%".$p."</div></div></td>";
 
 			#Check all queries are finished or not. if finished put button to show result of queries.
 			if ( $running_count == (sizeof($out_list[$subs."-mandatory"]) + sizeof($out_list[$subs."-optional"])) ){
-				$result = $result.'<td>'.'<a class="btn btn-success pull-right showOutput" onClick=showOutput("'.$subs.'") id ="'.$subs.'">Show Output</a>'.'</td>';
+				$result = $result.'<td>'.'<a class="accordion-toggle btn btn-success pull-right showOutput" href="#'.$subs.'Collapse" onClick=showOutput("'.$subs.'") id ="'.$subs.'" data-parent="#accordion2" data-toggle="collapse" >Show Output</a>'.'</td>';
+			}else{
+				$result = $result.'<td>'.'<a class="btn btn-disabled pull-right showOutput"  id="'.$subs.'Output" disabled="disabled" >Show Output</a>'.'</td>';
 			}
 			
 			$result = $result."</tr>";
+			$result = $result.'</table>';
+			$result = $result.'</div>';
+			$result = $result.'</div>';
+
+			$result = $result.'<div id="'.$subs.'Collapse" class="accordion-body collapse in">';
+			$result = $result.'<div id="'.$subs.'CollapseInner" class="accordion-inner">';
+			$result = $result."Serhat";
+			$result = $result.'</div>';
+			$result = $result.'</div>';
 		}
+		$result = $result.'</div>';
 		return $result;
 	}
 
@@ -88,6 +156,7 @@
 		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf", "r");
 		
 		while (!feof($file)){
+
 			$line = fgets($file);
 			list($id, $status) = explode('=', $line);
 			$remember[$id] = substr($status, 0, strlen($status) - 1);
