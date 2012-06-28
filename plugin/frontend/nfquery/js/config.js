@@ -1,37 +1,46 @@
 function register(){
-	var error = "<span class='help-inline'>Please correct the error</span>";
-	var error_class="control-groups error";
-	if(!$("#id_organization").val()){
-		$("#orgdiv").attr("class",error_class);
-		$("#orgdiv").append(error);
+	$("#warning").empty();
+	if(!$("#id_organization").val() || !$("#id_admin_name").val() || !$("#id_admin_email").val() || 
+		!$("#id_admin_phone").val() || !$("#id_plugin_ip").val() || !$("#id_prefix").val() || 
+		!$("#id_queryserverip").val() || !$("#id_queryserverport").val()){
+		$("#warning").attr("class","alert alert-error");
+		$('#warning').append("Fill all field");
 	}
-	if(!$("#id_admin_name").val()){
-		$("#admin_name_div").attr("class",error_class);
-		$("#admin_name_div").append(error);
+	else{
+		 $("#warning").attr("class","");
+		 $("#warning").empty();
+		 var map = {'organization':$("#id_organization").val(),'admin_name':$("#id_admin_name").val(),
+			    'admin_email':$("#id_admin_email").val(),'admin_phone':$("#id_admin_phone").val(),
+			    'plugin_ip':$("#id_plugin_ip").val(),'prefix':$("#id_prefix").val(),'qserver_ip':$("#id_queryserverip").val(),
+			    'qserver_port':$("#id_queryserverport").val()
+			};
+		 $.post("/nfsen/plugins/nfquery/ajaxhandler.php",{map:map},function(data){	
+		});	 
 	}
-	if(!$("#id_admin_email").val()){
-		$("#admin_mail_div").attr("class",error_class);
-		$("#admin_mail_div").append(error);
-	}
-	if(!$("#id_admin_phone").val()){
-		$("#admin_name_div").attr("class",error_class);
-		$("#admin_name_div").append(error);
-	}
-	if(!$("#id_plugin_ip").val()){
-		$("#admin_name_div").attr("class",error_class);
-		$("#admin_name_div").append(error);
-	}
-	if(!$("#id_prefix").val()){
-		$("#admin_name_div").attr("class",error_class);
-		$("#admin_name_div").append(error);
-	}
-	if(!$("#id_queryserverip").val()){
-		$("#admin_name_div").attr("class",error_class);
-		$("#admin_name_div").append(error);
-	}
-	if(!$("#id_queryserverport").val())(error
-		$("#admin_name_div").attr("class",error_class);
-		$("#admin_name_div").append(error);
-	}
-
 }
+
+//	if(!$("#id_organization").val()){kontrol=0;
+//		$("#orgdiv").attr("class",error_class);
+//	}else{$("#orgdiv").attr("class","");kontrol=1;}
+//	if(!$("#id_admin_name").val()){
+//		$("#admin_name_div").attr("class",error_class);
+//	}else{$("#admin_name_div").attr("class","");}
+//	if(!$("#id_admin_email").val()){
+//		$("#admin_mail_div").attr("class",error_class);
+//	}else{$("#admin_mail_div").attr("class","");}
+//	if(!$("#id_admin_phone").val()){
+//		$("#id_admphone_div").attr("class",error_class);
+//	}else{$("#id_admphone_div").attr("class","");}
+//	if(!$("#id_plugin_ip").val()){
+//		$("#id_plugin_div").attr("class",error_class);
+//	}else{$("#id_plugin_div").attr("class","");}
+//	if(!$("#id_prefix").val()){
+//		$("#id_prefix_div").attr("class",error_class);
+//	}else{$("#id_prefix_div").attr("class","");}
+//	if(!$("#id_queryserverip").val()){
+//		$("#id_queryserver_div").attr("class",error_class);
+//	}else{$("#id_queryserver_div").attr("class","");}
+//	if(!$("#id_queryserverport").val()){
+//		$("#id_qsport_div").attr("class",error_class);
+//	}else{$("#id_qsport_div").attr("class","");}
+

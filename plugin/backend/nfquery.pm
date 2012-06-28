@@ -89,24 +89,29 @@ sub ParseConfigFile {
 
 #Initialize plugin.
 sub Init {
-
-	my $cfg = &ParseConfigFile('/home/serhat/nfquery/plugin/backend/plugin.conf.pm');
-
+	my $json;
+	{
+  	local $/; #Enable 'slurp' mode
+  	open my $fh, "<", "/home/ahmetcan/nfquery/plugin/backend/plugin.conf.pm";
+  	$json = <$fh>;
+  	close $fh;
+	}
+	my $cfg = decode_json($json);
 	
-	$organization = $cfg->param ("organization");
-	syslog('debug', "$organization");
-	$adm_name =$cfg->param('adm_name');
-	$adm_mail =$cfg->param('adm_mail');
-	$adm_tel  =$cfg->param('adm_tel');
-	$adm_publickey_file = $cfg->param('adm_publickey_file');     # not using for the time.
+	$organization = $cfg->{"organization"};
+	syslog('debug', $cfg->{"$organization"});
+	$adm_name =$cfg->{'admin_name'};
+	$adm_mail =$cfg->{'admim_email'};
+	$adm_tel  =$cfg->{'admin_phone'};
+#	$adm_publickey_file = $cfg->{'adm_publickey_file'};     # not using for the time.
 
 	# plugin info                                                                                           
-	$prefix_list = $cfg->param('prefix_list');
-	$plugin_ip = $cfg->param('plugin_ip');
-	$output_dir = $cfg->param('output_dir');
+	$prefix_list = $cfg->{'prefix'};
+	$plugin_ip = $cfg->{'plugin_ip'};
+	$output_dir = $cfg->{'output_dir'};
 	# Query Server info                                                                                           
-	$qs_ip = $cfg->param('queryserver_ip');
-	$qs_port = $cfg->param('queryserver_port');
+	$qs_ip = $cfg->{'qserver_ip'};
+	$qs_port = $cfg->param{'qserver_port'};
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
     
 		
@@ -156,7 +161,7 @@ sub checkQueries{
 	$args{'subscriptions'} = [];
 
 	foreach my $subscription (keys %running_subscriptions){
-		push $args{'subscriptions'}, $subscription;
+		push @{$args{'subscriptions'}}, $subscription;
 		$args{"$subscription-mandatory"} = [];
 		$args{"$subscription-optional"} = [];
 
@@ -171,12 +176,12 @@ sub checkQueries{
 		foreach my $query_id (keys %mandatory_queries){
 			my $pid = $mandatory_queries{$query_id};
 			my $pid_state = &checkPIDState($pid);
-			push $args{"$subscription-mandatory"}, $query_id;
+			push @{$args{"$subscription-mandatory"}}, $query_id;
 			if ($pid_state){
-				push $args{"$subscription-mandatory-status"}, $pid_state;
+				push @{$args{"$subscription-mandatory-status"}}, $pid_state;
 				$finished = 0;
 			}else{
-				push $args{"$subscription-mandatory-status"}, 0;
+				push @{$args{"$subscription-mandatory-status"}}, 0;
 			}
 
 		}
@@ -184,12 +189,12 @@ sub checkQueries{
 		foreach my $query_id (keys %mandatory_queries){
 			my $pid = $mandatory_queries{$query_id};
 			my $pid_state = &checkPIDState($pid);
-			push $args{"$subscription-optional"}, $query_id;
+			push @{$args{"$subscription-optional"}, $query_id};
 			if ($pid_state){
-				push $args{"$subscription-optional-status"}, $pid_state;
+				push @{$args{"$subscription-optional-status"}}, $pid_state;
 				$finished = 0;
 			}else{
-				push $args{"$subscription-optional-status"}, 0;
+				push @{$args{"$subscription-optional-status"}}, 0;
 			}
 
 		}
