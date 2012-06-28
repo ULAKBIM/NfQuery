@@ -40,6 +40,11 @@
 	overflow: auto;
 }
 
+.outputAll{
+	max-height: 250px;
+	overflow: auto;
+}
+
 #runQueries{
 	width: 100px;
 }

@@ -9,6 +9,17 @@ function showOutput(subscriptionName){
 	);
 }
 
+function showStatistics(subscriptionName){
+	$.get('/nfsen/plugins/nfquery/ajaxhandler.php', 
+		{getStatisticsOfSubscription: 1,
+		 subscriptionName: subscriptionName
+		},
+	   	function (data){
+			$("#" + subscriptionName + "CollapseInner").html(data);
+		}
+	);
+}
+
 function checkQueryStatus(){
     $.post("/nfsen/plugins/nfquery/ajaxhandler.php", {checkQueryStatus:"checkQueries"}, function(data){
     	var data = JSON.parse(data);
@@ -21,7 +32,7 @@ function checkQueryStatus(){
 				$('#' + key + "Output").addClass('btn-success');
 				$('#' + key + "Output").click(function(){
 					$("#" + key + "Collapse").collapse('toggle');
-					showOutput(key);
+					showStatistics(key);
 				});
 			}
 		}
