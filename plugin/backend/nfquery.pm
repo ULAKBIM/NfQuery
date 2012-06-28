@@ -39,6 +39,7 @@ my %options = (
 	destroy => 'yes'
 );
 
+tie %running_subscriptions, 'IPC::Shareable', $glue, {%options};
 # assign values
 my $organization;
 my $adm_name;
@@ -55,8 +56,11 @@ my $qs_ip;
 my $qs_port;
 my $uri;
 
-#output dirctory
+#output directory
 my $output_dir;
+my %outputTable;
+my %statisticTable;
+
 
 #communication functions
 
@@ -67,6 +71,7 @@ our %cmd_lookup = (
 	'runQueries' => \&runQueries,
 	'checkQueries' => \&checkQueries,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
+	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
 );
 
 #Initialize plugin.
@@ -186,7 +191,7 @@ sub checkQueries{
 	return;
 }
 
-sub getOutputOfPid{
+sub parseOutputOfPid{
 	my $pid = shift;
     my @output;
 	my $summary;
@@ -220,31 +225,66 @@ sub getOutputOfPid{
 	return @output;
 }
 
-sub getOutputOfSubscription{
-	my $socket = shift;
-	my $opts = shift;
-	my %args;
+sub parseOutputsOfSubscription{
+	my $subscriptionName = shift;
 
-	my $subscriptionName = $$opts{'subscriptionName'};
 	my %output;	
 
-	my %mandatory_queries = %{$running_subscriptions{$subscriptionName}{'mandatory'}};
 	my %optional_queries = %{$running_subscriptions{$subscriptionName}{'optional'}};
+	my %mandatory_queries = %{$running_subscriptions{$subscriptionName}{'mandatory'}};
 	
 	foreach my $query_id ( keys %mandatory_queries ){
 		my $pid = $mandatory_queries{$query_id};
-		my @output = &getOutputOfPid($pid);
-		$output{$query_id} = \@output;
+		my @lines = &parseOutputOfPid($pid);
+		$output{$query_id} = \@lines;
 	}
 
 	foreach my $query_id ( keys %optional_queries ){
 		my $pid = $optional_queries{$query_id};
-		my @output = &getOutputOfPid($pid);
-		$output{$query_id} = \@output;
+		my @lines = &parseOutputOfPid($pid);
+		$output{$query_id} = \@lines;
 	}
+		
+	return %output;
+}
 
-	my $json = encode_json \%output;
-	syslog('debug', "$json");
+sub getTotalFlows{
+	my $output = shift;
+	my $total_flows = 0;
+	my $total_bytes = 0;
+	my $total_packets = 0;
+	
+	foreach my $query_id (keys %{$output}){
+		my $lines = $output->{$query_id};
+		foreach my $hash (@{$lines}){
+			$total_flows = $total_flows + int($hash->{'flows'});
+			$total_packets = $total_packets + int($hash->{'bytes'});
+			$total_bytes = $total_bytes + int($hash->{'bytes'});
+		}
+	}
+	
+	return $total_flows, $total_bytes, $total_packets;
+}
+
+sub getMatchedQueries{
+	my $output = shift;
+	my $total_packets = 0;
+	my @matched_queries;
+
+	foreach my $query_id (keys %{$output}){
+		my $lines = $output->{$query_id};
+		if (scalar @{$lines}){
+			push @matched_queries, $query_id;
+		}
+	}
+	
+	return @matched_queries;
+}
+
+sub divideJsonToParts{
+	my $json = shift;
+	
+	my %args;
 
 	my @chars = split('', $json);
 	my $counter = 0;
@@ -255,16 +295,56 @@ sub getOutputOfSubscription{
 	for my $char (@chars){
 	    $line = $line .$char ;
 	    if ($counter == 1000){
-		$counter = 0;
-		$args{"$index"} = $line;
-		syslog('debug', "$line");	
-		$index = $index +1;
-		$line = "";
+			$counter = 0;
+			$args{"$index"} = $line;
+			$index = $index +1;
+			$line = "";
 	    }
 	    $counter = $counter + 1 ;
 	}
     $args{"$index"} = $line;
-		
+
+	return %args;
+}
+
+sub getStatisticsOfSubscription{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+	
+	my $subscriptionName = $$opts{'subscriptionName'};
+
+	my %output = &parseOutputsOfSubscription($subscriptionName);	
+    my ($total_flows, $total_bytes, $total_packets) = &getTotalFlows(\%output);	
+	my @matched_queries = &getMatchedQueries(\%output);
+	
+	
+	$args{'matched'} = @matched_queries;
+	$args{'total_flows'} = $total_flows;
+	$args{'total_bytes'} = $total_bytes;
+	$args{'total_packets'} = $total_packets;
+
+
+	#TODO Keep all results in a data structure.	
+
+	syslog('debug', 'Response To frontend. GETSTATISTICS');
+	Nfcomm::socket_send_ok($socket, \%args);
+	return;
+}
+
+sub getOutputOfSubscription{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+
+	my $subscriptionName = $$opts{'subscriptionName'};
+
+	my %output = &parseOutputsOfSubscription($subscriptionName);	
+	my $json = encode_json \%output;
+	
+	%args = &divideJsonToParts($json);	
+	syslog('debug', "$args{'0'}");
+
 	syslog('debug', 'Response To frontend. GETOUTPUTT');
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
@@ -272,7 +352,6 @@ sub getOutputOfSubscription{
 }
 
 #Share running_subscriptions hash with all other child process. So they can put pid in it.
-tie %running_subscriptions, 'IPC::Shareable', $glue, {%options};
 sub runQueries{
 	my $socket = shift;
 	my $opts = shift;
