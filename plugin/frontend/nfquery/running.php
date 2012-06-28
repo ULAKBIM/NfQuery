@@ -7,7 +7,7 @@
 </div>
 
 <div class="row-fluid">
-	<div class="span10">
+	<div class="span12">
 		<div  id="queryStatusDiv">
 			<?php
 				require_once('nfqueryutil.php');

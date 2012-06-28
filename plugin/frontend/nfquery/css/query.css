@@ -48,3 +48,15 @@
 #runQueries{
 	width: 100px;
 }
+
+.outputs{
+	padding-left: 0px;
+}
+
+.showStatistics{
+	height: 15px;
+}
+.loading{
+	width : 60px;
+	height: 60px;
+}
