@@ -24,7 +24,7 @@ prefix_list = '193.140.94.0/24'
 # Ip Address Of This Plugin             
 # ? Not sure about that ?
 plugin_ip = '127.0.0.1'
-
+output_dir = '/tmp'
 # Query Server Information
 
 queryserver_ip = '127.0.0.1'
