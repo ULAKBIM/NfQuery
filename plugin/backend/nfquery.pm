@@ -91,29 +91,22 @@ sub ParseConfigFile {
 
 #Initialize plugin.
 sub Init {
-	my $json;
-	{
-  	local $/; #Enable 'slurp' mode
-  	open my $fh, "<", "/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf";
-  	$json = <$fh>;
-  	close $fh;
-	}
-	my $cfg = decode_json($json);
-	
-	$organization = $cfg->{"organization"};
-	$adm_name =$cfg->{'admin_name'};
-	$adm_mail =$cfg->{'admim_email'};
-	$adm_tel  =$cfg->{'admin_phone'};
+  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf");
+        	
+	$organization = $cfg->param("organization");
+	$adm_name =$cfg->param('admin_name');
+	$adm_mail =$cfg->param('admim_email');
+	$adm_tel  =$cfg->param('admin_phone');
 #	$adm_publickey_file = $cfg->{'adm_publickey_file'};     # not using for the time.
 
 	# plugin info                                                                                           
-	$prefix_list = $cfg->{'prefix'};
-	$plugin_ip = $cfg->{'plugin_ip'};
-	$output_dir = $cfg->{'outputdir'};
-	syslog('debug', $output_dir);
+	$prefix_list = $cfg->param('prefix');
+	$plugin_ip = $cfg->param('plugin_ip');
+	$output_dir = $cfg->param('outputdir');
+	syslog('debug', $organization);
 	# Query Server info                                                                                           
-	$qs_ip = $cfg->{'qserver_ip'};
-	$qs_port = $cfg->{'qserver_port'};
+	$qs_ip = $cfg->param('qserver_ip');
+	$qs_port = $cfg->param('qserver_port');
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
     
 		
