@@ -2,6 +2,7 @@
 <script src="/nfsen/plugins/nfquery/js/config.js"></script>
 <script src="http://code.jquery.com/jquery-1.7.2.js"></script>
 <script src="/nfsen/plugins/nfquery/js/bootstrap.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <div class="container-fluid">
 	<div class="row-fluid">
 		<div class="span2">
@@ -107,6 +108,16 @@
 					<div id="id_qsport_div" class="span5">
 						<center>
 					    <input id="id_queryserverport" type="text" style="height:25px;"title="QuseryServerPort" >
+					</div>
+					</div>
+					<div class="row-fluid">
+					<div class="span5">
+						<center>
+					    <label for="id_outdir"><b>OUTPUT DIRECTORY</b></label>
+					</div>
+					<div id="id_outdir_div" class="span5">
+						<center>
+					    <input id="id_outputdir" type="text" style="height:25px;"title="QuseryServerPort" >
 					</div>
 					</div>
 				</div>

@@ -43,7 +43,7 @@ function nfquery_Run( $plugin_id ) {
 			}
 			$_SESSION['nfquery']['nfqueryTabName'] = $_POST['nfqueryTabName'];
 		}
-		if(file_exists("/home/ahmetcan/nfquery/plugin/backend/plugin.conf.pm")){
+		if(file_exists("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf")){
 			include('nfquery/index.php');
 		}
 		else{

@@ -12,6 +12,16 @@
 		return $alerts;
 	}
 	
+
+	function createConfigFile($myarray){
+		$command = 'nfquery::createConfigFile';
+		$opts = array();
+		var_dump($myarray);
+		$opts['configarray'] = $myarray;
+		$out_list = nfsend_query($command, $opts);
+		return true;
+	}
+	
 	function getStatisticsOfSubscription($subscriptionName){
 		$command = 'nfquery::getStatisticsOfSubscription';
 		$opts = array();
