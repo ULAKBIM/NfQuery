@@ -72,7 +72,6 @@ our %cmd_lookup = (
 	'checkQueries' => \&checkQueries,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
-	'createConfigFile' => \&createConfigFile,
 );
 
 sub ParseConfigFile {
@@ -119,7 +118,7 @@ sub Init {
     
 		
 	$rpc = &get_connection($qs_ip, $qs_port);
-    IPC::Shareable->clean_up_all;	
+    	IPC::Shareable->clean_up_all;	
 	
 	return 1;
 }
