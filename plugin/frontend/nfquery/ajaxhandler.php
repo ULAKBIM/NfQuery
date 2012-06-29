@@ -48,5 +48,8 @@
 	if(isset($_GET['getOutputOfSubscription'])){
 		getOutputOfSubscription($_GET['subscriptionName']);
 	}
+	if(isset($_GET['lookup'])){
+		lookup($_GET['ip']);
+	}
 
 ?>

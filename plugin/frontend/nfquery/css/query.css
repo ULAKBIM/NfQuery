@@ -41,7 +41,7 @@
 }
 
 .outputAll{
-	max-height: 250px;
+	max-height: 350px;
 	overflow: auto;
 }
 
@@ -53,14 +53,20 @@
 	padding-left: 0px;
 }
 
-.showStatistics{
-	height: 15px;
-}
 .loading{
 	width : 60px;
 	height: 60px;
 }
 
 .outputInfoLabel{
-	color: #5BB75B;
+	color: #003333;
 }
+
+.ip{
+	cursor:pointer;
+}
+
+#lookupBox{
+		
+}
+

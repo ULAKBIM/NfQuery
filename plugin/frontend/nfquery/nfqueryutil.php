@@ -12,16 +12,11 @@
 		return $alerts;
 	}
 	
-
-	function createConfigFile($myarray){
-		$command = 'nfquery::createConfigFile';
-		$opts = array();
-		var_dump($myarray);
-		$opts['configarray'] = $myarray;
-		$out_list = nfsend_query($command, $opts);
-		return true;
+	function lookup($ip_address){
+		$opts = array('lookup'=>$ip_address);
+		nfsend_query("@lookup", $opts, 1);
 	}
-	
+
 	function getStatisticsOfSubscription($subscriptionName){
 		$command = 'nfquery::getStatisticsOfSubscription';
 		$opts = array();
@@ -35,7 +30,7 @@
 		echo '<tr><td class="outputInfoLabel"><strong>Total Byte </strong></td><td>'.$out_list['total_bytes'].'</td></tr>';
 		echo '<tr><td class="outputInfoLabel"><strong>Total Packet </strong></td><td>'.$out_list['total_packets'].'</td></tr>';
 		echo '</table>';
-		echo '<button class="btn btn-inverse" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Show Output</button>';
+		echo '<button class="btn btn-success" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Show Output</button>';
 		echo '</div>';
 		echo '<div id="'.$subscriptionName.'OutputTable" class="collapse">';
 			getOutputOfSubscription($subscriptionName);
@@ -67,8 +62,8 @@
 				echo '<td>'.$table['flow_start'].'</td>';
 				echo '<td>'.$table['duration'].'</td>';
 				echo '<td>'.$table['proto'].'</td>';
-				echo '<td>'.$table['srcip_port'].'</td>';
-				echo '<td>'.$table['dstip_port'].'</td>';
+				echo '<td><a class="ip" onclick=lookup(this)>'.$table['srcip_port'].'</a></td>';
+				echo '<td><a class="ip" onclick=lookup(this)>'.$table['dstip_port'].'</a></td>';
 				echo '<td>'.$table['packets'].'</td>';
 				echo '<td>'.$table['bytes'].'</td>';
 				echo '<td>'.$table['flows'].'</td>';
@@ -129,14 +124,14 @@
 			$totalQuery = sizeof($out_list[$subs."-optional"])+sizeof($out_list[$subs."-mandatory"]);
 			$p = $running_count*100/$totalQuery;
 
-			$result = $result."<tr><td>".$subs."</td><td><div class='progress progress-striped active'> <div class='bar'".
+			$result = $result."<tr><td style='width:300px'>".$subs."</td><td><div class='progress progress-striped active'> <div class='bar'".
 					"style='width:".$p."%;' id='".$subs."Bar'>%".$p."</div></div></td>";
 
 			#Check all queries are finished or not. if finished put button to show result of queries.
 			if ( $p == 100 ){
-				$result = $result.'<td>'.'<a class="accordion-toggle btn btn-success pull-right showStatistics" href="#'.$subs.'Collapse" onClick=showStatistics("'.$subs.'") id ="'.$subs.'" data-parent="#accordion2" data-toggle="collapse" >Show Statistics</a>'.'</td>';
+				$result = $result.'<td>'.'<a class="accordion-toggle btn btn-success btn-small pull-right showStatistics" href="#'.$subs.'Collapse" onClick=showStatistics("'.$subs.'") id ="'.$subs.'" data-parent="#accordion2" data-toggle="collapse" >Show Statistics</a>'.'</td>';
 			}else{
-				$result = $result.'<td>'.'<a class="btn btn-disabled pull-right showStatistics"  id="'.$subs.'Output" disabled="disabled" >Show Statistics</a>'.'</td>';
+				$result = $result.'<td>'.'<a class="btn btn-small pull-right showStatistics"  id="'.$subs.'Output" disabled="disabled" >Show Statistics</a>'.'</td>';
 			}
 			
 			$result = $result."</tr>";

@@ -18,6 +18,13 @@ function showStatistics(subscriptionName){
 		 subscriptionName: subscriptionName
 		},
 	   	function (data){
+			var len = 1000;
+			var regex = new RegExp(".{"+len+"}", "g");
+			var trail = data.length - (data.length % len);
+
+			var parts = data.match(regex);
+			parts.push(data.substring(trail));
+
 			$("#" + subscriptionName + "CollapseInner").html(data);
 			$("#" + subscriptionName + "CollapseInner").addClass('filled');
 		}
@@ -32,7 +39,6 @@ function checkQueryStatus(){
 			$("#" + key + "Bar").html("%" + data[key]);
 			if (data[key] == 100 && ! ($('#' + key + "Output").hasClass('btn-success')) ){
 				$('#' + key + "Output").attr('disabled', false);
-				$('#' + key + "Output").removeClass('btn-disabled');
 				$('#' + key + "Output").addClass('btn-success');
 				$('#' + key + "Output").click(function(){
 					$("#" + key + "Collapse").collapse('toggle');
@@ -42,6 +48,23 @@ function checkQueryStatus(){
 		}
 	});
     setTimeout(checkQueryStatus, 2500);
+}
+
+function lookup(anchor){
+	if ($(anchor).hasClass('filled')) return;
+	var ip_port = $(anchor).html();
+	var ip = ip_port.split(":")[0];
+	$(anchor).popover({title:'Lookup', content:'Content Loading', trigger: 'hover'});
+	$(anchor).popover('show');
+	$(anchor).addClass('filled');
+	$.get("/nfsen/plugins/nfquery/ajaxhandler.php", {lookup:1, ip:ip},
+		function (data){
+			$(anchor).popover('hide');
+			$(anchor).data('popover', null)
+			$(anchor).popover({title:'Lookup', content:data, trigger: 'hover'});
+			$(anchor).popover('show');
+			$(anchor).addClass('filled');
+		});
 }
 
 $(document).ready(function(){
