@@ -38,10 +38,6 @@ function getSubscriptionDetail3(name){
 					source_link = json[i][j][k]["link"];
 					r = r+1;
 					if(r<3){
-					     $("#mydiv").attr("data-target","#queries");
-					     $("#mydiv").attr("data-toggle","collapse");
-					     $("#mydiv").attr("class","alert");
-					     $("#queries").attr("class","collapse");
 					     //$("#queries").attr("class","alert alert-info2");
 					     if(category_name == "mandatory"){	
 						$("#queries").append("<table id='mandatory_table' class='table table-striped table-condensed'></table>");
@@ -59,15 +55,19 @@ function getSubscriptionDetail3(name){
 
 					}
 					if(category_name == "mandatory"){	
-					    var mandatory_table_row = "<tr><td>"+query_id+"</td><td>"+query_type+"</td><td data-toggle='collapse'"+
+					     $("#mydiv").attr("data-target","#queries");
+					     $("#mydiv").attr("data-toggle","collapse");
+					     $("#mydiv").attr("class","alert");
+					     $("#queries").attr("class","collapse");
+					    var mandatory_table_row = "<tr class='mandatory_query'><td >"+query_id+"</td><td>"+query_type+"</td><td style='margin-right:70px;'data-toggle='collapse'"+
 									"data-target='#optional"+j+"'><b>&darr; "+filter+"</b><div id='optional"+j+
-									"'class='collapse' ></td></tr>";
+									"'class='collapse' ></td><td><span class='mandatory_query_popover badge badge-warning'>M</span></td></tr>";
 					    $("#mandatory_table").append(mandatory_table_row);
 						
 					}
 					if(category_name == "optional"){
-						$("#optional"+j).append("<br><span  class='label' style='margin-left:30px;font-size:12px;"+
-                                                                        "border-radius: 3px 3px 3px 3px;'>&#176; "+filter+"</span></br>");
+						$("#optional"+j).append("<span class='optional_query' style='margin-left:10px;border-radius: 3px 3px 3px 3px;'>&#176; "+
+									filter+"</span><span class='optional_query_popover badge badge-success'>O</span></br>");
 					}
 					//$("#queries").append("<span class='table'>"+query_id+" "+query_type+" "+filter+"</span></br>");
 				}
