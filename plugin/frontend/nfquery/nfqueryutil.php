@@ -185,32 +185,50 @@
 
 	function parseRememberFile(){
 		$remember = array();
+		$remember2 = array();
+#		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf", "r");
+#		while (!feof($file)){
+#
+#			$line = fgets($file);
+#			list($id, $status) = explode('=', $line);
+#			$remember[$id] = substr($status, 0, strlen($status) - 1);
+#		}
+#		fclose($file);
 		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf", "r");
-		
-		while (!feof($file)){
-
-			$line = fgets($file);
-			list($id, $status) = explode('=', $line);
-			$remember[$id] = substr($status, 0, strlen($status) - 1);
+		$data = fread($file,filesize("/var/www/nfsen/plugins/nfquery/remember.conf"));
+		$mydata=json_decode($data);
+		$remember = $mydata->{'remember'};
+		foreach($remember as $key => $value){
+			$remember2[$key] = $value;
 		}
 		fclose($file);
-
-		return $remember;
+		return $remember2;
 	}
 
 
 	function editRememberFile(){
-
+		
+		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf", "r");
+		$data = fread($file,filesize("/var/www/nfsen/plugins/nfquery/remember.conf"));
+		$mydata=json_decode($data);
+		$prefix = $mydata->{'prefix'};
+		fclose($file);
 		$remember = parseRememberFile();	
 		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf","w");
 		
 		$button_id = $_POST['button_id'];
 		$button_status = $_POST['button_status'];
-		$remember[$button_id] = (strcmp($button_status, "On") == 0) ? 1 : 0;
-	
+		$remember["$button_id"] = (strcmp($button_status, "On") == 0) ? 1 : 0;
+		$res=array();
+		$rem=array();	
 		for($i = 1; $i < sizeof($remember); $i++){
-			fwrite($file, "$i=$remember[$i]\n");
+			$rem[$i]=$remember["$i"];
 		}
+		var_dump($rem);
+		$res['remember'] = $rem;
+		$res['prefix'] = $prefix;
+		var_dump($res);
+		fwrite($file,json_encode($res));
 
 		fclose($file);
 	}

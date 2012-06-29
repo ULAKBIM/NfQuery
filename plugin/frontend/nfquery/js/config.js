@@ -11,10 +11,11 @@ function register(){
 		 $("#warning").empty();
 		 var map = {'organization':$("#id_organization").val(),'admin_name':$("#id_admin_name").val(),
 			    'admin_email':$("#id_admin_email").val(),'admin_phone':$("#id_admin_phone").val(),
-			    'plugin_ip':$("#id_plugin_ip").val(),'prefix':$("#id_prefix").val(),'qserver_ip':$("#id_queryserverip").val(),
+			    'plugin_ip':$("#id_plugin_ip").val(),'qserver_ip':$("#id_queryserverip").val(),
 			    'qserver_port':$("#id_queryserverport").val(),'outputdir':$("#id_outputdir").val()
 			};
-		 $.post("/nfsen/plugins/nfquery/ajaxhandler.php",{map:map},function(data){	
+		var prefix = {'prefix':$("#id_prefix").val()}
+		 $.post("/nfsen/plugins/nfquery/ajaxhandler.php",{map:map,prefix:prefix},function(data){	
 			window.location.reload();
 		});	 
 	}

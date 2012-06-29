@@ -7,6 +7,10 @@
 		$map = $_POST['map'];
 		$json = json_encode($map);
 		$fp = fopen('/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf', 'w');
+		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf","w");
+		$res = array();
+		$res['prefix'] = $_POST['prefix'];
+		fwrite($file,json_encode($res));
 		fwrite($fp, $json);
 		fclose($fp);
 	}
