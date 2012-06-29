@@ -95,7 +95,7 @@ sub Init {
 	my $json;
 	{
   	local $/; #Enable 'slurp' mode
-  	open my $fh, "<", "/home/ahmetcan/nfquery/plugin/backend/plugin.conf.pm";
+  	open my $fh, "<", "/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf";
   	$json = <$fh>;
   	close $fh;
 	}
