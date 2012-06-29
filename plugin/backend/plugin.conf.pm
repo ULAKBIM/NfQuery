@@ -1,1 +1,1 @@
-{"organization":"A univresitesi","admin_name":"Ahmet Can","admin_email":"a@gmail.com","admin_phone":"123456","plugin_ip":"127.0.0.1","prefix":"127.0.0.0.1\/24","qserver_ip":"127.0.0.1","qserver_port":"7777"}
+{"organization":"B universtesi","admin_name":"asd","admin_email":"a@mail.com","admin_phone":"12345678","plugin_ip":"127.0.0.1","prefix":"127.0.0.1","qserver_ip":"127.0.0.1","qserver_port":"7777","outputdir":"\/tmp"}

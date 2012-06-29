@@ -72,6 +72,7 @@ our %cmd_lookup = (
 	'checkQueries' => \&checkQueries,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
+	'createConfigFile' => \&createConfigFile,
 );
 
 sub ParseConfigFile {
@@ -87,6 +88,8 @@ sub ParseConfigFile {
 }
 
 
+
+
 #Initialize plugin.
 sub Init {
 	my $json;
@@ -99,7 +102,6 @@ sub Init {
 	my $cfg = decode_json($json);
 	
 	$organization = $cfg->{"organization"};
-	syslog('debug', $cfg->{"$organization"});
 	$adm_name =$cfg->{'admin_name'};
 	$adm_mail =$cfg->{'admim_email'};
 	$adm_tel  =$cfg->{'admin_phone'};
@@ -108,10 +110,11 @@ sub Init {
 	# plugin info                                                                                           
 	$prefix_list = $cfg->{'prefix'};
 	$plugin_ip = $cfg->{'plugin_ip'};
-	$output_dir = $cfg->{'output_dir'};
+	$output_dir = $cfg->{'outputdir'};
+	syslog('debug', $output_dir);
 	# Query Server info                                                                                           
 	$qs_ip = $cfg->{'qserver_ip'};
-	$qs_port = $cfg->param{'qserver_port'};
+	$qs_port = $cfg->{'qserver_port'};
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
     
 		
@@ -121,6 +124,16 @@ sub Init {
 	return 1;
 }
 
+
+sub createConfigFile{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+	syslog('debug',print Dumper $$opts{'configarray'});
+
+
+
+}
 # prepare connection parameters
 sub get_connection {
 
