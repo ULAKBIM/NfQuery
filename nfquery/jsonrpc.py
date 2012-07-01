@@ -47,6 +47,14 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         raise jsonrpc.Fault(123, "The fault procedure is faulty.")
 
     def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):
+	result = []
+	print organization
+	print prefix_list
+	print plugin_ip
+	print adm_publickey_file
+	print adm_tel
+	print adm_name
+	print adm_mail
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
         #print "Registration information : %s,%s,%s,%s,%s,%s,%s" % (organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip)
@@ -56,8 +64,11 @@ class jsonRPCServer(jsonrpc.JSONRPC):
             message =  'Your plugin is not registered to QueryServer yet.'
             message += 'Plugin is not found.'
             message += 'Please ask to QS Administrator about your registration process.'
-            #print message
-            return message
+            self.rpclogger.info("AAAAAAAAAAa")
+            print message
+	    result.append(0)
+	    print result
+            return result
         else:
             checksum = hashlib.md5()
             checksum.update( organization + adm_name + adm_mail + 
@@ -67,8 +78,10 @@ class jsonRPCServer(jsonrpc.JSONRPC):
                 message = 'Your plugin information doesn\'t match with the QueryServer side.'
                 message += 'Plugin Checksum Error'
                 message += 'Please check your information and try again.'
-                #print message
-                return message
+	    	result.append(1)
+	    	print result
+            	return result
+               # print message
             elif checksum.hexdigest() == plugin.checksum:
                 # Set the plugin registered
                 plugin.registered = True
@@ -77,7 +90,9 @@ class jsonRPCServer(jsonrpc.JSONRPC):
                 message =  'Your plugin is registered.\n'
                 message += 'Feel free to checkout query subscriptions.'
                 #print message
-                return message
+	    	result.append(2)
+	    	print result
+            	return result
                 #return self.jsonrpc_get_subscriptions()
 
     def jsonrpc_get_query_filter(self,query_id):
