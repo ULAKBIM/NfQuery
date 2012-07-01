@@ -51,13 +51,17 @@
 		}
 		$output = json_decode($output, true);
 
-		echo '<table class="table table-striped table-bordered table-condensed">';
+		echo '<table class="table table-bordered table-condensed">';
 		echo '<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
 		
 		$colorList = array("#3399FF", "#FCF8E3", "#C6F6C3");
 		foreach ($output as $query_id=>$result){
 			foreach ($result as $table){
-				echo '<tr>';				
+				if ( $table['srcip_alert_prefix'] || $table['dstip_alert_prefix']){
+					echo '<tr class="alert alert-error">';				
+				}else{
+					echo '<tr>';				
+				}
 				echo '<td>'.$table['date'].'</td>';
 				echo '<td>'.$table['flow_start'].'</td>';
 				echo '<td>'.$table['duration'].'</td>';
@@ -80,8 +84,7 @@
 	function checkQueryStatus(){
 		$command = 'nfquery::checkQueries';
 		$opts = array();
-		$out_list = nfsend_query($command, $opts);
-		
+		$out_list = nfsend_query($command, $opts);	
 		$output = array();
 
 		$subscriptions = $out_list['subscriptions'];
