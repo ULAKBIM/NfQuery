@@ -18,12 +18,6 @@ function showStatistics(subscriptionName){
 		 subscriptionName: subscriptionName
 		},
 	   	function (data){
-			var len = 1000;
-			var regex = new RegExp(".{"+len+"}", "g");
-			var trail = data.length - (data.length % len);
-
-			var parts = data.match(regex);
-			parts.push(data.substring(trail));
 
 			$("#" + subscriptionName + "CollapseInner").html(data);
 			$("#" + subscriptionName + "CollapseInner").addClass('filled');
