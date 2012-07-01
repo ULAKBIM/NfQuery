@@ -21,6 +21,7 @@ use Sys::Syslog;
 use IPC::Shareable;
 use Proc::ProcessTable;
 use Config::Simple;
+use NetAddr::IP;
 
 #package NfQueryPlugin::Main; 
 
@@ -59,8 +60,7 @@ my $uri;
 #output directory
 my $output_dir;
 my %outputTable;
-my %statisticTable;
-
+my @prefixes;
 
 #communication functions
 
@@ -89,13 +89,13 @@ sub ParseConfigFile {
 
 sub pluginInfo{
 
-  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf");
+  	$cfg = new Config::Simple("/home/serhat/nfquery/plugin/backend/nfquery.plugin.conf");
         	
 	$organization = $cfg->param("organization");
 	$adm_name =$cfg->param('admin_name');
-	$adm_mail =$cfg->param('admim_email');
+	$adm_mail =$cfg->param('admin_email');
 	$adm_tel  =$cfg->param('admin_phone');
-#	$adm_publickey_file = $cfg->{'adm_publickey_file'};     # not using for the time.
+	$adm_publickey_file = $cfg->param('adm_publickey_file');
 
 	# plugin info                                                                                           
 	$prefix_list = $cfg->param('prefix');
@@ -113,7 +113,13 @@ sub Init {
 	&pluginInfo;
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
 	$rpc = &get_connection($qs_ip, $qs_port);
-    	IPC::Shareable->clean_up_all;	
+
+	# register
+	my $result = $rpc->call( $uri, 'register', [$organization, $adm_name, $adm_mail, $adm_tel,
+	                                            $adm_publickey_file, $prefix_list, $plugin_ip, ]);
+	
+	@prefixes = &getPrefixes();
+    IPC::Shareable->clean_up_all;	
 	return 1;
 }
 
@@ -203,10 +209,10 @@ sub checkQueries{
 
 		}
 
-		foreach my $query_id (keys %mandatory_queries){
-			my $pid = $mandatory_queries{$query_id};
+		foreach my $query_id (keys %optional_queries){
+			my $pid = $optional_queries{$query_id};
 			my $pid_state = &checkPIDState($pid);
-			push @{$args{"$subscription-optional"}, $query_id};
+			push @{$args{"$subscription-optional"}}, $query_id;
 			if ($pid_state){
 				push @{$args{"$subscription-optional-status"}}, $pid_state;
 				$finished = 0;
@@ -222,9 +228,26 @@ sub checkQueries{
 			#delete ($running_subscriptions{$subscription});
 		}
 	}
-	
+		
+	my $json = encode_json \%args;
+	syslog('debug', "CHECK $json");
+
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
+}
+
+sub ipInPrefixes{
+	my $ip = shift;
+	
+	foreach my $prefix (@prefixes){
+		my $block = NetAddr::IP->new($prefix);
+		my $ip_address = NetAddr::IP->new($ip);
+		if($ip_address->within($block)){
+			return $prefix;
+		}
+	}
+
+	return 0;	
 }
 
 sub parseOutputOfPid{
@@ -249,8 +272,25 @@ sub parseOutputOfPid{
 			$table{'flow_start'} = $vars[1];
 			$table{'duration'} = $vars[2];
 			$table{'proto'} = $vars[3];
+
+			#check ip adresses are in prefixes or not.
+			my @ip_port;
+			my $prefix;
+
 			$table{'srcip_port'} = $vars[5];
+			@ip_port = split(':', $table{'srcip_port'});
+			$prefix = &ipInPrefixes($ip_port[0]);;	
+			if ($prefix){
+				$table{'srcip_alert_prefix'} = $prefix;
+			}
+
 			$table{'dstip_port'} = $vars[8];
+			@ip_port = split(':', $table{'dstip_port'});
+			$prefix = &ipInPrefixes($ip_port[0]);;
+			if ($prefix){
+				$table{'dstip_alert_prefix'} = $prefix; 
+			}
+
 			$table{'packets'} = $vars[9];
 			$table{'bytes'} = $vars[10];
 			$table{'flows'} = $vars[11];
@@ -284,7 +324,7 @@ sub parseOutputsOfSubscription{
 	return %output;
 }
 
-sub getTotalFlows{
+sub getTotalOfFlows{
 	my $output = shift;
 	my $total_flows = 0;
 	my $total_bytes = 0;
@@ -298,7 +338,7 @@ sub getTotalFlows{
 			$total_bytes = $total_bytes + int($hash->{'bytes'});
 		}
 	}
-	
+	syslog('debug', "TOTAL OF FLOWS");
 	return $total_flows, $total_bytes, $total_packets;
 }
 
@@ -349,9 +389,18 @@ sub getStatisticsOfSubscription{
 	my %args;
 	
 	my $subscriptionName = $$opts{'subscriptionName'};
+	my %output;
+	
+	if ( $outputTable{$subscriptionName} ){
+		%output = %{$outputTable{$subscriptionName}};
+		syslog('debug', "$subscriptionName ALREADY IN OUTPUTTABLE");
+	}else{
+		%output = &parseOutputsOfSubscription($subscriptionName);	
+		#Keep all results in a data structure.	
+		$outputTable{$subscriptionName} = \%output;
+	}
 
-	my %output = &parseOutputsOfSubscription($subscriptionName);	
-    my ($total_flows, $total_bytes, $total_packets) = &getTotalFlows(\%output);	
+    my ($total_flows, $total_bytes, $total_packets) = &getTotalOfFlows(\%output);	
 	my @matched_queries = &getMatchedQueries(\%output);
 	
 	
@@ -362,8 +411,6 @@ sub getStatisticsOfSubscription{
 	$args{'total_packets'} = $total_packets;
 
 
-	#TODO Keep all results in a data structure.	
-	$outputTable{$subscriptionName} = \%output;
 	syslog('debug', 'Response To frontend. GETSTATISTICS');
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
@@ -488,8 +535,7 @@ sub getPrefixes{
     my $result = $rpc->call($uri,'get_prefixes',[$plugin_ip]);
 	syslog('debug', 'Response. - GETPREFIXES');
 	my $r = $result->result;
-	syslog('debug',$r);
-	return $r;
+	return @{$r};
 }
 
 sub getSubscriptions{
