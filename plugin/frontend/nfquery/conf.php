@@ -6,9 +6,11 @@
 <div class="container-fluid">
 	<div class="row-fluid">
 		<div class="span2">
-                 	<img src="/nfsen/plugins/nfquery/img/logo2.png">
+                 	<img src="/nfsen/plugins/nfquery/img/logo2.png"></br></br></br></br>
+                 	<a href="http://www.geant.net"><img src="/nfsen/plugins/nfquery/img/geantlogo.jpg"></a>
 		</div>
 		<div class="span8 ">
+			<div><strong><h2>Register</h2></strong></div>
 			<div class="alert alert-inforegister ">
 				<legend><b>Organization</b></legend>
 				<div class="alert alert-info2 ">
