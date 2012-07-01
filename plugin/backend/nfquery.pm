@@ -69,7 +69,7 @@ our %cmd_lookup = (
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
 	'runQueries' => \&runQueries,
-	'checkQueries' => \&checkQueries,
+	'isRegister' => \&isRegister,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
 );
@@ -96,9 +96,9 @@ sub pluginInfo{
 	$adm_mail =$cfg->param('admin_email');
 	$adm_tel  =$cfg->param('admin_phone');
 	$adm_publickey_file = $cfg->param('adm_publickey_file');
-
+	 $adm_publickey_file = "deneme";
 	# plugin info                                                                                           
-	$prefix_list = $cfg->param('prefix');
+	$prefix_list = $cfg->param('prefix_list');
 	$plugin_ip = $cfg->param('plugin_ip');
 	$output_dir = $cfg->param('outputdir');
 	syslog('debug', $organization);
@@ -111,6 +111,7 @@ sub pluginInfo{
 #Initialize plugin.
 sub Init {
 	&pluginInfo;
+	syslog('debug', "rrrrrrrrrrrrrrrrrrr");
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
 	$rpc = &get_connection($qs_ip, $qs_port);
 
@@ -155,9 +156,15 @@ sub isRegister{
 	my $socket = shift;
         my $opts = shift;
         my %args;
-	my $result = $rpc->call($uri,'get_subscription',[$organization,$adm_name,$adm_mail,
+	syslog('debug',$uri);
+	my $result = $rpc->call($uri,'register',[$organization,$adm_name,$adm_mail,
 				$adm_tel,$adm_publickey_file,$prefix_list,$plugin_ip]);
-	syslog('debug',$result);
+        my $r = $result->result;
+	syslog('debug',@{$r}[0]);
+	$args{'register'} = @{$r}[0];
+	syslog('debug',$args{'register'});
+	syslog('debug',"isRegister");
+        Nfcomm::socket_send_ok($socket, \%args);
 
 }
 

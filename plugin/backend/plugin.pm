@@ -47,7 +47,7 @@ sub get_connection {
 }
 
 # get configuration
-my $cfg = &ParseConfigFile('plugin.conf.pm');
+my $cfg = &ParseConfigFile('nfquery.plugin.conf');
 
 # assign values
 my $organization = $cfg->param('organization');
@@ -62,8 +62,8 @@ my $prefix_list = $cfg->param('prefix_list');
 my $plugin_ip = $cfg->param('plugin_ip');
 
 # Query Server info                                                                                           
-my $qs_ip = $cfg->param('queryserver_ip');
-my $qs_port = $cfg->param('queryserver_port');
+my $qs_ip = $cfg->param('qserver_ip');
+my $qs_port = $cfg->param('qserver_port');
 my $uri = 'https://' . $qs_ip . ':' . $qs_port;
                                                                                            
 #print all
