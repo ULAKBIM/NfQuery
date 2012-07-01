@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/bootstrap.css" />
+
 <?php
 
 /*
@@ -35,6 +37,8 @@ function nfquery_ParseInput( $plugin_id ) {
  * Its return value is ignored.
  */
 function nfquery_Run( $plugin_id ) {
+	        require_once('nfquery/nfqueryutil.php');
+
 		#print '<iframe id="nfqueryIFrame" src="/nfsen/plugins/nfquery/index.php" frameborder="0" style="height:100%;width:100%" scrolling="no">IFrame</iframe>';
 		if(isset($_POST['nfqueryTabName'])){
 				
@@ -44,7 +48,14 @@ function nfquery_Run( $plugin_id ) {
 			$_SESSION['nfquery']['nfqueryTabName'] = $_POST['nfqueryTabName'];
 		}
 		if(file_exists("/home/serhat/nfquery/plugin/backend/nfquery.plugin.conf")){
-			include('nfquery/index.php');
+			$result  = isRegister();
+			if($result==0){
+				echo "<div class='alert alert-error span11'> Your plugin is not registered to QueryServer yet.</div>";
+
+			}
+			if($result==1){
+			         include('nfquery/index.php');
+			}
 		}
 		else{
 			include('nfquery/conf.php');

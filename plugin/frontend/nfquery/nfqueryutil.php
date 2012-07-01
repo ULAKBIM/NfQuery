@@ -2,7 +2,13 @@
     #include('loghandler.php');
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
+	function isRegister(){
+		$command = 'nfquery::isRegister';
+		$opts = array();
+		$outlist = nfsend_query($command, $opts);
+		return $outlist['register'];
 	
+	}
 	
 	function getMyAlerts(){
 		$command = 'nfquery::getSubscriptions';
