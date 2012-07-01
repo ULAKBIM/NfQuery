@@ -87,10 +87,8 @@ sub ParseConfigFile {
 }
 
 
+sub pluginInfo{
 
-
-#Initialize plugin.
-sub Init {
   	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf");
         	
 	$organization = $cfg->param("organization");
@@ -107,12 +105,15 @@ sub Init {
 	# Query Server info                                                                                           
 	$qs_ip = $cfg->param('qserver_ip');
 	$qs_port = $cfg->param('qserver_port');
+
+}
+
+#Initialize plugin.
+sub Init {
+	&pluginInfo;
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
-    
-		
 	$rpc = &get_connection($qs_ip, $qs_port);
     	IPC::Shareable->clean_up_all;	
-	
 	return 1;
 }
 
@@ -121,7 +122,7 @@ sub createConfigFile{
 	my $socket = shift;
 	my $opts = shift;
 	my %args;
-	syslog('debug',print Dumper $$opts{'configarray'});
+	syslog('debug',print Dumper $$opts{'configArray'});
 
 
 
@@ -140,6 +141,17 @@ sub get_connection {
     );
 
     return $rpc;
+
+}
+
+
+sub isRegister{
+	my $socket = shift;
+        my $opts = shift;
+        my %args;
+	my $result = $rpc->call($uri,'get_subscription',[$organization,$adm_name,$adm_mail,
+				$adm_tel,$adm_publickey_file,$prefix_list,$plugin_ip]);
+	syslog('debug',$result);
 
 }
 
