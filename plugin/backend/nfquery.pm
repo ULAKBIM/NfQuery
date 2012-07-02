@@ -22,8 +22,7 @@ use IPC::Shareable;
 use Proc::ProcessTable;
 use Config::Simple;
 use NetAddr::IP;
-use Fcntl qw/ :flock /;
-
+use Config::Tiny;
 #package NfQueryPlugin::Main; 
 
 use feature 'say';
@@ -75,6 +74,7 @@ our %cmd_lookup = (
 	'runQueries' => \&runQueries,
 	'isRegister' => \&isRegister,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
+	'writeConfigFile' => \&writeConfigFile,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
 );
 
@@ -93,7 +93,7 @@ sub ParseConfigFile {
 
 sub pluginInfo{
 
-  	$cfg = new Config::Simple("/home/serhat/nfquery/plugin/backend/nfquery.plugin.conf");
+  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin2.conf");
         	
 	$organization = $cfg->param("organization");
 	$adm_name =$cfg->param('admin_name');
@@ -103,7 +103,7 @@ sub pluginInfo{
 	# plugin info                                                                                           
 	$prefix_list = $cfg->param('prefix_list');
 	$plugin_ip = $cfg->param('plugin_ip');
-	$output_dir = $cfg->param('outputdir');
+	$output_dir = "/tmp";
 	syslog('debug', $organization);
 	# Query Server info                                                                                           
 	$qs_ip = $cfg->param('qserver_ip');
@@ -123,16 +123,29 @@ sub Init {
 	                                            $adm_publickey_file, $prefix_list, $plugin_ip, ]);
 	
 	@prefixes = &getPrefixes();
-    IPC::Shareable->clean_up_all;	
+	syslog('debug',"prefixx");	
+	syslog('debug',$prefixes[0]);	
+    	IPC::Shareable->clean_up_all;	
 	return 1;
 }
 
 
-sub createConfigFile{
+sub writeConfigFile{
 	my $socket = shift;
 	my $opts = shift;
 	my %args;
-	syslog('debug',print Dumper $$opts{'configArray'});
+	my $configArray = json_to_perl($$opts{'configArray'});
+        my %myconfig = %{$configArray};
+	$plugin_ip = $myconfig{'plugin_ip'};
+	$qs_ip = $myconfig{'qserver_ip'};
+	$qs_port = $myconfig{'qserver_port'};
+	$adm_publickey_file = $myconfig{'publickeyfile'};
+	my $Config = Config::Tiny->new();
+	$Config->{plugin_information}={plugin_ip=>$plugin_ip,qserver_ip=>$qs_ip,qserver_port=>$qs_port,
+			adm_publickey_file=>$adm_publickey_file};
+	$Config->write( '/tmp/nfquery.plugin.conf' );
+	
+	syslog('debug',$plugin_ip);
 
 
 
