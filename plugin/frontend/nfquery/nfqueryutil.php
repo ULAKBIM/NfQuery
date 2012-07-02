@@ -28,18 +28,26 @@
 		$opts = array();
 		$opts['subscriptionName'] = $subscriptionName;
 		$out_list = nfsend_query($command, $opts);
-		echo '<div class="alert alert-info">';
-		echo '<table>';
-		echo '<tr><td class="outputInfoLabel"><strong>Matched Queries </strong></td><td>'.$out_list['matched'].'</td></tr>';
-		echo '<tr><td class="outputInfoLabel"><strong>Total Query </strong></td><td>'.$out_list['total_query'].'</td></tr>';
-		echo '<tr><td class="outputInfoLabel"><strong>Total Flow </strong></td><td>'.$out_list['total_flows'].'</td></tr>';
-		echo '<tr><td class="outputInfoLabel"><strong>Total Byte </strong></td><td>'.$out_list['total_bytes'].'</td></tr>';
-		echo '<tr><td class="outputInfoLabel"><strong>Total Packet </strong></td><td>'.$out_list['total_packets'].'</td></tr>';
+
+		echo '<div>';
+		echo '<table class="table table-bordered table-condensed tablesorter">';
+		echo '<thead>';
+		echo '<tr><th class="header">Query Id</th><th class="header">Total Flows</th><th class="header">Total Bytes</th><th class="header">Total Packets</th></tr>';
+		echo '</thead>';
+
+		$query_ids = $out_list['query_id'];
+		echo '<tbody>';
+		for($i = 0; $i<sizeof($query_ids); $i++){
+			echo '<tr>';
+			echo '<td>'.$query_ids[$i].'</td>'.'<td>'.$out_list['total_flows'][$i].'</td>'.'<td>'.$out_list['total_bytes'][$i].'</td>'.'<td>'.$out_list['total_packets'][$i].'</td>';
+			echo '</tr>';
+		}
+		echo '</tbody>';
 		echo '</table>';
 		echo '<button class="btn btn-success" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Show Output</button>';
 		echo '</div>';
 		echo '<div id="'.$subscriptionName.'OutputTable" class="collapse">';
-			getOutputOfSubscription($subscriptionName);
+		echo 'OMW';
 		echo '</div>';
 		
 	}

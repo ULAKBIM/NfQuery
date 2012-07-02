@@ -1,4 +1,6 @@
 <script src="/nfsen/plugins/nfquery/js/running.js"></script>
+<script src="/nfsen/plugins/nfquery/js/jquery.tablesorter.js"></script>
+<link type="text/css" href="/nfsen/plugins/nfquery/css/tablesorter.css" rel="stylesheet">
 
 <div class="row-fluid">
 	<div class="span4">

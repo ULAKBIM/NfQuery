@@ -21,6 +21,7 @@ function showStatistics(subscriptionName){
 
 			$("#" + subscriptionName + "CollapseInner").html(data);
 			$("#" + subscriptionName + "CollapseInner").addClass('filled');
+			$('.tablesorter').tablesorter();
 		}
 	);
 }
