@@ -42,12 +42,12 @@ function getSubscriptionDetail3(name){
 					     if(category_name == "mandatory"){	
 						$("#queries").append("<table id='mandatory_table' class='table table-striped table-condensed'></table>");
 					     	$("#mandatory_table").append("<thead><tr><th><h3>Mandatory</h3></th></tr></thead>");
-					     	$("#mydiv").append("<b><center><h3>&darr; Queries</h3></center></b>");
+					     	$("#mydiv").append("<b><center><h3><i class='icon-chevron-down'></i> Queries</h3></center></b>");
 					    	$("#mandatory_table").append("<thead><tr><th>Query Id</t><th>Query Type</th><th>Filter"+
 										"</th></tr></thead><tbody>");
 					     }
 					     $("#subscription_desc").attr("class","alert alert-info");
-					     $("#subscription_desc").append("<h3><u><b>Details Of " +name+"</b></u></h3></br><h4><b>Source Name :  "+
+					     $("#subscription_desc").append("<h3 style='color:black;'><u><b>Details Of " +name+"</b></u></h3></br><h4><b>Source Name :  "+
 										source_name+"</b></h4></br><h4><b>Source Link"+"   :  <a href="+
 										source_link+">"+source_link+"</a></b></h4></br>");
 						
@@ -57,7 +57,7 @@ function getSubscriptionDetail3(name){
 					if(category_name == "mandatory"){	
 					     $("#mydiv").attr("data-target","#queries");
 					     $("#mydiv").attr("data-toggle","collapse");
-					     $("#mydiv").attr("class","alert");
+					     $("#mydiv").attr("class","upDown");
 					     $("#queries").attr("class","collapse");
 					    var mandatory_table_row = "<tr class='mandatory_query'><td >"+query_id+"</td><td>"+query_type+"</td><td style='margin-right:70px;'data-toggle='collapse'"+
 									"data-target='#optional"+j+"'><b>&darr; "+filter+"</b><div id='optional"+j+
