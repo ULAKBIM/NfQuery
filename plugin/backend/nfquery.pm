@@ -22,6 +22,7 @@ use IPC::Shareable;
 use Proc::ProcessTable;
 use Config::Simple;
 use NetAddr::IP;
+use Fcntl qw/ :flock /;
 
 #package NfQueryPlugin::Main; 
 
@@ -32,7 +33,7 @@ my $rpc;
 
 #Shared memory options
 my %running_subscriptions;
-my $glue = 'running';
+my %stats;
 my %options = (
 	create => 'yes',
 	mode => 0644,
@@ -40,7 +41,9 @@ my %options = (
 	destroy => 'yes'
 );
 
-tie %running_subscriptions, 'IPC::Shareable', $glue, {%options};
+tie %running_subscriptions, 'IPC::Shareable', 'running', {%options};
+tie %stats, 'IPC::Shareable', 'stats', {%options};
+
 # assign values
 my $organization;
 my $adm_name;
@@ -90,7 +93,7 @@ sub ParseConfigFile {
 
 sub pluginInfo{
 
-  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf");
+  	$cfg = new Config::Simple("/home/serhat/nfquery/plugin/backend/nfquery.plugin.conf");
         	
 	$organization = $cfg->param("organization");
 	$adm_name =$cfg->param('admin_name');
@@ -160,10 +163,8 @@ sub isRegister{
 	my $result = $rpc->call($uri,'register',[$organization,$adm_name,$adm_mail,
 				$adm_tel,$adm_publickey_file,$prefix_list,$plugin_ip]);
         my $r = $result->result;
-	syslog('debug',@{$r}[0]);
 	$args{'register'} = @{$r}[0];
 	syslog('debug',$args{'register'});
-	syslog('debug',"isRegister");
         Nfcomm::socket_send_ok($socket, \%args);
 
 }
@@ -398,27 +399,46 @@ sub getStatisticsOfSubscription{
 	my $subscriptionName = $$opts{'subscriptionName'};
 	my %output;
 	
-	if ( $outputTable{$subscriptionName} ){
-		%output = %{$outputTable{$subscriptionName}};
-		syslog('debug', "$subscriptionName ALREADY IN OUTPUTTABLE");
-	}else{
-		%output = &parseOutputsOfSubscription($subscriptionName);	
-		#Keep all results in a data structure.	
-		$outputTable{$subscriptionName} = \%output;
-	}
+	#if ( $outputTable{$subscriptionName} ){
+	#	%output = %{$outputTable{$subscriptionName}};
+	#	syslog('debug', "$subscriptionName ALREADY IN OUTPUTTABLE");
+	#}else{
+	#	%output = &parseOutputsOfSubscription($subscriptionName);	
+	#	#Keep all results in a data structure.	
+	#	$outputTable{$subscriptionName} = \%output;
+	#}
 
-    my ($total_flows, $total_bytes, $total_packets) = &getTotalOfFlows(\%output);	
-	my @matched_queries = &getMatchedQueries(\%output);
+	#my ($total_flows, $total_bytes, $total_packets) = &getTotalOfFlows(\%output);	
+	#my @matched_queries = &getMatchedQueries(\%output);
 	
 	
-	$args{'matched'} = @matched_queries;
-	$args{'total_query'} = scalar (keys %output);
-	$args{'total_flows'} = $total_flows;
-	$args{'total_bytes'} = $total_bytes;
-	$args{'total_packets'} = $total_packets;
+	#$args{'matched'} = @matched_queries;
+	#$args{'total_query'} = scalar (keys %output);
+	#$args{'total_flows'} = $total_flows;
+	#$args{'total_bytes'} = $total_bytes;
+	#$args{'total_packets'} = $total_packets;
+	
+	$args{'query_id'} = [];
+	$args{'total_flows'} = [];
+	$args{'total_bytes'} = [];
+	$args{'total_packets'} = [];
+	
+	my %queries = %{$stats{$subscriptionName}};
+	
+
+	foreach my $query_id ( keys %queries ){
+		push $args{'query_id'}, $query_id;
+
+		my %fields = %{$queries{$query_id}};
+		push $args{'total_flows'}, $fields{'total flows'};
+		push $args{'total_bytes'}, $fields{'total bytes'};
+		push $args{'total_packets'}, $fields{'total packets'};
+	}
 
 
 	syslog('debug', 'Response To frontend. GETSTATISTICS');
+	my $json = encode_json \%args;
+    syslog('debug', "$json");
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
 }
@@ -474,22 +494,30 @@ sub runQueries{
 		$running_subscriptions{$subscription_name} = {};
 		$running_subscriptions{$subscription_name}{'mandatory'} = {};
 		$running_subscriptions{$subscription_name}{'optional'} = {};
-
+		$stats{$subscription_name} = {};
+	    
 		foreach my $query_id (@{$category{'mandatory'}}){
+			$stats{$subscription_name}{$query_id} = {};
 			my $filter = &getFilter($query_id);
 			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
 			syslog('debug', "$command");		
 			my $pid = fork();
 			if ($pid == 0){
-				#TODO
-				syslog('debug', 'DENEME'); 
 				my $nfdump_pid = open(OUT, "nice -n 7 $command |");
-				syslog('debug', 'DENEME'); 
 			    $running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
 			    	
 				open FILE, ">", "/tmp/$nfdump_pid";
 				while (defined(my $line = <OUT>)){
 					print FILE $line;
+					if ($line =~ /^Summary/){
+						syslog('debug', "SUMMARY $line");
+						my @sum = split(/: /, $line, 2);
+						my @fields = split(/, /, $sum[1]);
+						foreach my $field (@fields){
+							my ($key, $value) = split(/: /, $field);
+							$stats{$subscription_name}{$query_id}{$key} = $value;
+						}
+					}
 				}
 				close FILE;
 				my $json = encode_json \%running_subscriptions;	
@@ -499,20 +527,27 @@ sub runQueries{
 		}
 
 		foreach my $query_id (@{$category{'optional'}}){
+			$stats{$subscription_name}{$query_id} = {};
 			my $filter = &getFilter(int($query_id));
 			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
 			
 			my $pid = fork();
 			if ($pid == 0){
-				#TODO
-				syslog('debug', 'DENEME'); 
 				my $nfdump_pid = open(OUT, " nice -n 7 $command |");
-				syslog('debug', 'DENEME'); 
 			    $running_subscriptions{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
 				
 				open FILE, ">", "/tmp/$nfdump_pid";
 				while (defined(my $line = <OUT>)){
 					print FILE $line;
+					if ($line =~ /^Summary/){
+						my @sum = split(/: /, $line, 2);
+						my @fields = split(/, /, $sum[1]);
+						foreach my $field (@fields){
+							my ($key, $value) = split(/: /, $field);
+							$stats{$subscription_name}{$query_id}{$key} = $value;
+						}
+
+					}
 				}
 				close FILE;
 				my $json = encode_json \%running_subscriptions;	
