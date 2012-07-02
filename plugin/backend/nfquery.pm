@@ -68,6 +68,7 @@ our %cmd_lookup = (
 	'getSubscriptions' => \&getSubscriptions,
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
+	'checkQueries'=>\&checkQueries,
 	'runQueries' => \&runQueries,
 	'isRegister' => \&isRegister,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
@@ -89,14 +90,13 @@ sub ParseConfigFile {
 
 sub pluginInfo{
 
-  	$cfg = new Config::Simple("/home/serhat/nfquery/plugin/backend/nfquery.plugin.conf");
+  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf");
         	
 	$organization = $cfg->param("organization");
 	$adm_name =$cfg->param('admin_name');
 	$adm_mail =$cfg->param('admin_email');
 	$adm_tel  =$cfg->param('admin_phone');
-	$adm_publickey_file = $cfg->param('adm_publickey_file');
-	 $adm_publickey_file = "deneme";
+	$adm_publickey_file = $cfg->param('publickeyfile');
 	# plugin info                                                                                           
 	$prefix_list = $cfg->param('prefix_list');
 	$plugin_ip = $cfg->param('plugin_ip');
