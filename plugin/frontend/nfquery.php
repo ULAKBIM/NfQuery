@@ -47,15 +47,23 @@ function nfquery_Run( $plugin_id ) {
 			}
 			$_SESSION['nfquery']['nfqueryTabName'] = $_POST['nfqueryTabName'];
 		}
-		if(file_exists("/home/serhat/nfquery/plugin/backend/nfquery.plugin.conf")){
-			$result  = isRegister();
-			if($result==0){
-				echo "<div class='alert alert-error span11'> Your plugin is not registered to QueryServer yet.</div>";
-
-			}
-			if($result==1){
-			         include('nfquery/index.php');
-			}
+#		if(file_exists("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf")){
+#			$result  = isRegister();
+#			if($result==0){
+#				echo "<div class='alert alert-error span11'> Your plugin is not registered to QueryServer yet.</div>";
+#
+#			}
+#			if($result==1){
+#			         include('nfquery/index.php');
+#			}
+#		}
+#		else{
+#			include('nfquery/conf.php');
+#		}
+		if(file_exists("/tmp/nfquery.plugin.conf")){
+		#	echo "<div class='alert alert-info span11'><img src='/nfsen/plugins/nfquery/img/button_ok.png'>Your Plugin Informations has been Saved</div>";
+			
+			include('nfquery/index.php');
 		}
 		else{
 			include('nfquery/conf.php');

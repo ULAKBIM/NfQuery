@@ -11,64 +11,6 @@
 		</div>
 		<div class="span8 ">
 			<div><strong><h2>Register</h2></strong></div>
-			<div class="alert alert-inforegister ">
-				<legend><b>Organization</b></legend>
-				<div class="alert alert-info2 ">
-					<div class="row-fluid">
-					<div class="span5">
-						<center>
-					    <label for="id_org"><b>ORGANIZATION</b></label>
-					</div>
-					<div id="orgdiv" class="span5">
-						<center>
-					    <input id="id_organization" name="org" type="text" style="height:25px;"title="Organization" >
-					    <div id="od"></div>
-					</div>
-					</div>
-				</div>
-			</div>
-			
-			<div class="alert alert-inforegister">
-				<legend><b>Administrator Informations</b></legend>
-				<div class="alert alert-info2 ">
-					<div class="row-fluid">
-					<div class="span5">
-						<center>
-					    <label for="id_adm_name"><b>FULL NAME</b></label>
-					</div>
-					<div id="admin_name_div" class="span5">
-						<center>
-					    <input id="id_admin_name"  type="text" style="height:25px;"title="AdminName" >
-					</div>
-					</div>
-
-					
-					<div class="row-fluid">
-					<div class="span5">
-						<center>
-					    <label for="id_adm_email"><b>EMAIL</b></label>
-					</div>
-					<div id="admin_mail_div" class="span5">
-						<center>
-					    <input id="id_admin_email" type="text" style="height:25px;"title="AdminMail" class="required" />
-					</div>
-					</div>
-
-
-					
-					<div class="row-fluid">
-					<div class="span5">
-						<center>
-					    <label for="id_adm_phone"><b>PHONE NUMBER</b></label>
-					</div>
-					<div id="id_admphone_div" class="span5">
-						<center>
-					    <input id="id_admin_phone" type="text" style="height:25px;"title="AdminPhone" >
-					</div>
-					</div>
-				</div>
-			</div>
-				
 			<div class="alert alert-inforegister">
 				<legend><b>Plugin Informations</b></legend>
 				<div class="alert alert-info2 ">
@@ -80,16 +22,6 @@
 					<div id="id_plugin_div" class="span5">
 						<center>
 					    <input id="id_plugin_ip"  type="text" style="height:25px;"title="PluginIP" >
-					</div>
-					</div>
-					<div class="row-fluid">
-					<div class="span5">
-						<center>
-					    <label for="id_prefixlist"><b>PREFIX LIST</b></label>
-					</div>
-					<div id="id_prefix_div" class="span5">
-						<center>
-					    <input id="id_prefix" type="text" style="height:25px;"title="Prefix" >
 					</div>
 					</div>
 					<div class="row-fluid">
@@ -115,17 +47,7 @@
 					<div class="row-fluid">
 					<div class="span5">
 						<center>
-					    <label for="id_outdir"><b>OUTPUT DIRECTORY</b></label>
-					</div>
-					<div id="id_outdir_div" class="span5">
-						<center>
-					    <input id="id_outputdir" type="text" style="height:25px;"title="Output Directory" >
-					</div>
-					</div>
-					<div class="row-fluid">
-					<div class="span5">
-						<center>
-					    <label for="id_adm_pkfile"><b>PUBLİC KEY FİLE</b></label>
+					    <label for="id_adm_pkfile"><b>PUBLIC KEY FILE</b></label>
 					</div>
 					<div id="id_pkeyfile_div" class="span5">
 						<center>
