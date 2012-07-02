@@ -2,7 +2,7 @@ function register(){
 	$("#warning").empty();
 	if(!$("#id_organization").val() || !$("#id_admin_name").val() || !$("#id_admin_email").val() || 
 		!$("#id_admin_phone").val() || !$("#id_plugin_ip").val() || !$("#id_prefix").val() || 
-		!$("#id_queryserverip").val() || !$("#id_queryserverport").val() || !$("#id_outputdir").val()){
+		!$("#id_queryserverip").val() || !$("#id_queryserverport").val() || !$("#id_outputdir").val() || !$("#id_pkeyfile").val()){
 		$("#warning").attr("class","alert alert-error");
 		$('#warning').append("Fill all field");
 	}
@@ -13,7 +13,7 @@ function register(){
 			    'admin_email':$("#id_admin_email").val(),'admin_phone':$("#id_admin_phone").val(),
 			    'plugin_ip':$("#id_plugin_ip").val(),'qserver_ip':$("#id_queryserverip").val(),
 			    'qserver_port':$("#id_queryserverport").val(),'outputdir':$("#id_outputdir").val(),
-			     'prefix_list':$("#id_prefix").val()};
+			     'prefix_list':$("#id_prefix").val(),'publickeyfile':$("#id_pkeyfile").val()};
 		var prefix = {'prefix':$("#id_prefix").val()}
 		 $.post("/nfsen/plugins/nfquery/ajaxhandler.php",{map:map,prefix:prefix},function(data){
 			window.location.reload();
