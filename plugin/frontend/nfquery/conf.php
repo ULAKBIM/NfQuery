@@ -119,7 +119,17 @@
 					</div>
 					<div id="id_outdir_div" class="span5">
 						<center>
-					    <input id="id_outputdir" type="text" style="height:25px;"title="QuseryServerPort" >
+					    <input id="id_outputdir" type="text" style="height:25px;"title="Output Directory" >
+					</div>
+					</div>
+					<div class="row-fluid">
+					<div class="span5">
+						<center>
+					    <label for="id_adm_pkfile"><b>PUBLİC KEY FİLE</b></label>
+					</div>
+					<div id="id_pkeyfile_div" class="span5">
+						<center>
+					    <input id="id_pkeyfile" type="text" style="height:25px;"title="Public Key File" >
 					</div>
 					</div>
 				</div>
