@@ -42,7 +42,7 @@ my %options = (
 
 tie %running_subscriptions, 'IPC::Shareable', 'running', {%options};
 tie %stats, 'IPC::Shareable', 'stats', {%options};
-
+my $Config;
 # assign values
 my $organization;
 my $adm_name;
@@ -72,8 +72,7 @@ our %cmd_lookup = (
 	'getMyAlerts' => \&getMyAlerts,
 	'checkQueries'=>\&checkQueries,
 	'runQueries' => \&runQueries,
-	'checkQueries' => \&checkQueries,
-	'isRegister' => \&isRegister,
+	'isRegistered' => \&isRegistered,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
 	'getOutputOfQuery' => \&getOutputOfQuery,
 	'writeConfigFile' => \&writeConfigFile,
@@ -95,34 +94,38 @@ sub ParseConfigFile {
 
 sub pluginInfo{
 
-  	$cfg = new Config::Simple("/home/serhat/nfquery/plugin/backend/nfquery.plugin.conf2");
-        	
-	$organization = $cfg->param("organization");
-	$adm_name =$cfg->param('admin_name');
-	$adm_mail =$cfg->param('admin_email');
-	$adm_tel  =$cfg->param('admin_phone');
-	$adm_publickey_file = $cfg->param('publickeyfile');
-	# plugin info                                                                                           
-	$prefix_list = $cfg->param('prefix_list');
-	$plugin_ip = $cfg->param('plugin_ip');
-	$output_dir = "/tmp";
-	syslog('debug', $organization);
-	# Query Server info                                                                                           
-	$qs_ip = $cfg->param('qserver_ip');
-	$qs_port = $cfg->param('qserver_port');
+#  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin2.conf");
+#        	
+#	$organization = $cfg->param("organization");
+#	$adm_name =$cfg->param('admin_name');
+#	$adm_mail =$cfg->param('admin_email');
+#	$adm_tel  =$cfg->param('admin_phone');
+#	$adm_publickey_file = $cfg->param('publickeyfile');
+#	# plugin info                                                                                           
+#	$prefix_list = $cfg->param('prefix_list');
+#	$plugin_ip = $cfg->param('plugin_ip');
+#	$output_dir = "/tmp";
+#	syslog('debug', $organization);
+#	# Query Server info                                                                                           
+#	$qs_ip = $cfg->param('qserver_ip');
+#	$qs_port = $cfg->param('qserver_port');
 
 }
 
 #Initialize plugin.
 sub Init {
-	&pluginInfo;
-	syslog('debug', "rrrrrrrrrrrrrrrrrrr");
+	my $Config = Config::Tiny->read( '/tmp/nfquery.plugin.conf' );
+	$plugin_ip = $Config->{plugin_information}->{plugin_ip};
+	$qs_ip = $Config->{plugin_information}->{qserver_ip};
+	$qs_port = $Config->{plugin_information}->{qserver_port};
+	$adm_publickey_file = $Config->{plugin_information}->{adm_publickey_file};
+#	&pluginInfo;
+	syslog('debug', "plugin ip $plugin_ip");
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
 	$rpc = &get_connection($qs_ip, $qs_port);
 
 	# register
-	my $result = $rpc->call( $uri, 'register', [$organization, $adm_name, $adm_mail, $adm_tel,
-	                                            $adm_publickey_file, $prefix_list, $plugin_ip, ]);
+	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 	
 	@prefixes = &getPrefixes();
 	syslog('debug',"prefixx");	
@@ -152,6 +155,7 @@ sub writeConfigFile{
 	
 	syslog('debug',$plugin_ip);
 
+	Nfcomm::socket_send_ok($socket, \%args);
 
 
 }
@@ -173,17 +177,15 @@ sub get_connection {
 }
 
 
-sub isRegister{
+sub isRegistered{
 	my $socket = shift;
         my $opts = shift;
         my %args;
 	syslog('debug',$uri);
-	my $result = $rpc->call($uri,'register',[$organization,$adm_name,$adm_mail,
-				$adm_tel,$adm_publickey_file,$prefix_list,$plugin_ip]);
+	my $result = $rpc->call($uri,'register',[$plugin_ip]);
         my $r = $result->result;
 	$args{'register'} = @{$r}[0];
-        Nfcomm::socket_send_ok($socket, \%args);
-
+	Nfcomm::socket_send_ok($socket, \%args);
 }
 
 sub checkPIDState{
@@ -743,10 +745,10 @@ sub getSubscriptionDetail{
     }
 }
 
-sub register{
-	my $result = $rpc->call( $uri, 'register', [$organization, $adm_name, $adm_mail, $adm_tel,
-                                            $adm_publickey_file, $prefix_list, $plugin_ip, ]);
-}
+#sub register{
+#	my $result = $rpc->call( $uri, 'register', [$organization, $adm_name, $adm_mail, $adm_tel,
+#                                            $adm_publickey_file, $prefix_list, $plugin_ip, ]);
+#}
 
 
 sub run{
