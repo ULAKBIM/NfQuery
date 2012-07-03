@@ -46,54 +46,79 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         """
         raise jsonrpc.Fault(123, "The fault procedure is faulty.")
 
-    def jsonrpc_register(self, organization, adm_name, adm_mail, adm_tel, adm_publickey_file, prefix_list, plugin_ip):
+    def jsonrpc_register(self,plugin_ip):
 	result = []
-	print organization
-	print prefix_list
 	print plugin_ip
-	print adm_publickey_file
-	print adm_tel
-	print adm_name
-	print adm_mail
-        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+	self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
-        #print "Registration information : %s,%s,%s,%s,%s,%s,%s" % (organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip)
-        self.store = db.get_store()
-        plugin = self.store.find(Plugin, Plugin.organization == unicode(organization)).one()
-        if plugin is None:
-            message =  'Your plugin is not registered to QueryServer yet.'
-            message += 'Plugin is not found.'
-            message += 'Please ask to QS Administrator about your registration process.'
-            self.rpclogger.info("AAAAAAAAAAa")
-            print message
-	    result.append(0)
-	    print result
-            return result
-        else:
-            checksum = hashlib.md5()
-            checksum.update( organization + adm_name + adm_mail + 
-                             adm_tel      + adm_publickey_file  + 
-                             prefix_list  + plugin_ip )
-            if checksum.hexdigest() != plugin.checksum:
-                message = 'Your plugin information doesn\'t match with the QueryServer side.'
-                message += 'Plugin Checksum Error'
-                message += 'Please check your information and try again.'
-	    	result.append(1)
-	    	print result
-            	return result
-               # print message
-            elif checksum.hexdigest() == plugin.checksum:
-                # Set the plugin registered
-                plugin.registered = True
-                self.store.add(plugin)
-                self.store.commit()
-                message =  'Your plugin is registered.\n'
-                message += 'Feel free to checkout query subscriptions.'
-                #print message
-	    	result.append(2)
-	    	print result
-            	return result
-                #return self.jsonrpc_get_subscriptions()
+	self.store = db.get_store()
+	plugin = self.store.find(Plugin, Plugin.plugin_ip == plugin_ip).one()
+	print plugin.organization
+	if plugin is None:
+		result.append(0);
+		print result
+		return result
+	else:
+		if plugin.registered == 1:
+			result.append(1)
+			print result
+			return result
+		if plugin.registered == 2:
+			result.append(2)
+			print result
+			return result
+		if plugin.registered == 3:
+			result.append(3)
+			print result
+			return result
+	print result
+	return result
+#	print organization
+#	print prefix_list
+#	print plugin_ip
+#	print adm_publickey_file
+#	print adm_tel
+#	print adm_name
+#	print adm_mail
+#        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+#        # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
+#        #print "Registration information : %s,%s,%s,%s,%s,%s,%s" % (organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip)
+#        self.store = db.get_store()
+#        plugin = self.store.find(Plugin, Plugin.organization == unicode(organization)).one()
+#        if plugin is None:
+#            message =  'Your plugin is not registered to QueryServer yet.'
+#            message += 'Plugin is not found.'
+#            message += 'Please ask to QS Administrator about your registration process.'
+#            self.rpclogger.info("AAAAAAAAAAa")
+#            print message
+#	    result.append(0)
+#	    print result
+#            return result
+#        else:
+#            checksum = hashlib.md5()
+#            checksum.update( organization + adm_name + adm_mail + 
+#                             adm_tel      + adm_publickey_file  + 
+#                             prefix_list  + plugin_ip )
+#            if checksum.hexdigest() != plugin.checksum:
+#                message = 'Your plugin information doesn\'t match with the QueryServer side.'
+#                message += 'Plugin Checksum Error'
+#                message += 'Please check your information and try again.'
+#	    	result.append(1)
+#	    	print result
+#            	return result
+#               # print message
+#            elif checksum.hexdigest() == plugin.checksum:
+#                # Set the plugin registered
+#                plugin.registered = True
+#                self.store.add(plugin)
+#                self.store.commit()
+#                message =  'Your plugin is registered.\n'
+#                message += 'Feel free to checkout query subscriptions.'
+#                #print message
+#	    	result.append(2)
+#	    	print result
+#            	return result
+#                #return self.jsonrpc_get_subscriptions()
 
     def jsonrpc_get_query_filter(self,query_id):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
