@@ -3,8 +3,8 @@
 	$SUBDIRLAYOUT = 1;
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
-	function isRegister(){
-		$command = 'nfquery::isRegister';
+	function isRegistered(){
+		$command = 'nfquery::isRegistered';
 		$opts = array();
 		$outlist = nfsend_query($command, $opts);
 		return $outlist['register'];
@@ -15,7 +15,6 @@
 		$command = 'nfquery::writeConfigFile';
 		$opts = array();
 		$json = json_encode($map);
-		var_dump($json);
 		$opts['configArray'] = $json;
 		$outlist = nfsend_query($command, $opts);
 	}

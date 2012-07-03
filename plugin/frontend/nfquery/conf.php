@@ -10,14 +10,14 @@
                  	<a href="http://www.geant.net"><img src="/nfsen/plugins/nfquery/img/geantlogo.jpg"></a>
 		</div>
 		<div class="span8 ">
-			<div><strong><h2>Register</h2></strong></div>
+			<div><strong><h2>Settings</h2></strong></div>
 			<div class="alert alert-inforegister">
-				<legend><b>Plugin Informations</b></legend>
+				<legend><b>Plug-In Information</b></legend>
 				<div class="alert alert-info2 ">
 					<div class="row-fluid">
 					<div class="span5">
 						<center>
-					    <label for="id_pluginip"><b>PLUGIN IP</b></label>
+					    <label for="id_pluginip"><b>Plug-In IP</b></label>
 					</div>
 					<div id="id_plugin_div" class="span5">
 						<center>
@@ -27,7 +27,7 @@
 					<div class="row-fluid">
 					<div class="span5">
 						<center>
-					    <label for="id_queryserver"><b>QUERYSERVER IP</b></label>
+					    <label for="id_queryserver"><b>Query Server IP</b></label>
 					</div>
 					<div id="id_queryserver_div" class="span5">
 						<center>
@@ -37,7 +37,7 @@
 					<div class="row-fluid">
 					<div class="span5">
 						<center>
-					    <label for="id_querysport"><b>QUERYSERVER PORT</b></label>
+					    <label for="id_querysport"><b>Query Server Port</b></label>
 					</div>
 					<div id="id_qsport_div" class="span5">
 						<center>
@@ -47,7 +47,7 @@
 					<div class="row-fluid">
 					<div class="span5">
 						<center>
-					    <label for="id_adm_pkfile"><b>PUBLIC KEY FILE</b></label>
+					    <label for="id_adm_pkfile"><b>Public Key File</b></label>
 					</div>
 					<div id="id_pkeyfile_div" class="span5">
 						<center>
@@ -57,7 +57,7 @@
 				</div>
 			</div>
 	<center><div id="warning"></div></center>
-	<center><div class="alert alert-success"><button id="register" onclick="register()" class="btn btn-primary"> Register</button></div></center>
+	<center><div class="alert alert-success"><button id="register" onclick="register()" class="btn btn-primary"> Save</button></div></center>
 		</div>
 	</div>
 </div>

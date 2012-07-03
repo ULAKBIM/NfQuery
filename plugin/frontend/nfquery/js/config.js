@@ -11,7 +11,8 @@ function register(){
 		 var map = {'plugin_ip':$("#id_plugin_ip").val(),'qserver_ip':$("#id_queryserverip").val(),
 			    'qserver_port':$("#id_queryserverport").val(),
 				'publickeyfile':$("#id_pkeyfile").val()};
-		 $.post("/nfsen/plugins/nfquery/ajaxhandler.php",{map:map},function(data){
+		$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{map:map},function(data){
+			alert(data);
 			window.location.reload();
 		});	 
 	}
