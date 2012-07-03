@@ -72,8 +72,10 @@ our %cmd_lookup = (
 	'getMyAlerts' => \&getMyAlerts,
 	'checkQueries'=>\&checkQueries,
 	'runQueries' => \&runQueries,
+	'checkQueries' => \&checkQueries,
 	'isRegister' => \&isRegister,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
+	'getOutputOfQuery' => \&getOutputOfQuery,
 	'writeConfigFile' => \&writeConfigFile,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
 );
@@ -93,7 +95,7 @@ sub ParseConfigFile {
 
 sub pluginInfo{
 
-  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin2.conf");
+  	$cfg = new Config::Simple("/home/serhat/nfquery/plugin/backend/nfquery.plugin.conf2");
         	
 	$organization = $cfg->param("organization");
 	$adm_name =$cfg->param('admin_name');
@@ -125,10 +127,13 @@ sub Init {
 	@prefixes = &getPrefixes();
 	syslog('debug',"prefixx");	
 	syslog('debug',$prefixes[0]);	
-    	IPC::Shareable->clean_up_all;	
+    IPC::Shareable->clean_up_all;	
 	return 1;
 }
 
+sub Cleanup {
+    IPC::Shareable->clean_up_all;	
+}
 
 sub writeConfigFile{
 	my $socket = shift;
@@ -177,7 +182,6 @@ sub isRegister{
 				$adm_tel,$adm_publickey_file,$prefix_list,$plugin_ip]);
         my $r = $result->result;
 	$args{'register'} = @{$r}[0];
-	syslog('debug',$args{'register'});
         Nfcomm::socket_send_ok($socket, \%args);
 
 }
@@ -203,6 +207,8 @@ sub checkQueries{
 	my %args;
 	
 	$args{'subscriptions'} = [];
+	my $json = encode_json \%running_subscriptions;
+	syslog('debug', "CHECK $json");
 
 	foreach my $subscription (keys %running_subscriptions){
 		push @{$args{'subscriptions'}}, $subscription;
@@ -250,8 +256,6 @@ sub checkQueries{
 		}
 	}
 		
-	my $json = encode_json \%args;
-	syslog('debug', "CHECK $json");
 
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
@@ -277,7 +281,7 @@ sub parseOutputOfPid{
 	my $summary;
 	
 	open my $fh, "<", "$output_dir/$pid";
-
+	syslog('debug', "PARSING $pid");
 	foreach my $line (<$fh>){
 
 		chomp($line);
@@ -319,6 +323,7 @@ sub parseOutputOfPid{
 		}
 	}
 	close $fh;
+	syslog('debug', "PARSED $pid");
 	return @output;
 }
 
@@ -343,24 +348,6 @@ sub parseOutputsOfSubscription{
 	}
 		
 	return %output;
-}
-
-sub getTotalOfFlows{
-	my $output = shift;
-	my $total_flows = 0;
-	my $total_bytes = 0;
-	my $total_packets = 0;
-	
-	foreach my $query_id (keys %{$output}){
-		my $lines = $output->{$query_id};
-		foreach my $hash (@{$lines}){
-			$total_flows = $total_flows + int($hash->{'flows'});
-			$total_packets = $total_packets + int($hash->{'packets'});
-			$total_bytes = $total_bytes + int($hash->{'bytes'});
-		}
-	}
-	syslog('debug', "TOTAL OF FLOWS");
-	return $total_flows, $total_bytes, $total_packets;
 }
 
 sub getMatchedQueries{
@@ -404,6 +391,34 @@ sub divideJsonToParts{
 	return %args;
 }
 
+sub getTotalOfFile{
+	my $fileName = shift;
+	my %total;
+
+	open (FILE, "/$output_dir/$fileName");
+	my @lines = <FILE>;
+	close(FILE);
+	
+	my $line = $lines[-2]; #Total of working query is -2. line of file.
+	my @fields = split(/, /, $line);
+
+    foreach my $field (@fields){
+		my ($key, $value) = split(/: /, $field);
+		$total{$key} = $value;
+	}
+
+	return %total;	
+}
+
+sub humanReadableBytes{
+	my $bytes = shift;
+	
+	if ($bytes =~ /M$/){
+		return $bytes;
+	}else{
+		return $bytes / (1024 * 1024);
+	}
+}
 sub getStatisticsOfSubscription{
 	my $socket = shift;
 	my $opts = shift;
@@ -412,46 +427,72 @@ sub getStatisticsOfSubscription{
 	my $subscriptionName = $$opts{'subscriptionName'};
 	my %output;
 	
-	#if ( $outputTable{$subscriptionName} ){
-	#	%output = %{$outputTable{$subscriptionName}};
-	#	syslog('debug', "$subscriptionName ALREADY IN OUTPUTTABLE");
-	#}else{
-	#	%output = &parseOutputsOfSubscription($subscriptionName);	
-	#	#Keep all results in a data structure.	
-	#	$outputTable{$subscriptionName} = \%output;
-	#}
 
-	#my ($total_flows, $total_bytes, $total_packets) = &getTotalOfFlows(\%output);	
-	#my @matched_queries = &getMatchedQueries(\%output);
-	
-	
-	#$args{'matched'} = @matched_queries;
-	#$args{'total_query'} = scalar (keys %output);
-	#$args{'total_flows'} = $total_flows;
-	#$args{'total_bytes'} = $total_bytes;
-	#$args{'total_packets'} = $total_packets;
-	
+	#
+	#This values will be calculated for evey query
+	#If query ids index is 'n' its /total_(flows|bytes|packets)/ will 'n'th element of list.
+	#
 	$args{'query_id'} = [];
 	$args{'total_flows'} = [];
 	$args{'total_bytes'} = [];
 	$args{'total_packets'} = [];
-	
+	$args{'filters'} = [];
+
+	$args{'matched_queries'} = [];
+	$args{'matched_bytes'} = 0;
+	$args{'matched_flows'} = 0;
+
 	my %queries = %{$stats{$subscriptionName}};
-	
 
 	foreach my $query_id ( keys %queries ){
-		push $args{'query_id'}, $query_id;
-
 		my %fields = %{$queries{$query_id}};
+
+		if (int($fields{'total flows'}) > 0){
+			push $args{'matched_queries'}, $query_id;
+			$args{'matched_bytes'} += &humanReadableBytes($fields{'total bytes'});
+			$args{'matched_packets'} += int($fields{'total packets'});
+			$args{'matched_flows'} += int($fields{'total flows'});
+		}
+
+		push $args{'query_id'}, $query_id;
 		push $args{'total_flows'}, $fields{'total flows'};
 		push $args{'total_bytes'}, $fields{'total bytes'};
 		push $args{'total_packets'}, $fields{'total packets'};
+		push $args{'filters'}, &getFilter($query_id);
 	}
 
+	#
+	#Look one of output files to get total flows and total bytes.
+	#
+	
+	my %optional_queries = %{$running_subscriptions{$subscriptionName}{'optional'}};
+	my %mandatory_queries = %{$running_subscriptions{$subscriptionName}{'mandatory'}};
+	
+	#
+	#First check any mandatory queries is running.
+	#If found mandatory queries look output of the first one.
+	#Else look output of the first optional query. 
+	#
+	foreach my $query_id ( keys %mandatory_queries ){
+		my $pid = $mandatory_queries{$query_id};
+		my %total;
 
-	syslog('debug', 'Response To frontend. GETSTATISTICS');
-	my $json = encode_json \%args;
-    syslog('debug', "$json");
+		if ($pid){
+			%total = &getTotalOfFile($pid);
+			$args{'total_flows_processed'} = $total{'Total flows processed'};
+			$args{'total_bytes_read'} = &humanReadableBytes($total{'Bytes read'});
+		}else{
+			foreach my $query_id ( keys %optional_queries ){
+				$pid = $optional_queries{$query_id};
+				%total = &getTotalOfFile($pid);
+				$args{'total_flows_processed'} = $total{'Total flows processed'};
+				$args{'total_bytes_read'} = &humanReadableBytes($total{'Bytes read'});
+				last;
+			}
+		}
+		last;
+	}
+	
 	Nfcomm::socket_send_ok($socket, \%args);
 	return;
 }
@@ -462,10 +503,10 @@ sub getOutputOfSubscription{
 	my %args;
 
 	my $subscriptionName = $$opts{'subscriptionName'};
-
-	my %output = %{$outputTable{$subscriptionName}};	
-	my $json = encode_json \%output;
 	
+	my %output = %{$outputTable{$subscriptionName}};	
+
+	my $json = encode_json \%output;
 	%args = &divideJsonToParts($json);	
 	syslog('debug', "$args{'0'}");
 
@@ -475,6 +516,37 @@ sub getOutputOfSubscription{
 
 }
 
+sub getOutputOfQuery{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+
+	my $subscriptionName = $$opts{'subscriptionName'};
+	my $query_id = $$opts{'query_id'};
+	my $pid;
+	
+	#
+	#Find pid number. Query id may be in mandatory queries or optional queries.
+	#
+	my %mandatory_queries = %{$running_subscriptions{$subscriptionName}{'mandatory'}};
+	if ($mandatory_queries{$query_id}){
+		$pid = $mandatory_queries{$query_id};
+	}else{
+		my %optional_queries = %{$running_subscriptions{$subscriptionName}{'optional'}};
+		$pid = $optional_queries{$query_id};
+	}	
+	
+
+	my @outputOfQuery = &parseOutputOfPid($pid);
+	my $json = encode_json \@outputOfQuery;
+	syslog('debug', "$json");
+	%args = &divideJsonToParts($json);	
+	
+	syslog('debug', 'Response To frontend. GETOUTPUT OF QUERY');
+	Nfcomm::socket_send_ok($socket, \%args);
+	return;
+
+}
 #Share running_subscriptions hash with all other child process. So they can put pid in it.
 sub runQueries{
 	my $socket = shift;
@@ -533,6 +605,7 @@ sub runQueries{
 					}
 				}
 				close FILE;
+
 				my $json = encode_json \%running_subscriptions;	
 				syslog('debug', "$json");
 				exit(0);
