@@ -116,7 +116,7 @@ function getFilters(){
 	});
 	//send them to the server.
 	queryMap['source'] = $('#flowSource').val();
-	$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap}, function(data){alert("asd");});
+	$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap}, function(data){});
 		
 	$('#nfqueryTab').val('Running');
 	$('#navigationForm').submit();

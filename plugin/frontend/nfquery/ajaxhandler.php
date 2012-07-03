@@ -34,6 +34,9 @@
 	if(isset($_GET['getOutputOfSubscription'])){
 		getOutputOfSubscription($_GET['subscriptionName']);
 	}
+	if(isset($_GET['getOutputOfQuery'])){
+		getOutputOfQuery($_GET['subscriptionName'], $_GET['query_id']);
+	}
 	if(isset($_GET['lookup'])){
 		lookup($_GET['ip']);
 	}

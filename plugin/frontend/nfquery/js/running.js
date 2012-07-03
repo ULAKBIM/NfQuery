@@ -9,6 +9,24 @@ function showOutput(subscriptionName){
 	);
 }
 
+function getOutputOfQuery(cell, subscriptionName){
+	$.get('/nfsen/plugins/nfquery/ajaxhandler.php', 
+		{getOutputOfQuery: 1,
+		 subscriptionName: subscriptionName,
+		 query_id: $(cell).html()
+		},
+	   	function (data){
+			$('#outputModalBody').html(data);
+			$('#outputModal').modal().css({
+					      	width: 'auto',
+					        'margin-left': function () {
+									            return -($(this).width() / 2);
+						}
+			    });
+		}
+	);
+}
+
 function showStatistics(subscriptionName){
 	if ($("#" + subscriptionName + "CollapseInner").hasClass('filled'))
 		return;
@@ -21,6 +39,9 @@ function showStatistics(subscriptionName){
 
 			$("#" + subscriptionName + "CollapseInner").html(data);
 			$("#" + subscriptionName + "CollapseInner").addClass('filled');
+			$('.query_id').click(function (){
+				getOutputOfQuery($(this), subscriptionName);
+			});
 			$('.tablesorter').tablesorter();
 		}
 	);

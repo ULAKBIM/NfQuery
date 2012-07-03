@@ -1,5 +1,6 @@
 <?php
-    #include('loghandler.php');
+	#include('loghandler.php');
+	$SUBDIRLAYOUT = 1;
     require_once('/var/www/nfsen/conf.php');
 	require_once('/var/www/nfsen/nfsenutil.php');
 	function isRegister(){
@@ -37,18 +38,46 @@
 		$opts = array();
 		$opts['subscriptionName'] = $subscriptionName;
 		$out_list = nfsend_query($command, $opts);
+			
+		echo '<div class="alert alert-info">';
+		echo '<table class="table">';
+		echo '<tr><th>#</th><th>Matched</th><th>Total</th><th>Percent</th></tr>';
 
+		echo '<tr><td class="outputInfoLabel"><strong>Flows</strong></td>';
+		echo '<td>'.$out_list['matched_flows'].'</td>';
+		echo '<td>'.$out_list['total_flows_processed'].'</td>';
+		$percent = $out_list['matched_flows']*100;
+		$percent = $percent / $out_list['total_flows_processed'];
+		echo '<td>% '.intval($percent).'</td></tr>';
+
+		echo '<tr><td class="outputInfoLabel"><strong>Queries</strong></td>';
+		echo '<td>'.sizeof($out_list['matched_queries']).'</td>';
+		echo '<td>'.sizeof($out_list['query_id']).'</td>';
+		$percent = sizeof($out_list['matched_queries'])*100;
+		$percent = $percent / sizeof($out_list['query_id']);
+		echo '<td>% '.intval($percent).'</td></tr>';
+
+
+		echo '</table>';
+		echo '</div>';
+
+		#
+		#Show staticstics in a sortable table.
+		#
 		echo '<div>';
 		echo '<table class="table table-bordered table-condensed tablesorter">';
 		echo '<thead>';
-		echo '<tr><th class="header">Query Id</th><th class="header">Total Flows</th><th class="header">Total Bytes</th><th class="header">Total Packets</th></tr>';
+		echo '<tr><th class="header">Query Id</th><td style="background-color:#E6EEEE"><strong>Filter</strong></td><th class="header">Total Flows</th><th class="header">Total Bytes</th><th class="header">Total Packets</th></tr>';
 		echo '</thead>';
-
 		$query_ids = $out_list['query_id'];
 		echo '<tbody>';
 		for($i = 0; $i<sizeof($query_ids); $i++){
 			echo '<tr>';
-			echo '<td>'.$query_ids[$i].'</td>'.'<td>'.$out_list['total_flows'][$i].'</td>'.'<td>'.$out_list['total_bytes'][$i].'</td>'.'<td>'.$out_list['total_packets'][$i].'</td>';
+			echo '<td class="query_id">'.$query_ids[$i].'</td>';
+			echo '<td>'.$out_list['filters'][$i].'</td>';
+			echo '<td>'.$out_list['total_flows'][$i].'</td>';
+			echo '<td>'.$out_list['total_bytes'][$i].'</td>';
+			echo '<td>'.$out_list['total_packets'][$i].'</td>';
 			echo '</tr>';
 		}
 		echo '</tbody>';
@@ -61,7 +90,45 @@
 		
 	}
 
-	function getOutputOfSubscription($subscriptionName){
+	function getOutputOfQuery($subscriptionName, $query_id){
+		$command = 'nfquery::getOutputOfQuery';
+		$opts = array();
+		$opts['subscriptionName'] = $subscriptionName;
+		$opts['query_id'] = $query_id;
+		$out_list = nfsend_query($command, $opts);
+		$output = "";
+		for($i=0;$i<sizeof($out_list);$i++){
+			$index="".$i;
+			$line = $out_list[$index];
+			$output = $output.$line;
+		}
+		$output = json_decode($output, true);
+		echo '<table class="table table-bordered table-condensed">';
+		echo '<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
+		foreach ($output as $table){
+				if ( $table['srcip_alert_prefix'] || $table['dstip_alert_prefix']){
+					echo '<tr class="alert alert-error">';				
+				}else{
+					echo '<tr>';				
+				}
+				echo '<td>'.$table['date'].'</td>';
+				echo '<td>'.$table['flow_start'].'</td>';
+				echo '<td>'.$table['duration'].'</td>';
+				echo '<td>'.$table['proto'].'</td>';
+				echo '<td><a class="ip" onclick=lookup(this)>'.$table['srcip_port'].'</a></td>';
+				echo '<td><a class="ip" onclick=lookup(this)>'.$table['dstip_port'].'</a></td>';
+				echo '<td>'.$table['packets'].'</td>';
+				echo '<td>'.$table['bytes'].'</td>';
+				echo '<td>'.$table['flows'].'</td>';
+				echo '<td>'.$query_id.'</td>';
+				echo '</tr>';
+		}
+		
+		echo '</table>';
+
+	}
+
+	function getOutputOfSubscription($subscriptionName, $total_query, $page_number){
 		$command = 'nfquery::getOutputOfSubscription';
 		$opts = array();
 		$opts['subscriptionName'] = $subscriptionName;
@@ -77,9 +144,25 @@
 		echo '<table class="table table-bordered table-condensed">';
 		echo '<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
 		
+		$query_per_page = 50;
+		$pagination = ($total_query < $query_per_page * $page_number)?1:0;	
+		$start = 0;
+		if ($pagination){
+			$start = $query_per_page * $page_number;
+		}
+		$counter = 0;	
 		$colorList = array("#3399FF", "#FCF8E3", "#C6F6C3");
+
 		foreach ($output as $query_id=>$result){
 			foreach ($result as $table){
+				if ($pagination){
+					if ($counter < $start) continue;
+					if ($counter == $start + $query_per_page){
+						echo '</table>';
+						return;
+					}
+				}
+
 				if ( $table['srcip_alert_prefix'] || $table['dstip_alert_prefix']){
 					echo '<tr class="alert alert-error">';				
 				}else{
@@ -96,6 +179,7 @@
 				echo '<td>'.$table['flows'].'</td>';
 				echo '<td style="background:'.$colorList[0].'">'.$query_id.'</td>';
 				echo '</tr>';
+				$counter ++;
 			}
 			$color = array_shift($colorList);
 			array_push($colorList, $color);
@@ -129,7 +213,6 @@
 		$command = 'nfquery::checkQueries';
 		$opts = array();
 		$out_list = nfsend_query($command, $opts);
-
 		if (!$out_list['subscriptions']){ #if no query is active return alert.
 			$result = '<div class="alert">No query is running.</div>';
 			return $result;
@@ -282,7 +365,7 @@
     	} else {
         	// several 5 min timeslices
         	$tslot1 = UNIX2ISO($_SESSION['tleft']);
-        	$subdirs1 = SubdirHierarchy($_SESSION['tleft']);
+			$subdirs1 = SubdirHierarchy($_SESSION['tleft']);
         	$tslot2 = UNIX2ISO($_SESSION['tright']);
         	$subdirs2 = SubdirHierarchy($_SESSION['tright']);
         	if ( strlen($subdirs1) == 0 )
@@ -311,7 +394,6 @@
 		foreach($cargs  as $key=>$value){
 			$opts[$key] = $value;
 		}
-		var_dump($opts);
 		$response = nfsend_query('nfquery::runQueries', $opts);
 
 		return true;
