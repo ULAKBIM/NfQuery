@@ -70,3 +70,7 @@
 		
 }
 
+.query_id:hover{
+	cursor: pointer;
+	background-color: #5BB75B;
+}
