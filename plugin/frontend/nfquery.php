@@ -61,9 +61,23 @@ function nfquery_Run( $plugin_id ) {
 #			include('nfquery/conf.php');
 #		}
 		if(file_exists("/tmp/nfquery.plugin.conf")){
-		#	echo "<div class='alert alert-info span11'><img src='/nfsen/plugins/nfquery/img/button_ok.png'>Your Plugin Informations has been Saved</div>";
+			$result  = isRegistered();
+			// 0:plugin has not    1:reject plugin    2:request pending     3:plugin registered
+			if($result == 0){
+				include('nfquery/conf.php');
+			}
+			else if($result==1){
+				include('nfquery/settings.php');
+			}
+			else if($result==2){
+				include('nfquery/settings.php');
+			}
+			else if($result==3){
+				include('nfquery/settings.php');
+			}
+	#		echo "<div class='alert alert-info span11'><img src='/nfsen/plugins/nfquery/img/button_ok.png'>Your Plugin Informations has been Saved</div>";
 			
-			include('nfquery/index.php');
+		#	include('nfquery/index.php');
 		}
 		else{
 			include('nfquery/conf.php');

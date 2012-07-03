@@ -6,8 +6,23 @@
 		<script src="/nfsen/plugins/nfquery/js/bootstrap.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/welcome.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/subscription.js"></script>
+		<script src="/nfsen/plugins/nfquery/js/index.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/iphone-style-checkboxes.js"></script>
-		<div class="container-fluid">
+		<?php
+#		       echo "<div id='welcome_div' class='container alert alert-info'>";
+#		       echo "<div class='row show-grid'>";
+#	               echo "<div class='span4'>";
+#        	       echo "<img  src='/nfsen/plugins/nfquery/img/check_ok.png'>Your Plugin is Registered.";
+#                       echo "</div>";
+#	               echo "</br></br></br> </br></br></br>";
+#	               echo "<div class='span4 offset8'>Now! You can start running nfquery.".
+#                            "<a id='next_anchor' href='#'><img src='/nfsen/plugins/nfquery/img/arrow_next.png'></a>";
+#                       echo "</div>";
+#                       echo "</div>";
+#                       echo "</div>";	
+#	
+#		?>
+		<div id="index_container"  class="container-fluid">
 			<div class="row-fluid">
 			  <div class="span2">
 					<img src="/nfsen/plugins/nfquery/img/logo2.png">
@@ -15,11 +30,12 @@
 						<form method="post" action="/nfsen/nfsen.php" id="navigationForm"> 
 							<input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
 								<?php
+									
 									/*
 									 * Check the tab name and activate corresponding tab.
 									 * Default tab is Home.
  									*/
-									$tabName = "Home";
+									$tabName = "Settings";
 									if (isset($_SESSION['nfquery']['nfqueryTabName'])){
 											$tabName = $_SESSION['nfquery']['nfqueryTabName'];
 									}
@@ -45,6 +61,13 @@
 
 							<div class="container-fluid">
 								<?php if (strcmp($tabName, "Subscription") == 0) include('subscriptions.php'); ?>
+							</div>
+						</div>
+						
+						<div class="tab-pane <?php if (strcmp($tabName, "Settings") == 0) echo "active"?>" id="settings">
+
+							<div class="container-fluid">
+								<?php if (strcmp($tabName, "Settings") == 0) include('settings.php'); ?>
 							</div>
 						</div>
 						<div class="tab-pane <?php if (strcmp($tabName, "About") == 0) echo "active"?>" id="about">

@@ -41,9 +41,9 @@ function getSubscriptionDetail3(name){
 					     //$("#queries").attr("class","alert alert-info2");
 					     if(category_name == "mandatory"){	
 						$("#queries").append("<table id='mandatory_table' class='table table-striped table-condensed'></table>");
-					     	$("#mandatory_table").append("<thead><tr><th><h3>Mandatory</h3></th></tr></thead>");
+					     	$("#mandatory_table").append("<thead><tr class='accordion-heading'><th><h3>Mandatory</h3></th></tr></thead>");
 					     	$("#mydiv").append("<b><center><h3><i class='icon-chevron-down'></i> Queries</h3></center></b>");
-					    	$("#mandatory_table").append("<thead><tr><th>Query Id</t><th>Query Type</th><th>Filter"+
+					    	$("#mandatory_table").append("<thead><tr><th>Query Id</th><th>Filter"+
 										"</th></tr></thead><tbody>");
 					     }
 					     $("#subscription_desc").attr("class","alert alert-info");
@@ -57,9 +57,9 @@ function getSubscriptionDetail3(name){
 					if(category_name == "mandatory"){	
 					     $("#mydiv").attr("data-target","#queries");
 					     $("#mydiv").attr("data-toggle","collapse");
-					     $("#mydiv").attr("class","upDown");
+					     $("#mydiv").attr("class","upDown accordion-heading");
 					     $("#queries").attr("class","collapse");
-					    var mandatory_table_row = "<tr class='mandatory_query'><td >"+query_id+"</td><td>"+query_type+"</td><td style='margin-right:70px;'data-toggle='collapse'"+
+					    var mandatory_table_row = "<tr class='mandatory_query'><td >"+query_id+"<td data-toggle='collapse'"+
 									"data-target='#optional"+j+"'><b>&darr; "+filter+"</b><div id='optional"+j+
 									"'class='collapse' ></td><td><span class='mandatory_query_popover badge badge-warning'>M</span></td></tr>";
 					    $("#mandatory_table").append(mandatory_table_row);
@@ -72,7 +72,21 @@ function getSubscriptionDetail3(name){
 					//$("#queries").append("<span class='table'>"+query_id+" "+query_type+" "+filter+"</span></br>");
 				}
 			}
-		}	
+		}
+		  $('.mandatory_query_popover').popover({
+                	title: "Mandatory Query",
+                	content: "Click Here to See Optional Queries Of This Mandatory Query"
+        	  });
+		  $('.optional_query_popover').popover({
+                	title: "Optional Query",
+                	content: "This is optional query."
+       		  });
+		 $('.upDown').click(function (){
+                  changeCollapseIcon($(this));
+        	 });
+
+
+	
 	} 
 	);
 }
