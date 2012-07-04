@@ -188,13 +188,8 @@ sub isRegistered{
 	syslog('debug',$plugin_ip);
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 	if($result){	
-		if($result->is_error){
-			$args{'register'} = 4;
-		}	
-		else{
-        	my $r = $result->result;
-			$args{'register'} = @{$r}[0];
-		}
+       	my $r = $result->result;
+		$args{'register'} = @{$r}[0];
 		Nfcomm::socket_send_ok($socket, \%args);
 	}
 }
@@ -293,7 +288,7 @@ sub parseOutputOfPid{
     my @output;
 	my $summary;
 	
-	open my $fh, "<", "$output_dir/$pid";
+	open my $fh, "<", "/tmp/$pid";
 	syslog('debug', "PARSING $pid");
 	foreach my $line (<$fh>){
 
@@ -408,7 +403,7 @@ sub getTotalOfFile{
 	my $fileName = shift;
 	my %total;
 
-	open (FILE, "/$output_dir/$fileName");
+	open (FILE, "/tmp/$fileName");
 	my @lines = <FILE>;
 	close(FILE);
 	
