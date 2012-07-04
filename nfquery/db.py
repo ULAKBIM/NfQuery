@@ -61,7 +61,7 @@ def initialize_db(store):
   		"prefix_id int(10) unsigned NOT NULL,"                               +
   		"plugin_ip varchar(20) COLLATE utf8_unicode_ci NOT NULL,"            +
   		"checksum varchar(32) COLLATE utf8_unicode_ci NOT NULL,"             +
-  		"registered tinyint(1) NOT NULL,"                                    +
+  		"registered INT NOT NULL,"                                    +
   		"PRIMARY KEY (id),"                                                  +
   		"UNIQUE KEY plugin_ip (plugin_ip),"                                  +
   		"KEY prefix_id (prefix_id),"                                         +

@@ -53,7 +53,8 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
 	self.store = db.get_store()
 	plugin = self.store.find(Plugin, Plugin.plugin_ip == plugin_ip).one()
-	print plugin.organization
+	print plugin.registered
+	#TODO Anywhere plugins registered flags not set. Flags must be define.
 	if plugin is None:
 		result.append(0);
 		print result
@@ -159,7 +160,7 @@ class jsonRPCServer(jsonrpc.JSONRPC):
             p_list = []
             for prefix in prefix_list:
                 p_list.append(prefix)
-            #print p_list
+            print p_list
             return p_list
 
 

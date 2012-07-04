@@ -6,7 +6,6 @@
 		<script src="/nfsen/plugins/nfquery/js/bootstrap.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/welcome.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/subscription.js"></script>
-		<script src="/nfsen/plugins/nfquery/js/index.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/iphone-style-checkboxes.js"></script>
 		<?php
 #		       echo "<div id='welcome_div' class='container alert alert-info'>";
@@ -30,12 +29,11 @@
 						<form method="post" action="/nfsen/nfsen.php" id="navigationForm"> 
 							<input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
 								<?php
-									
+									$register = isRegistered();
 									/*
 									 * Check the tab name and activate corresponding tab.
 									 * Default tab is Home.
  									*/
-									$tabName = "Settings";
 									if (isset($_SESSION['nfquery']['nfqueryTabName'])){
 											$tabName = $_SESSION['nfquery']['nfqueryTabName'];
 									}
@@ -52,15 +50,15 @@
 				</div>
 					<div class="tab-content span10">
 
-						<div class="tab-pane <?php if (strcmp($tabName, "Home") == 0) echo "active"?>" id="home">
+						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Home") == 0) echo "active" ?>" id="home">
 							<div class="container-fluid">
 								<?php if (strcmp($tabName, "Home") == 0) include('welcome.php');?>
 							</div>
 						</div>
-						<div class="tab-pane <?php if (strcmp($tabName, "Subscription") == 0) echo "active"?>" id="subscription">
+						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Subscription") == 0) echo "active"?>" id="subscription">
 
 							<div class="container-fluid">
-								<?php if (strcmp($tabName, "Subscription") == 0) include('subscriptions.php'); ?>
+								<?php if ( strcmp($tabName, "Subscription") == 0) include('subscriptions.php'); ?>
 							</div>
 						</div>
 						
@@ -75,14 +73,14 @@
 								<?php if (strcmp($tabName, "About") == 0) include('about.php'); ?>
 							</div>
 						</div>
-						<div class="tab-pane <?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>" id="workspace">
+						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Workspace") == 0) echo "active"?>" id="workspace">
 							<div class="container-fluid">
-								<?php if (strcmp($tabName, "Workspace") == 0) include('workspace.php'); ?>
+								<?php if (strcmp($tabName, "Workspace") == 0) include('workspace.php');?>
 							</div>
 						</div>
-						<div class="tab-pane <?php if (strcmp($tabName, "Running") == 0) echo "active"?>" id="running">
+						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Running") == 0) echo "active"?>" id="running">
 							<div class="container-fluid">
-								<?php if (strcmp($tabName, "Running") == 0)include('running.php'); ?>
+								<?php if (strcmp($tabName, "Running") == 0)include('running.php'); else{$tabName="Settings";}?>
 							</div>
 						</div>
 					</div>

@@ -114,22 +114,24 @@ sub pluginInfo{
 
 #Initialize plugin.
 sub Init {
-	my $Config = Config::Tiny->read( '/tmp/nfquery.plugin.conf' );
-	$plugin_ip = $Config->{plugin_information}->{plugin_ip};
-	$qs_ip = $Config->{plugin_information}->{qserver_ip};
-	$qs_port = $Config->{plugin_information}->{qserver_port};
-	$adm_publickey_file = $Config->{plugin_information}->{adm_publickey_file};
-#	&pluginInfo;
-	syslog('debug', "plugin ip $plugin_ip");
-	$uri = 'https://' . $qs_ip . ':' . $qs_port;
-	$rpc = &get_connection($qs_ip, $qs_port);
+    my $file = "/tmp/nfquery.plugin.conf";
+    if(-e $file){
+	    my $Config = Config::Tiny->read( '/tmp/nfquery.plugin.conf' );
+	    $plugin_ip = $Config->{plugin_information}->{plugin_ip};
+	    $qs_ip = $Config->{plugin_information}->{qserver_ip};
+	    $qs_port = $Config->{plugin_information}->{qserver_port};
+	    $adm_publickey_file = $Config->{plugin_information}->{adm_publickey_file};
+#	    &pluginInfo;
+	    syslog('debug', "plugin ip $plugin_ip");
+	    $uri = 'https://' . $qs_ip . ':' . $qs_port;
+	    $rpc = &get_connection($qs_ip, $qs_port);
+	    my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
+	    @prefixes = &getPrefixes();
+	    syslog('debug',"prefixx");	
+	    syslog('debug',$prefixes[0]);	
 
-	# register
-	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
-	
-	@prefixes = &getPrefixes();
-	syslog('debug',"prefixx");	
-	syslog('debug',$prefixes[0]);	
+			
+    }	
     IPC::Shareable->clean_up_all;	
 	return 1;
 }
@@ -154,6 +156,8 @@ sub writeConfigFile{
 	$Config->write( '/tmp/nfquery.plugin.conf' );
 	
 	syslog('debug',$plugin_ip);
+#	&pluginInfo;
+	# register
 
 	Nfcomm::socket_send_ok($socket, \%args);
 
@@ -181,11 +185,18 @@ sub isRegistered{
 	my $socket = shift;
         my $opts = shift;
         my %args;
-	syslog('debug',$uri);
-	my $result = $rpc->call($uri,'register',[$plugin_ip]);
-        my $r = $result->result;
-	$args{'register'} = @{$r}[0];
-	Nfcomm::socket_send_ok($socket, \%args);
+	syslog('debug',$plugin_ip);
+	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
+	if($result){	
+		if($result->is_error){
+			$args{'register'} = 4;
+		}	
+		else{
+        	my $r = $result->result;
+			$args{'register'} = @{$r}[0];
+		}
+		Nfcomm::socket_send_ok($socket, \%args);
+	}
 }
 
 sub checkPIDState{
