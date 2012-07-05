@@ -158,7 +158,7 @@ sub writeConfigFile{
 	syslog('debug',$plugin_ip);
 #	&pluginInfo;
 	# register
-
+        &Init;
 	Nfcomm::socket_send_ok($socket, \%args);
 
 
@@ -185,7 +185,6 @@ sub isRegistered{
 	my $socket = shift;
         my $opts = shift;
         my %args;
-	syslog('debug',$plugin_ip);
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 	if($result){	
        	my $r = $result->result;
