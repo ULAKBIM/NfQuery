@@ -194,7 +194,10 @@ sub isRegistered{
         my %args;
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 	if($result){	
-       	my $r = $result->result;
+		if($result->is_error){
+			args{'register'} = 4;
+		}
+       		my $r = $result->result;
 		$args{'register'} = @{$r}[0];
 		Nfcomm::socket_send_ok($socket, \%args);
 	}
