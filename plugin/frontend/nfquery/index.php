@@ -39,13 +39,27 @@
 									}
 								?>
 						</form>
-							<li class="navItem <?php if (strcmp($tabName, "Home") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav "><i class="icon-home"></i>Home</a></li>
-							<li class="navItem <?php if (strcmp($tabName, "Subscription") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-book"></i>Subscription</a></li>
-							<li class="navItem <?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-pencil"></i>Workspace</a></li>
-							<li class="navItem <?php if (strcmp($tabName, "Running") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-info-sign"></i>Running</a></li>
-							<li class="navItem <?php if (strcmp($tabName, "Report") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-bullhorn"></i>Report</a></li>
-							<li class="navItem <?php if (strcmp($tabName, "Settings") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-wrench"></i>Settings</a></li>
-							<li class="navItem <?php if (strcmp($tabName, "About") == 0) echo "active"?>"><a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-align-justify"></i>About</a></li>
+							<li class="navItem <?php if (strcmp($tabName, "Home") == 0) echo "active"?>">
+								<a data-toggle="tab" href="#" class="nfqueryNav "><i class="icon-home"></i>Home</a>
+							</li>
+							<li class="navItem <?php if (strcmp($tabName, "Subscription") == 0) echo "active"?>">
+								<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-book"></i>Subscription</a>
+							</li>
+							<li class="navItem <?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>">
+								<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-pencil"></i>Workspace</a>
+							</li>
+							<li class="navItem <?php if (strcmp($tabName, "Running") == 0) echo "active"?>">
+								<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-info-sign"></i>Running</a>
+							</li>
+							<li class="navItem <?php if (strcmp($tabName, "Report") == 0) echo "active"?>">
+								<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-bullhorn"></i>Report</a>
+							</li>
+							<li class="navItem <?php if (strcmp($tabName, "Settings") == 0) echo "active"?>">
+								<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-wrench"></i>Settings</a>
+							</li>
+							<li class="navItem <?php if (strcmp($tabName, "About") == 0) echo "active"?>">
+								<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-align-justify"></i>About</a>
+							</li>
 					</ul>
 				</div>
 					<div class="tab-content span10">
@@ -55,8 +69,8 @@
 								<?php if (strcmp($tabName, "Home") == 0) include('welcome.php');?>
 							</div>
 						</div>
-						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Subscription") == 0) echo "active"?>" id="subscription">
 
+						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Subscription") == 0) echo "active"?>" id="subscription">
 							<div class="container-fluid">
 								<?php if ( strcmp($tabName, "Subscription") == 0) include('subscriptions.php'); ?>
 							</div>
@@ -68,21 +82,25 @@
 								<?php if (strcmp($tabName, "Settings") == 0) include('settings.php'); ?>
 							</div>
 						</div>
+
 						<div class="tab-pane <?php if (strcmp($tabName, "About") == 0) echo "active"?>" id="about">
 							<div class="container-fluid">
 								<?php if (strcmp($tabName, "About") == 0) include('about.php'); ?>
 							</div>
 						</div>
+
 						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Workspace") == 0) echo "active"?>" id="workspace">
 							<div class="container-fluid">
 								<?php if (strcmp($tabName, "Workspace") == 0) include('workspace.php');?>
 							</div>
 						</div>
+
 						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Running") == 0) echo "active"?>" id="running">
 							<div class="container-fluid">
 								<?php if (strcmp($tabName, "Running") == 0)include('running.php'); else{$tabName="Settings";}?>
 							</div>
 						</div>
+
 					</div>
 			
 				</div>

@@ -42,7 +42,12 @@ function showStatistics(subscriptionName){
 			$('.query_id').click(function (){
 				getOutputOfQuery($(this), subscriptionName);
 			});
-			$('.tablesorter').tablesorter();
+			$('.tablesorter').each(function(){
+                var id = $(this).attr('id');
+                if ($('#' + id).hasClass('tablesorted')) return;
+                $('#' + id).tablesorter();
+                $('#' + id).addClass('tablesorted');
+            });
 		}
 	);
 }
