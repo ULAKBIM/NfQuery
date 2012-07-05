@@ -37,7 +37,6 @@
 		$opts = array();
 		$opts['subscriptionName'] = $subscriptionName;
 		$out_list = nfsend_query($command, $opts);
-			
 		echo '<div class="alert alert-info">';
 		echo '<table class="table">';
 		echo '<tr><th>#</th><th>Matched</th><th>Total</th><th>Percent</th></tr>';
@@ -64,7 +63,7 @@
 		#Show staticstics in a sortable table.
 		#
 		echo '<div>';
-		echo '<table class="table table-bordered table-condensed tablesorter">';
+		echo '<table class="table table-bordered table-condensed tablesorter" id="'.$subscriptionName.'Statistics">';
 		echo '<thead>';
 		echo '<tr><th class="header">Query Id</th><td style="background-color:#E6EEEE"><strong>Filter</strong></td><th class="header">Total Flows</th><th class="header">Total Bytes</th><th class="header">Total Packets</th></tr>';
 		echo '</thead>';
