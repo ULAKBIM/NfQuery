@@ -423,6 +423,7 @@ def get_store(conf=None):
         Create and return a database connection if not exists yet.
     '''
     global __store
+    global database 
     if not __store:
         if conf is None:
             print 'initiate the db first'
@@ -431,20 +432,24 @@ def get_store(conf=None):
             try:
                 db = 'mysql://' + conf.db_user  + ':' + conf.db_password + '@' + conf.db_host + '/' + conf.db_name
                 #db = "mysql://test@localhost/test"
-                database = create_database(db)
+		database = create_database(db)
                 __store = Store(database)
                 # Check if table exists
                 result = __store.execute("SELECT version FROM application")
                 if result:
                     print 'connection established'
+                    __store = Store(database)
                     return __store
             except MySQLException, e:
+                __store = Store(database)
                 if e.args[0] == 1146:
                     print 'Creating the tables'
                     initialize_db(__store)
                     insert_threats(__store)
 		    insert_type(__store)
 		    insert_category(__store)
+		    __store.flush()
+                    __store = Store(database)
                     return __store
                 else:
                     print 'Another mysql error is happened'
@@ -453,6 +458,7 @@ def get_store(conf=None):
                 print e
                 sys.exit()
     else:
+        __store = Store(database)
         return __store
 
 
