@@ -8,10 +8,7 @@ use warnings;
 use Data::Dumper;
 use Data::Printer;
 use Data::Types qw(:all);
-use JSON::RPC::Common::Marshal::HTTP;
-use LWP::Protocol::https;
 use LWP::UserAgent;
-use LWP::Simple;
 use JSON::RPC::LWP;
 use Config::Simple;
 use Term::ANSIColor;
@@ -23,9 +20,10 @@ use Proc::ProcessTable;
 use Config::Simple;
 use NetAddr::IP;
 use Config::Tiny;
-#package NfQueryPlugin::Main; 
+use Net::SSL ();
 
 use feature 'say';
+
 
 my $cfg;
 my $rpc;
@@ -117,20 +115,18 @@ sub Init {
     my $file = "/tmp/nfquery.plugin.conf";
     if(-e $file){
 	    my $Config = Config::Tiny->read( '/tmp/nfquery.plugin.conf' );
+        #get values from config file
 	    $plugin_ip = $Config->{plugin_information}->{plugin_ip};
 	    $qs_ip = $Config->{plugin_information}->{qserver_ip};
 	    $qs_port = $Config->{plugin_information}->{qserver_port};
 	    $adm_publickey_file = $Config->{plugin_information}->{adm_publickey_file};
-#	    &pluginInfo;
-	    syslog('debug', "plugin ip $plugin_ip");
-	    $uri = 'https://' . $qs_ip . ':' . $qs_port;
-	    $rpc = &get_connection($qs_ip, $qs_port);
-	    my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
-	    @prefixes = &getPrefixes();
-	    syslog('debug',"prefixx");	
-	    syslog('debug',$prefixes[0]);	
 
-			
+	    $uri = 'https://' . $qs_ip . ':' . $qs_port;
+	    $rpc = &get_connection();
+        
+	    my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
+
+	    @prefixes = &getPrefixes();
     }	
     IPC::Shareable->clean_up_all;	
 	return 1;
@@ -165,11 +161,22 @@ sub writeConfigFile{
 }
 # prepare connection parameters
 sub get_connection {
+    $Net::HTTPS::SSL_SOCKET_CLASS = "Net::SSL"; # Force use of Net::SSL
+
+    $ENV{HTTPS_DEBUG} = 1;
+    # CA cert peer verification
+    $ENV{HTTPS_CA_FILE}   = '/home/serhat/nfquery/cfg/certs/cacert.pem';
+    $ENV{HTTPS_CA_DIR}    = '/home/serhat/nfquery/cfg/certs/';
+
+    # Client PKCS12 cert support
+    $ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/nfquery/cfg/certs/plugin-cert.p12';
+    $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat';
 
     # Prepare user agent
     my $ua = eval { LWP::UserAgent->new() }
             or die "Could not make user-agent! $@";
-    $ua->ssl_opts( verify_hostname => 0, SSL_ca_file => 'nfquery.crt', SSL_version => 'TLSv1');
+    $ua->ssl_opts( verify_hostname => 0);
+    # $ua->ssl_opts( verify_hostname => 0, SSL_version => 'TLSv1');
     
     my $rpc = JSON::RPC::LWP->new(
       ua => $ua,
@@ -214,8 +221,6 @@ sub checkQueries{
 	my %args;
 	
 	$args{'subscriptions'} = [];
-	my $json = encode_json \%running_subscriptions;
-	syslog('debug', "CHECK $json");
 
 	foreach my $subscription (keys %running_subscriptions){
 		push @{$args{'subscriptions'}}, $subscription;
@@ -582,11 +587,13 @@ sub runQueries{
 		if ($running_subscriptions{$subscription_name}){
 			syslog('debug', "$subscription_name is already running.");
 			next;
-		}
-		$running_subscriptions{$subscription_name} = {};
-		$running_subscriptions{$subscription_name}{'mandatory'} = {};
-		$running_subscriptions{$subscription_name}{'optional'} = {};
-		$stats{$subscription_name} = {};
+		}else{    
+            syslog('debug', "INITIALIZING $subscription_name");
+            $running_subscriptions{$subscription_name} = {};
+            $running_subscriptions{$subscription_name}{'mandatory'} = {};
+            $running_subscriptions{$subscription_name}{'optional'} = {};
+		    $stats{$subscription_name} = {};
+        }
 	    
 		foreach my $query_id (@{$category{'mandatory'}}){
 			$stats{$subscription_name}{$query_id} = {};
