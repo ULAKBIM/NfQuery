@@ -88,7 +88,7 @@ $PREFIX  = '/usr/bin';
 # This may be a different or the same uid than your web server.
 # Note: This user must be in group $WWWGROUP, otherwise nfcapd
 #       is not able to write data files!
-$USER    = "netflow";
+$USER    = "ahmetcan";
 
 # user and group of the web server process
 # All netflow processing will be done with this user
