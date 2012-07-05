@@ -12,7 +12,6 @@ function register(){
 			    'qserver_port':$("#id_queryserverport").val(),
 				'publickeyfile':$("#id_pkeyfile").val()};
 		$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{map:map},function(data){
-			alert(data);
 			window.location.reload();
 		});	 
 	}
