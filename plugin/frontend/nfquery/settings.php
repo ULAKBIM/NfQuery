@@ -2,13 +2,12 @@
 	if(file_exists("/tmp/nfquery.plugin.conf")){
 		$registered = isRegistered();
 		if($registered==0){
-			echo "plugin has not";
+			include('conf2.php');
 			$html = "<div class='alert' >Plugin is not found.";
 			$html=$html." Please check your informations or contact to Query Server admin.</div>";
 			echo $html;
 		}
 		if($registered==1){
-			echo "reject plugin";
 			$html = "<div class='alert alert-error'><img src='/nfsen/plugins/nfquery/img/check_block.png'>&nbsp; &nbsp; &nbsp;    Your registration request was rejected.</div>";	
 			echo $html;
 		}

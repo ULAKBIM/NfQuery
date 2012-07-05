@@ -3,12 +3,7 @@
 <script src="http://code.jquery.com/jquery-1.7.2.js"></script>
 <script src="/nfsen/plugins/nfquery/js/bootstrap.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<div class="container-fluid">
 	<div class="row-fluid">
-		<div class="span2">
-                 	<img src="/nfsen/plugins/nfquery/img/logo2.png"></br></br></br></br>
-                 	<a href="http://www.geant.net"><img src="/nfsen/plugins/nfquery/img/geantlogo.jpg"></a>
-		</div>
 		<div class="span8 ">
 			<div><strong><h2>Settings</h2></strong></div>
 			<div class="alert alert-inforegister">
@@ -60,7 +55,6 @@
 	<center><div class="alert alert-success"><button id="register" onclick="register()" class="btn btn-primary"> Save</button></div></center>
 		</div>
 	</div>
-</div>
 
 
 
