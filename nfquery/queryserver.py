@@ -21,6 +21,7 @@ from querymanager import QueryManager
 # Special Imports For Twisted JSON_RPC  -> txjsonrpc
 from twisted.web import server
 from twisted.internet import ssl,reactor
+from OpenSSL import SSL
 from twisted.internet import task
 #from twisted.internet.protocol import Factory
 #from twisted.application import service,internet
@@ -84,6 +85,13 @@ class QueryServer:
             self.qslogger.info('You should have all \'nfquery, database, plugin, sources\' options in the configuration file')
             self.qslogger.info('Please add the required option and check the manual')
         
+    def verifyCallback(self, connection, x509, errnum, errdepth, ok):
+        if not ok:
+            print 'invalid cert from subject:', x509.get_subject()
+            return False
+        else:
+            print "Certs are fine"
+        return True
 
     def startJSONRPCServer(self):
         '''
@@ -94,12 +102,16 @@ class QueryServer:
         
         # sslmethod = ssl.SSL.SSLv23_METHOD and other could be implemented here.
         # For TLSV1
-
-        reactor.listenSSL( self.config.nfquery.port, rpcserver,
-                           ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file,
-                           #sslmethod=ssl.SSL.TLSv1_METHOD) 
-                           sslmethod=ssl.SSL.SSLv23_METHOD) 
-                         )
+        
+        contextFactory = ssl.DefaultOpenSSLContextFactory(self.config.nfquery.key_file, self.config.nfquery.cert_file,
+                                                                                        sslmethod=ssl.SSL.SSLv23_METHOD)
+        ctx = contextFactory.getContext()
+        ctx.set_verify(SSL.VERIFY_PEER | SSL.VERIFY_FAIL_IF_NO_PEER_CERT, self.verifyCallback)
+        
+        # Since we have self-signed certs we have to explicitly
+        # tell the server to trust them.
+        ctx.load_verify_locations("/home/serhat/nfquery/cfg/certs/cacert.pem")
+        reactor.listenSSL( self.config.nfquery.port, rpcserver, contextFactory)
 
         #reactor.listenTCP(self.config.nfquery.port, rpcserver)
 

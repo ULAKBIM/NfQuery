@@ -47,39 +47,39 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         raise jsonrpc.Fault(123, "The fault procedure is faulty.")
 
     def jsonrpc_register(self,plugin_ip):
-	result = []
-	print plugin_ip
-	self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        result = []
+        print plugin_ip
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
-	self.store = db.get_store()
-	plugin = self.store.find(Plugin, Plugin.plugin_ip == plugin_ip).one()
-	#TODO Anywhere plugins registered flags not set. Flags must be define.
-	if plugin is None:
-		result.append(0);
-		print result
-		return result
-	else:
-		if plugin.registered == 1:
-			result.append(1)
-			print result
-			return result
-		if plugin.registered == 2:
-			result.append(2)
-			print result
-			return result
-		if plugin.registered == 3:
-			result.append(3)
-			print result
-			return result
-	print result
-	return result
-#	print organization
-#	print prefix_list
-#	print plugin_ip
-#	print adm_publickey_file
-#	print adm_tel
-#	print adm_name
-#	print adm_mail
+        self.store = db.get_store()
+        plugin = self.store.find(Plugin, Plugin.plugin_ip == plugin_ip).one()
+        #TODO Anywhere plugins registered flags not set. Flags must be define.
+        if plugin is None:
+            result.append(0);
+            print result
+            return result
+        else:
+            if plugin.registered == 1:
+                result.append(1)
+                print result
+                return result
+            if plugin.registered == 2:
+                result.append(2)
+                print result
+                return result
+            if plugin.registered == 3:
+                result.append(3)
+                print result
+                return result
+        print result
+        return result
+#    print organization
+#    print prefix_list
+#    print plugin_ip
+#    print adm_publickey_file
+#    print adm_tel
+#    print adm_name
+#    print adm_mail
 #        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
 #        # DEBUG mode da hangi fieldlarin hatali geldigini yazdirabiliriz tabiki sadece query server ' a.
 #        #print "Registration information : %s,%s,%s,%s,%s,%s,%s" % (organization, adm_name, adm_mail, adm_tel, adm_publickey, prefix_list, plugin_ip)
@@ -91,8 +91,8 @@ class jsonRPCServer(jsonrpc.JSONRPC):
 #            message += 'Please ask to QS Administrator about your registration process.'
 #            self.rpclogger.info("AAAAAAAAAAa")
 #            print message
-#	    result.append(0)
-#	    print result
+#        result.append(0)
+#        print result
 #            return result
 #        else:
 #            checksum = hashlib.md5()
@@ -103,9 +103,9 @@ class jsonRPCServer(jsonrpc.JSONRPC):
 #                message = 'Your plugin information doesn\'t match with the QueryServer side.'
 #                message += 'Plugin Checksum Error'
 #                message += 'Please check your information and try again.'
-#	    	result.append(1)
-#	    	print result
-#            	return result
+#            result.append(1)
+#            print result
+#                return result
 #               # print message
 #            elif checksum.hexdigest() == plugin.checksum:
 #                # Set the plugin registered
@@ -115,9 +115,9 @@ class jsonRPCServer(jsonrpc.JSONRPC):
 #                message =  'Your plugin is registered.\n'
 #                message += 'Feel free to checkout query subscriptions.'
 #                #print message
-#	    	result.append(2)
-#	    	print result
-#            	return result
+#            result.append(2)
+#            print result
+#                return result
 #                #return self.jsonrpc_get_subscriptions()
 
     def jsonrpc_get_query_filter(self,query_id):
@@ -127,9 +127,9 @@ class jsonRPCServer(jsonrpc.JSONRPC):
 
 
     def jsonrpc_get_subscription_detail(self, subscription):
-	self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.rpclogger.debug('returning subscriptions detail')
-	return self.queryManager.getSubscription(subscription)
+        return self.queryManager.getSubscription(subscription)
     
     def jsonrpc_get_subscriptions(self):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
