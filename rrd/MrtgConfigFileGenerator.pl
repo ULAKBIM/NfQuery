@@ -2,6 +2,7 @@
 
 use ConfigUtils 'parseConfigFile';
 use Webservice  'getLinksOfManIp';
+use Logger 'logger';
 
 use strict;
 
@@ -10,7 +11,10 @@ my $cfg = &parseConfigFile();
 my $mrtg_conf_path = $cfg->param('MRTG_CONF_PATH');
 my $mrtg_work_dir = $cfg->param('MRTG_WORK_DIR');
 
+
 my %man_links = &getLinksOfManIp();
+
+&logger('info', 'Mrth Config File Generator is Running Now');
 
 foreach my $man_ip (keys %man_links){
 	my %links = %{$man_links{$man_ip}};
@@ -29,6 +33,8 @@ foreach my $man_ip (keys %man_links){
 	print FILE "LogFormat: rrdtool\n";
 	print FILE "PathAdd: /usr/local/bin\n";
 	print FILE "EnableSnmpV3: yes\n\n\n";
+	
+	&logger('info', "Creating $man_ip.cfg");
 
 	foreach my $link_id (keys %links){
 		my %link = %{$links{$link_id}};
@@ -64,3 +70,6 @@ foreach my $man_ip (keys %man_links){
 
 	close FILE;
 }
+
+&logger('info', "Mrtg Configuration Files Created Successfuly");
+
