@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     for i in router:
         for j in router[i]:
-            g=os.popen("ls "+ filter_dir +"/"+j+"*").read()
+            g=os.popen("ls "+ filter_dir +"/"+j+"/"+j+"*").read()
             g=g.rstrip()
             for k in g.split("\n"):
                 fromm = k.split("/")[-1].split("_")[0]

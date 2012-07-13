@@ -5,6 +5,7 @@ from IPy import IP
 import netaddr
 import os
 from config import Config, ConfigError
+from datetime import datetime
 
 from_node_ifdesc_dir = "/from_node_ifdesc"
 to_node_ifdesc_dir = "/to_node_ifdesc"
@@ -44,6 +45,7 @@ def createdirectory(node_to_node_dir,from_node_ifdesc_dir,from_node_ip_dir,to_no
 
 def connectWS(location,uri):
     print "connecting to ws"
+    print datetime.now()
     global block
     global result
     try:
@@ -76,6 +78,8 @@ def connectWS(location,uri):
     		    block2.append( str(IP(ip_range)))
         block[myid]=block2
     print "taken all data from ws"
+    print datetime.now()
+
 
 
 
@@ -149,7 +153,8 @@ def from_node_to_node():
                                     filee = open(file_name,"w")
                                     filee.write(filterr)
                                     filee.close()
-
+    print "created node_to_node"
+    print datetime.now()
 def from_node_ifdesc(name=None):
     if not name:
         for i in result:
@@ -169,7 +174,8 @@ def from_node_ifdesc(name=None):
 	                if_desc = result[i][node1]["router_ifindex"]
 	                filter = "in if " + result[i][node1]["router_ifindex"]
       			return filter
-
+    print "created from_node_ifdesc"
+    print datetime.now()
 def from_node_ip(name=None):
     if not name:
         for i in result:
@@ -193,7 +199,8 @@ def from_node_ip(name=None):
                         return filter
 		    else:
 		        return ""
-
+    print "created from_node_ip"
+    print datetime.now()
 def to_node_ifdesc(name=None):
     if not name:
         for i in result:
@@ -214,8 +221,8 @@ def to_node_ifdesc(name=None):
 			filter = "out if " + result[i][node1]["router_ifindex"]
 			return filter
 
-
-
+    print "to_node_ifdesc"
+    print datetime.now()
 def to_node_ip(name=None):
     if not name:
         for i in result:
@@ -239,8 +246,8 @@ def to_node_ip(name=None):
                         return filter
 		    else:
 		        return ""
-
-
+    print "to_node_ip"
+    print datetime.now()
 if __name__ == "__main__":
     config = parseConfig(os.getcwd()+"/matrice.conf")
     location = config.location.wslocation
