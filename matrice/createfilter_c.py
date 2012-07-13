@@ -43,13 +43,14 @@ def createdirectory(node_to_node_dir,from_node_ifdesc_dir,from_node_ip_dir,to_no
 
 
 def connectWS(location,uri):
+    print "connecting to ws"
     global block
     global result
     try:
     	p = SOAPProxy(location, uri)
     	result = p.wsGetMainLinksByInstId()
     	ips = p.wsGetIPByInstId()
-    
+	print "connection finished"    
     except:
     	print "can not connect"
     	print "baska bahara kaldi"
@@ -74,6 +75,7 @@ def connectWS(location,uri):
     		    ip_range = str(node2["ip_begin"]+"-"+node2["ip_end"])
     		    block2.append( str(IP(ip_range)))
         block[myid]=block2
+    print "taken all data from ws"
 
 
 
@@ -115,7 +117,10 @@ def from_node_to_node():
         for node1 in result[element1]:
             for element2 in result: 
                 for node2 in result[element2]:
-    	            file_name = node_to_node_dir+"/"+result[element1][node1]["inst_code"]+"_"+result[element2][node2]["inst_code"]
+		    unidir = node_to_node_dir  + "/" + result[element1][node1]["inst_code"]
+		    if not os.path.exists(unidir):
+                        os.mkdir(unidir)
+     	            file_name = unidir +"/"+result[element1][node1]["inst_code"]+"_"+result[element2][node2]["inst_code"]
                     if result[element1][node1]["router_name"]==result[element2][node2]["router_name"] and result[element1][node1]["link_id"]!=result[element2][node2]["link_id"]:
                         if (result[element2][node2]["router_ifindex"]!=None):
                             if len(result[element1])>1:			
