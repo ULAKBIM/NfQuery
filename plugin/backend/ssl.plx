@@ -11,11 +11,11 @@ use Net::SSL (); # From Crypt-SSLeay
 $Net::HTTPS::SSL_SOCKET_CLASS = "Net::SSL"; # Force use of Net::SSL
 $ENV{HTTPS_DEBUG} = 1;
 # CA cert peer verification
-$ENV{HTTPS_CA_FILE}   = '/home/serhat/nfquery/cfg/certs/cacert.pem';
-$ENV{HTTPS_CA_DIR}    = '/home/serhat/nfquery/cfg/certs/';
+$ENV{HTTPS_CA_FILE}   = '/home/ahmetcan/nfquery/cfg/certs/cacert.pem';
+$ENV{HTTPS_CA_DIR}    = '/home/ahmetcan/nfquery/cfg/certs/';
 
 # Client PKCS12 cert support
-$ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/nfquery/cfg/certs/plugin-cert.p12';
+$ENV{HTTPS_PKCS12_FILE}     = '/home/ahmetcan/nfquery/cfg/certs/plugin-cert.p12';
 $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat';
 
 # client certificate support
@@ -37,4 +37,4 @@ my $rpc = JSON::RPC::LWP->new(
   ua => $ua,
   version => '2.0'
 );
-my $result = $rpc->call( 'https://193.140.94.217:7777', 'register', ['127.0.0.1']);
+my $result = $rpc->call( 'https://127.0.0.1:7777', 'register', ['127.0.0.1']);

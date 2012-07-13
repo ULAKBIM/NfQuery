@@ -110,7 +110,7 @@ class QueryServer:
         
         # Since we have self-signed certs we have to explicitly
         # tell the server to trust them.
-        ctx.load_verify_locations(self.config.root_cert_file)
+        ctx.load_verify_locations(self.config.nfquery.root_cert_file)
         reactor.listenSSL( self.config.nfquery.port, rpcserver, contextFactory)
 
         #reactor.listenTCP(self.config.nfquery.port, rpcserver)
