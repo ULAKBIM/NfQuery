@@ -37,7 +37,7 @@ function nfquery_ParseInput( $plugin_id ) {
  * Its return value is ignored.
  */
 function nfquery_Run( $plugin_id ) {
-	        require_once('nfquery/nfqueryutil.php');
+	    require_once('nfquery/nfqueryutil.php');
 
 		#print '<iframe id="nfqueryIFrame" src="/nfsen/plugins/nfquery/index.php" frameborder="0" style="height:100%;width:100%" scrolling="no">IFrame</iframe>';
 		if(isset($_POST['nfqueryTabName'])){
@@ -47,10 +47,10 @@ function nfquery_Run( $plugin_id ) {
 			}
 			$_SESSION['nfquery']['nfqueryTabName'] = $_POST['nfqueryTabName'];
 		}
-			if(!isset($_SESSION['nfquery']['nfqueryTabName']))
-				$_SESSION['nfquery']['nfqueryTabName'] = "Settings";
+		if(!isset($_SESSION['nfquery']['nfqueryTabName']))
+			$_SESSION['nfquery']['nfqueryTabName'] = "Settings";
 			
-			include("nfquery/index.php");
+		include("nfquery/index.php");
 	
 ##		if(file_exists("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin.conf")){
 ##			$result  = isRegister();

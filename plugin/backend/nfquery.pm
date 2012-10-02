@@ -112,9 +112,9 @@ sub pluginInfo{
 
 #Initialize plugin.
 sub Init {
-    my $file = "/tmp/nfquery.plugin.conf";
+    my $file = "/home/serhat/nfquery.plugin.conf";
     if(-e $file){
-	    my $Config = Config::Tiny->read( '/tmp/nfquery.plugin.conf' );
+	    my $Config = Config::Tiny->read( '/home/serhat/nfquery.plugin.conf' );
         #get values from config file
 	    $plugin_ip = $Config->{plugin_information}->{plugin_ip};
 	    $qs_ip = $Config->{plugin_information}->{qserver_ip};
@@ -124,6 +124,8 @@ sub Init {
 	    $uri = 'https://' . $qs_ip . ':' . $qs_port;
 	    $rpc = &get_connection();
         
+        syslog('debug',"$uri");
+        syslog('debug',"$plugin_ip");
 	    my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 
 	    @prefixes = &getPrefixes();
@@ -141,7 +143,7 @@ sub writeConfigFile{
 	my $opts = shift;
 	my %args;
 	my $configArray = json_to_perl($$opts{'configArray'});
-        my %myconfig = %{$configArray};
+    my %myconfig = %{$configArray};
 	$plugin_ip = $myconfig{'plugin_ip'};
 	$qs_ip = $myconfig{'qserver_ip'};
 	$qs_port = $myconfig{'qserver_port'};
@@ -149,12 +151,12 @@ sub writeConfigFile{
 	my $Config = Config::Tiny->new();
 	$Config->{plugin_information}={plugin_ip=>$plugin_ip,qserver_ip=>$qs_ip,qserver_port=>$qs_port,
 			adm_publickey_file=>$adm_publickey_file};
-	$Config->write( '/tmp/nfquery.plugin.conf' );
+	$Config->write( '/home/serhat/nfquery.plugin.conf' );
 	
 	syslog('debug',$plugin_ip);
 #	&pluginInfo;
 	# register
-        &Init;
+    &Init;
 	Nfcomm::socket_send_ok($socket, \%args);
 
 
@@ -170,7 +172,7 @@ sub get_connection {
 
     # Client PKCS12 cert support
     $ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/nfquery/cfg/certs/plugin-cert.p12';
-    $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat';
+    $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat1991';
 
     # Prepare user agent
     my $ua = eval { LWP::UserAgent->new() }
@@ -190,8 +192,8 @@ sub get_connection {
 
 sub isRegistered{
 	my $socket = shift;
-        my $opts = shift;
-        my %args;
+    my $opts = shift;
+    my %args;
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 	if($result){	
 		if($result->is_error){

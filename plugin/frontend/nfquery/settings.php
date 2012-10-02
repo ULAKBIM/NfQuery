@@ -1,5 +1,5 @@
 <?php
-	if(file_exists("/tmp/nfquery.plugin.conf")){
+	if(file_exists("/home/serhat/nfquery.plugin.conf")){
 		$registered = isRegistered();
 		if($registered==0){
 			include('conf2.php');
