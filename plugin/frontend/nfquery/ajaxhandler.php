@@ -3,11 +3,6 @@
     require_once('nfqueryutil.php');
 
 
-	if(isset($_POST['map'])){
-		$map = $_POST['map'];
-		writeConfigFile($map);
-	}
-
 	if(isset($_POST['getAlerts'])){
 		$result = getSubscriptions();
 		print($result);
