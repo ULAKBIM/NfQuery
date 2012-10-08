@@ -146,7 +146,7 @@ sub Cleanup {
 }
 
 
-}
+
 # prepare connection parameters
 sub get_connection {
     $Net::HTTPS::SSL_SOCKET_CLASS = "Net::SSL"; # Force use of Net::SSL
