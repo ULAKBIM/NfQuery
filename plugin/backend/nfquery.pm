@@ -89,7 +89,6 @@ our %cmd_lookup = (
 	'isRegistered' => \&isRegistered,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
 	'getOutputOfQuery' => \&getOutputOfQuery,
-	'writeConfigFile' => \&writeConfigFile,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
 );
 
@@ -108,25 +107,6 @@ sub ParseConfigFile {
 
 
 
-sub pluginInfo{
-
-#  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin2.conf");
-#        	
-#	$organization = $cfg->param("organization");
-#	$adm_name =$cfg->param('admin_name');
-#	$adm_mail =$cfg->param('admin_email');
-#	$adm_tel  =$cfg->param('admin_phone');
-#	$adm_publickey_file = $cfg->param('publickeyfile');
-#	# plugin info                                                                                           
-#	$prefix_list = $cfg->param('prefix_list');
-#	$plugin_ip = $cfg->param('plugin_ip');
-#	$output_dir = "/tmp";
-#	syslog('debug', $organization);
-#	# Query Server info                                                                                           
-#	$qs_ip = $cfg->param('qserver_ip');
-#	$qs_port = $cfg->param('qserver_port');
-
-}
 
 #Initialize plugin.
 sub Init {
@@ -158,54 +138,12 @@ sub Init {
     IPC::Shareable->clean_up_all;	
     return 1;
   
-#    my $file = "/home/ahmetcan/nfquery.plugin.conf";
-#    if(-e $file){
-#	    my $Config = Config::Tiny->read( '/home/ahmetcan/nfquery.plugin.conf' );
-#        #get values from config file
-#	    $plugin_ip = $Config->{plugin_information}->{plugin_ip};
-#	    $qs_ip = $Config->{plugin_information}->{qserver_ip};
-#	    $qs_port = $Config->{plugin_information}->{qserver_port};
-#	    $adm_publickey_file = $Config->{plugin_information}->{adm_publickey_file};
-#
-#	    $uri = 'https://' . $qs_ip . ':' . $qs_port;
-#	    $rpc = &get_connection();
-#        
-#        syslog('debug',"$uri");
-#        syslog('debug',"$plugin_ip");
-#	    my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
-#
-#	    @prefixes = &getPrefixes();
-#    }	
-#    IPC::Shareable->clean_up_all;	
-#	return 1;
-
     
 }
 
 sub Cleanup {
     IPC::Shareable->clean_up_all;	
 }
-
-sub writeConfigFile{
-	my $socket = shift;
-	my $opts = shift;
-	my %args;
-	my $configArray = json_to_perl($$opts{'configArray'});
-    my %myconfig = %{$configArray};
-	$plugin_ip = $myconfig{'plugin_ip'};
-	$qs_ip = $myconfig{'qserver_ip'};
-	$qs_port = $myconfig{'qserver_port'};
-	$adm_publickey_file = $myconfig{'publickeyfile'};
-	my $Config = Config::Tiny->new();
-	$Config->{plugin_information}={plugin_ip=>$plugin_ip,qserver_ip=>$qs_ip,qserver_port=>$qs_port,
-			adm_publickey_file=>$adm_publickey_file};
-	$Config->write( '/home/ahmetcan/nfquery.plugin.conf' );
-	
-	syslog('debug',$plugin_ip);
-#	&pluginInfo;
-	# register
-    &Init;
-	Nfcomm::socket_send_ok($socket, \%args);
 
 
 }
@@ -215,12 +153,17 @@ sub get_connection {
 
     $ENV{HTTPS_DEBUG} = 1;
     # CA cert peer verification
-    $ENV{HTTPS_CA_FILE}   = '/home/serhat/nfquery/cfg/certs/cacert.pem';
-    $ENV{HTTPS_CA_DIR}    = '/home/serhat/nfquery/cfg/certs/';
-
+     $ENV{HTTPS_CA_FILE}   = $$cfg{'https_ca_file'};
+     $ENV{HTTPS_CA_DIR}    = $$cfg{'https_ca_dir'};
     # Client PKCS12 cert support
-    $ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/nfquery/cfg/certs/plugin-cert.p12';
-    $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat1991';
+     $ENV{HTTPS_PKCS12_FILE}  = $$cfg{'https_pkcs12_file'};
+     $ENV{HTTPS_PKCS12_PASSWORD} = $$cfg{'https_pkcs12_password'};
+   # $ENV{HTTPS_CA_FILE}   = '/home/serhat/nfquery/cfg/certs/cacert.pem';
+   # $ENV{HTTPS_CA_DIR}    = '/home/serhat/nfquery/cfg/certs/';
+
+   # # Client PKCS12 cert support
+   # $ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/nfquery/cfg/certs/plugin-cert.p12';
+   # $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat1991';
 
     # Prepare user agent
     my $ua = eval { LWP::UserAgent->new() }
