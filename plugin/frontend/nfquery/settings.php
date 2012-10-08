@@ -1,8 +1,7 @@
 <?php
-	if(file_exists("/home/serhat/nfquery.plugin.conf")){
+    if(file_exists("/data/nfsen/etc/nfsen.conf")){
 		$registered = isRegistered();
 		if($registered==0){
-			include('conf2.php');
 			$html = "<div class='alert' >Plugin is not found.";
 			$html=$html." Please check your informations or contact to Query Server admin.</div>";
 			echo $html;
@@ -22,12 +21,13 @@
 		}
 		if($registered==4){
 			$html = "<div class='alert alert-error'><img src='/nfsen/plugins/nfquery/img/connect_problem.png'>&nbsp; &nbsp; &nbsp;    Connection can't be established!</div>";	
-			echo $html;
-			
+			echo $html;	
 		}
 	}
 	else{
-		include('conf2.php');
+            $html = "<div class='alert' >Plugin is not found.";
+	    $html=$html." Please check your informations or contact to Query Server admin.</div>";
+	    echo $html;
 	}
 	
 ?>
