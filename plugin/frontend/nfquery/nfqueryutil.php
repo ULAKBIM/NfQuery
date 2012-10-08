@@ -11,13 +11,6 @@
 	
 	}
 	
-	function writeConfigFile($map){
-		$command = 'nfquery::writeConfigFile';
-		$opts = array();
-		$json = json_encode($map);
-		$opts['configArray'] = $json;
-		$outlist = nfsend_query($command, $opts);
-	}
 	
 	function getMyAlerts(){
 		$command = 'nfquery::getSubscriptions';
