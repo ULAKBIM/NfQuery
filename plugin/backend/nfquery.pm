@@ -130,35 +130,31 @@ sub pluginInfo{
 
 #Initialize plugin.
 sub Init {
-    my $file = "/data/nfsen/etc/nfsen.conf";
-    if(-e $file){
+    $cfg = $NfConf::PluginConf{'nfquery'};
 
-        $cfg = $NfConf::PluginConf{'nfquery'};
+    # assign values
+    $organization = $$cfg{'organization'};
+    syslog('debug', "organization: $organization");
+    $adm_name = $$cfg{'adm_name'};
+    $adm_mail = $$cfg{'adm_mail'};
+    $adm_tel  = $$cfg{'adm_tel'};
+    $adm_publickey_file = $$cfg{'adm_publickey_file'};     # not using for the time.
 
-        # assign values
-        $organization = $$cfg{'organization'};
-        syslog('debug', "organization: $organization");
-        $adm_name = $$cfg{'adm_name'};
-        $adm_mail = $$cfg{'adm_mail'};
-        $adm_tel  = $$cfg{'adm_tel'};
-        $adm_publickey_file = $$cfg{'adm_publickey_file'};     # not using for the time.
+    # plugin info                                                                                           
+    $prefix_list = $$cfg{'prefix_list'};
+    $plugin_ip = $$cfg{'plugin_ip'};
 
-        # plugin info                                                                                           
-        $prefix_list = $$cfg{'prefix_list'};
-        $plugin_ip = $$cfg{'plugin_ip'};
-
-        # Query Server info                                                                                           
-        $qs_ip = $$cfg{'queryserver_ip'};
-        $qs_port = $$cfg{'queryserver_port'};
+    # Query Server info                                                                                           
+    $qs_ip = $$cfg{'queryserver_ip'};
+    $qs_port = $$cfg{'queryserver_port'};
 
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
 	$rpc = &get_connection();
      
-        syslog('debug',"plugin_ip: $plugin_ip");
+    syslog('debug',"plugin_ip: $plugin_ip");
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 
-        @prefixes = &getPrefixes();
-    }	
+    @prefixes = &getPrefixes();
     IPC::Shareable->clean_up_all;	
     return 1;
   
@@ -219,11 +215,11 @@ sub get_connection {
 
     $ENV{HTTPS_DEBUG} = 1;
     # CA cert peer verification
-    $ENV{HTTPS_CA_FILE}   = '/home/ahmetcan/NfQuery/cfg/certs/cacert.pem';
-    $ENV{HTTPS_CA_DIR}    = '/home/ahmetcan/NfQuery/cfg/certs/';
+    $ENV{HTTPS_CA_FILE}   = '/home/serhat/nfquery/cfg/certs/cacert.pem';
+    $ENV{HTTPS_CA_DIR}    = '/home/serhat/nfquery/cfg/certs/';
 
     # Client PKCS12 cert support
-    $ENV{HTTPS_PKCS12_FILE}     = '/home/ahmetcan/NfQuery/cfg/certs/plugin-cert.p12';
+    $ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/nfquery/cfg/certs/plugin-cert.p12';
     $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat1991';
 
     # Prepare user agent
