@@ -2,7 +2,6 @@
 
 package nfquery;
 use NfProfile;
-
 use strict;
 use warnings;
 use Data::Dumper;
@@ -21,6 +20,8 @@ use Config::Simple;
 use NetAddr::IP;
 use Config::Tiny;
 use Net::SSL ();
+use Parallel::ForkManager;
+use NfConf;
 
 use feature 'say';
 
@@ -90,6 +91,8 @@ sub ParseConfigFile {
 }
 
 
+
+
 sub pluginInfo{
 
 #  	$cfg = new Config::Simple("/home/ahmetcan/nfquery/plugin/backend/nfquery.plugin2.conf");
@@ -112,26 +115,60 @@ sub pluginInfo{
 
 #Initialize plugin.
 sub Init {
-    my $file = "/home/serhat/nfquery.plugin.conf";
+    my $file = "/data/nfsen/etc/nfsen.conf";
     if(-e $file){
-	    my $Config = Config::Tiny->read( '/home/serhat/nfquery.plugin.conf' );
-        #get values from config file
-	    $plugin_ip = $Config->{plugin_information}->{plugin_ip};
-	    $qs_ip = $Config->{plugin_information}->{qserver_ip};
-	    $qs_port = $Config->{plugin_information}->{qserver_port};
-	    $adm_publickey_file = $Config->{plugin_information}->{adm_publickey_file};
 
-	    $uri = 'https://' . $qs_ip . ':' . $qs_port;
-	    $rpc = &get_connection();
-        
-        syslog('debug',"$uri");
-        syslog('debug',"$plugin_ip");
-	    my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
+        $cfg = $NfConf::PluginConf{'nfquery'};
 
-	    @prefixes = &getPrefixes();
+        # assign values
+        $organization = $$cfg{'organization'};
+        syslog('debug', "organization: $organization");
+        $adm_name = $$cfg{'adm_name'};
+        $adm_mail = $$cfg{'adm_mail'};
+        $adm_tel  = $$cfg{'adm_tel'};
+        $adm_publickey_file = $$cfg{'adm_publickey_file'};     # not using for the time.
+
+        # plugin info                                                                                           
+        $prefix_list = $$cfg{'prefix_list'};
+        $plugin_ip = $$cfg{'plugin_ip'};
+
+        # Query Server info                                                                                           
+        $qs_ip = $$cfg{'queryserver_ip'};
+        $qs_port = $$cfg{'queryserver_port'};
+
+	$uri = 'https://' . $qs_ip . ':' . $qs_port;
+	$rpc = &get_connection();
+     
+        syslog('debug',"plugin_ip: $plugin_ip");
+	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
+
+        @prefixes = &getPrefixes();
     }	
     IPC::Shareable->clean_up_all;	
-	return 1;
+    return 1;
+  
+#    my $file = "/home/ahmetcan/nfquery.plugin.conf";
+#    if(-e $file){
+#	    my $Config = Config::Tiny->read( '/home/ahmetcan/nfquery.plugin.conf' );
+#        #get values from config file
+#	    $plugin_ip = $Config->{plugin_information}->{plugin_ip};
+#	    $qs_ip = $Config->{plugin_information}->{qserver_ip};
+#	    $qs_port = $Config->{plugin_information}->{qserver_port};
+#	    $adm_publickey_file = $Config->{plugin_information}->{adm_publickey_file};
+#
+#	    $uri = 'https://' . $qs_ip . ':' . $qs_port;
+#	    $rpc = &get_connection();
+#        
+#        syslog('debug',"$uri");
+#        syslog('debug',"$plugin_ip");
+#	    my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
+#
+#	    @prefixes = &getPrefixes();
+#    }	
+#    IPC::Shareable->clean_up_all;	
+#	return 1;
+
+    
 }
 
 sub Cleanup {
@@ -151,7 +188,7 @@ sub writeConfigFile{
 	my $Config = Config::Tiny->new();
 	$Config->{plugin_information}={plugin_ip=>$plugin_ip,qserver_ip=>$qs_ip,qserver_port=>$qs_port,
 			adm_publickey_file=>$adm_publickey_file};
-	$Config->write( '/home/serhat/nfquery.plugin.conf' );
+	$Config->write( '/home/ahmetcan/nfquery.plugin.conf' );
 	
 	syslog('debug',$plugin_ip);
 #	&pluginInfo;
@@ -167,11 +204,11 @@ sub get_connection {
 
     $ENV{HTTPS_DEBUG} = 1;
     # CA cert peer verification
-    $ENV{HTTPS_CA_FILE}   = '/home/serhat/nfquery/cfg/certs/cacert.pem';
-    $ENV{HTTPS_CA_DIR}    = '/home/serhat/nfquery/cfg/certs/';
+    $ENV{HTTPS_CA_FILE}   = '/home/ahmetcan/NfQuery/cfg/certs/cacert.pem';
+    $ENV{HTTPS_CA_DIR}    = '/home/ahmetcan/NfQuery/cfg/certs/';
 
     # Client PKCS12 cert support
-    $ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/nfquery/cfg/certs/plugin-cert.p12';
+    $ENV{HTTPS_PKCS12_FILE}     = '/home/ahmetcan/NfQuery/cfg/certs/plugin-cert.p12';
     $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat1991';
 
     # Prepare user agent
@@ -196,9 +233,6 @@ sub isRegistered{
     my %args;
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 	if($result){	
-		if($result->is_error){
-			args{'register'} = 4;
-		}
        		my $r = $result->result;
 		$args{'register'} = @{$r}[0];
 		Nfcomm::socket_send_ok($socket, \%args);
@@ -580,6 +614,10 @@ sub runQueries{
 	my $nfdump_args = $$opts{'args'};
 	$profile = substr $profile, 2;
 
+
+    #Create a fork manager object and set the maximum number of childen processes to fork.
+    my $pm=new Parallel::ForkManager(50);
+
 	#Find path to the nfdump and flow files.
 	my $nfdump = "$NfConf::PREFIX/nfdump";
 	my $flowFiles = "$NfConf::PROFILEDATADIR/$profile/$strSource";
@@ -604,31 +642,33 @@ sub runQueries{
 			$stats{$subscription_name}{$query_id} = {};
 			my $filter = &getFilter($query_id);
 			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
-			syslog('debug', "$command");		
-			my $pid = fork();
-			if ($pid == 0){
-				my $nfdump_pid = open(OUT, "nice -n 7 $command |");
-			    $running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
-			    	
-				open FILE, ">", "/tmp/$nfdump_pid";
-				while (defined(my $line = <OUT>)){
-					print FILE $line;
-					if ($line =~ /^Summary/){
-						syslog('debug', "SUMMARY $line");
-						my @sum = split(/: /, $line, 2);
-						my @fields = split(/, /, $sum[1]);
-						foreach my $field (@fields){
-							my ($key, $value) = split(/: /, $field);
-							$stats{$subscription_name}{$query_id}{$key} = $value;
-						}
+            
+            #start the job.
+			$pm->start and next;
+
+			my $nfdump_pid = open(OUT, "nice -n 7 $command |");
+			$running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
+				
+			open FILE, ">", "/tmp/$nfdump_pid";
+			while (defined(my $line = <OUT>)){
+				print FILE $line;
+				if ($line =~ /^Summary/){
+					syslog('debug', "SUMMARY $line");
+					my @sum = split(/: /, $line, 2);
+					my @fields = split(/, /, $sum[1]);
+					foreach my $field (@fields){
+						my ($key, $value) = split(/: /, $field);
+						$stats{$subscription_name}{$query_id}{$key} = $value;
 					}
 				}
-				close FILE;
+			}
+			close FILE;
 
-				my $json = encode_json \%running_subscriptions;	
-				syslog('debug', "$json");
-				exit(0);
-			}	
+            #my $json = encode_json \%running_subscriptions;	
+            #syslog('debug', "$json");
+
+            
+            $pm->finish;
 		}
 
 		foreach my $query_id (@{$category{'optional'}}){
@@ -636,29 +676,30 @@ sub runQueries{
 			my $filter = &getFilter(int($query_id));
 			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
 			
-			my $pid = fork();
-			if ($pid == 0){
-				my $nfdump_pid = open(OUT, " nice -n 7 $command |");
-			    $running_subscriptions{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
-				
-				open FILE, ">", "/tmp/$nfdump_pid";
-				while (defined(my $line = <OUT>)){
-					print FILE $line;
-					if ($line =~ /^Summary/){
-						my @sum = split(/: /, $line, 2);
-						my @fields = split(/, /, $sum[1]);
-						foreach my $field (@fields){
-							my ($key, $value) = split(/: /, $field);
-							$stats{$subscription_name}{$query_id}{$key} = $value;
-						}
-
+            #start the job.
+			$pm->start and next;
+			my $nfdump_pid = open(OUT, " nice -n 7 $command |");
+			$running_subscriptions{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
+			
+			open FILE, ">", "/tmp/$nfdump_pid";
+			while (defined(my $line = <OUT>)){
+				print FILE $line;
+				if ($line =~ /^Summary/){
+					my @sum = split(/: /, $line, 2);
+					my @fields = split(/, /, $sum[1]);
+					foreach my $field (@fields){
+						my ($key, $value) = split(/: /, $field);
+						$stats{$subscription_name}{$query_id}{$key} = $value;
 					}
+
 				}
-				close FILE;
-				my $json = encode_json \%running_subscriptions;	
-				syslog('debug', "$json");
-				exit(0);
-			}	
+			}
+			close FILE;
+
+            #my $json = encode_json \%running_subscriptions;	
+            #syslog('debug', "$json");
+            
+            $pm->finish;
 		}
 	
 	}
