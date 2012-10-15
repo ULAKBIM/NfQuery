@@ -37,6 +37,7 @@ use Config::Tiny;
 use Net::SSL ();
 use Parallel::ForkManager;
 use NfConf;
+use DBM::Deep;
 
 use feature 'say';
 
@@ -45,17 +46,15 @@ my $cfg;
 my $rpc;
 
 #Shared memory options
-my %running_subscriptions;
-my %stats;
-my %options = (
-	create => 'yes',
-	mode => 0644,
-	exclusive => 0,
-	destroy => 'yes'
-);
-
-tie %running_subscriptions, 'IPC::Shareable', 'running', {%options};
-tie %stats, 'IPC::Shareable', 'stats', {%options};
+#my %options = (
+#	create => 'yes',
+#	mode => 0644,
+#	exclusive => 0,
+#	destroy => 'yes'
+#);
+#
+#tie %running_subscriptions, 'IPC::Shareable', 'running', {%options};
+#tie %stats, 'IPC::Shareable', 'stats', {%options};
 my $Config;
 # assign values
 my $organization;
@@ -142,7 +141,10 @@ sub Init {
 }
 
 sub Cleanup {
-    IPC::Shareable->clean_up_all;	
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
+    my $stats = DBM::Deep->new( "/tmp/stats" );
+    $running_subscriptions->clear();
+    $stats->clear();
 }
 
 
@@ -214,8 +216,10 @@ sub checkQueries{
 	my %args;
 	
 	$args{'subscriptions'} = [];
+    
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
 
-	foreach my $subscription (keys %running_subscriptions){
+	foreach my $subscription (keys %$running_subscriptions){
 		push @{$args{'subscriptions'}}, $subscription;
 		$args{"$subscription-mandatory"} = [];
 		$args{"$subscription-optional"} = [];
@@ -223,8 +227,8 @@ sub checkQueries{
 		$args{"$subscription-mandatory-status"} = [];
 		$args{"$subscription-optional-status"} = [];
 
-		my %mandatory_queries = %{$running_subscriptions{$subscription}{'mandatory'}};
-		my %optional_queries = %{$running_subscriptions{$subscription}{'optional'}};
+		my %mandatory_queries = %{$running_subscriptions->{$subscription}{'mandatory'}};
+		my %optional_queries = %{$running_subscriptions->{$subscription}{'optional'}};
 		my @query_statuses;
 		my $finished = 1;
 
@@ -336,9 +340,9 @@ sub parseOutputsOfSubscription{
 	my $subscriptionName = shift;
 
 	my %output;	
-
-	my %optional_queries = %{$running_subscriptions{$subscriptionName}{'optional'}};
-	my %mandatory_queries = %{$running_subscriptions{$subscriptionName}{'mandatory'}};
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
+	my %optional_queries = %{$running_subscriptions->{$subscriptionName}{'optional'}};
+	my %mandatory_queries = %{$running_subscriptions->{$subscriptionName}{'mandatory'}};
 	
 	foreach my $query_id ( keys %mandatory_queries ){
 		my $pid = $mandatory_queries{$query_id};
@@ -446,11 +450,14 @@ sub getStatisticsOfSubscription{
 	$args{'matched_queries'} = [];
 	$args{'matched_bytes'} = 0;
 	$args{'matched_flows'} = 0;
+    
+    my $stats = DBM::Deep->new( "/tmp/stats" );
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
 
-	my %queries = %{$stats{$subscriptionName}};
+	my $queries = $stats->{$subscriptionName};
 
-	foreach my $query_id ( keys %queries ){
-		my %fields = %{$queries{$query_id}};
+	foreach my $query_id ( keys %$queries ){
+		my %fields = %{$queries->{$query_id}};
 
 		if (int($fields{'total flows'}) > 0){
 			push $args{'matched_queries'}, $query_id;
@@ -470,8 +477,8 @@ sub getStatisticsOfSubscription{
 	#Look one of output files to get total flows and total bytes.
 	#
 	
-	my %optional_queries = %{$running_subscriptions{$subscriptionName}{'optional'}};
-	my %mandatory_queries = %{$running_subscriptions{$subscriptionName}{'mandatory'}};
+	my %optional_queries = %{$running_subscriptions->{$subscriptionName}{'optional'}};
+	my %mandatory_queries = %{$running_subscriptions->{$subscriptionName}{'mandatory'}};
 	
 	#
 	#First check any mandatory queries is running.
@@ -529,15 +536,15 @@ sub getOutputOfQuery{
 	my $subscriptionName = $$opts{'subscriptionName'};
 	my $query_id = $$opts{'query_id'};
 	my $pid;
-	
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");	
 	#
 	#Find pid number. Query id may be in mandatory queries or optional queries.
 	#
-	my %mandatory_queries = %{$running_subscriptions{$subscriptionName}{'mandatory'}};
+	my %mandatory_queries = %{$running_subscriptions->{$subscriptionName}{'mandatory'}};
 	if ($mandatory_queries{$query_id}){
 		$pid = $mandatory_queries{$query_id};
 	}else{
-		my %optional_queries = %{$running_subscriptions{$subscriptionName}{'optional'}};
+		my %optional_queries = %{$running_subscriptions->{$subscriptionName}{'optional'}};
 		$pid = $optional_queries{$query_id};
 	}	
 	
@@ -553,6 +560,7 @@ sub getOutputOfQuery{
 
 }
 #Share running_subscriptions hash with all other child process. So they can put pid in it.
+
 sub runQueries{
 	my $socket = shift;
 	my $opts = shift;
@@ -577,31 +585,38 @@ sub runQueries{
 	my $flowFiles = "$NfConf::PROFILEDATADIR/$profile/$strSource";
 	
 	my @filterKeys = keys %filters;
+
+    
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
+    my $stats = DBM::Deep->new( "/tmp/stats" );
+
 	foreach my $subscription_name (@filterKeys){
 		my %category = %{$filters{$subscription_name}};
 		
 		#Check $subscription name is already running.
-		if ($running_subscriptions{$subscription_name}){
+		if ($running_subscriptions->{$subscription_name}){
 			syslog('debug', "$subscription_name is already running.");
 			next;
 		}else{    
             syslog('debug', "INITIALIZING $subscription_name");
-            $running_subscriptions{$subscription_name} = {};
-            $running_subscriptions{$subscription_name}{'mandatory'} = {};
-            $running_subscriptions{$subscription_name}{'optional'} = {};
-		    $stats{$subscription_name} = {};
+            $running_subscriptions->{$subscription_name} = {};
+            $running_subscriptions->{$subscription_name}{'mandatory'} = {};
+            $running_subscriptions->{$subscription_name}{'optional'} = {};
+		    $stats->{$subscription_name} = {};
         }
 	    
 		foreach my $query_id (@{$category{'mandatory'}}){
-			$stats{$subscription_name}{$query_id} = {};
-			my $filter = &getFilter($query_id);
-			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
             
             #start the job.
 			$pm->start and next;
 
+            my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
+            my $stats = DBM::Deep->new( "/tmp/stats" );
+			$stats->{$subscription_name}{$query_id} = {};
+			my $filter = &getFilter($query_id);
+			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
 			my $nfdump_pid = open(OUT, "nice -n 7 $command |");
-			$running_subscriptions{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
+			$running_subscriptions->{$subscription_name}{'mandatory'}{$query_id} = $nfdump_pid;			
 				
 			open FILE, ">", "/tmp/$nfdump_pid";
 			while (defined(my $line = <OUT>)){
@@ -612,7 +627,7 @@ sub runQueries{
 					my @fields = split(/, /, $sum[1]);
 					foreach my $field (@fields){
 						my ($key, $value) = split(/: /, $field);
-						$stats{$subscription_name}{$query_id}{$key} = $value;
+						$stats->{$subscription_name}{$query_id}{$key} = $value;
 					}
 				}
 			}
@@ -626,14 +641,16 @@ sub runQueries{
 		}
 
 		foreach my $query_id (@{$category{'optional'}}){
-			$stats{$subscription_name}{$query_id} = {};
-			my $filter = &getFilter(int($query_id));
-			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
 			
             #start the job.
 			$pm->start and next;
+            my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
+            my $stats = DBM::Deep->new( "/tmp/stats" );
+			$stats->{$subscription_name}{$query_id} = {};
+			my $filter = &getFilter(int($query_id));
+			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
 			my $nfdump_pid = open(OUT, " nice -n 7 $command |");
-			$running_subscriptions{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
+			$running_subscriptions->{$subscription_name}{'optional'}{$query_id} = $nfdump_pid;			
 			
 			open FILE, ">", "/tmp/$nfdump_pid";
 			while (defined(my $line = <OUT>)){
@@ -643,7 +660,7 @@ sub runQueries{
 					my @fields = split(/, /, $sum[1]);
 					foreach my $field (@fields){
 						my ($key, $value) = split(/: /, $field);
-						$stats{$subscription_name}{$query_id}{$key} = $value;
+						$stats->{$subscription_name}{$query_id}{$key} = $value;
 					}
 
 				}
