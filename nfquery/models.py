@@ -364,7 +364,7 @@ class Alert(object):
     __storm_table__ = 'alert'
   
     id = Int(primary=True)
-    alert_id = Int()
+    #alert_id = Int()
     query_id = Int()
     plugin_id = Int()
 
