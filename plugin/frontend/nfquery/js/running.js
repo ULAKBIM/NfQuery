@@ -88,5 +88,13 @@ function lookup(anchor){
 		});
 }
 
+function pushOutput(subscriptionName){
+    $.get("/nfsen/plugins/nfquery/ajaxhandler.php", 
+          {pushOutput:1, subscriptionName:subscriptionName},
+          function(data){
+              //TODO redirect here
+          }
+    );
+}
 $(document).ready(function(){
 });

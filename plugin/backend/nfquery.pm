@@ -88,6 +88,7 @@ our %cmd_lookup = (
 	'isRegistered' => \&isRegistered,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
 	'getOutputOfQuery' => \&getOutputOfQuery,
+	'pushOutputToQueryServer' => \&pushOutputToQueryServer,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
 );
 
