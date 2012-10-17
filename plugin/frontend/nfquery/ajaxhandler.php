@@ -35,5 +35,8 @@
 	if(isset($_GET['lookup'])){
 		lookup($_GET['ip']);
 	}
+	if(isset($_GET['pushOutput'])){
+		pushOutput($_GET['subscriptionName']);
+	}
 
 ?>
