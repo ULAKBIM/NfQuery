@@ -139,7 +139,6 @@ def initialize_db(store):
     store.execute(
 		  "CREATE TABLE alert ("					     +
   		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
-  		  "alert_id int(10) unsigned NOT NULL,"                              +
   		  "query_id int(10) unsigned NOT NULL,"                              +
   		  "plugin_id int(10) unsigned NOT NULL,"                            +
   		  "PRIMARY KEY (id),"                                                +
