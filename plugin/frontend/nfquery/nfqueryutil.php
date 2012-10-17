@@ -73,13 +73,22 @@
 		}
 		echo '</tbody>';
 		echo '</table>';
-		echo '<button class="btn btn-success" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Show Output</button>';
+		echo '<button class="btn btn-success pushOutput" onClick=pushOutput("'.$subscriptionName.'")>Send Output To Query Server</button>';
+		#echo '<button class="btn btn-success" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Send Output To Query Server</button>';
 		echo '</div>';
-		echo '<div id="'.$subscriptionName.'OutputTable" class="collapse">';
-		echo 'OMW';
-		echo '</div>';
+		#echo '<div id="'.$subscriptionName.'OutputTable" class="collapse">';
+		#echo 'OMW';
+		#echo '</div>';
 		
 	}
+
+    function pushOutput($subscriptionName){
+		$command = 'nfquery::pushOutputToQueryServer';
+		$opts = array();
+		$opts['subscriptionName'] = $subscriptionName;
+        $out_list = nfsend_query($command, $opts);
+        echo "1";
+    }
 
 	function getOutputOfQuery($subscriptionName, $query_id){
 		$command = 'nfquery::getOutputOfQuery';
