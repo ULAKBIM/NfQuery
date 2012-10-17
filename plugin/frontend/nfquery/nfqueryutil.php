@@ -184,7 +184,7 @@
 		$opts = array();
 		$out_list = nfsend_query($command, $opts);	
 		$output = array();
-
+        
 		$subscriptions = $out_list['subscriptions'];
 		foreach($subscriptions as $subs){
 			$running_count=0;

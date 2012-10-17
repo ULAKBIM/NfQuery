@@ -270,6 +270,8 @@ sub checkQueries{
 	return;
 }
 
+
+
 sub ipInPrefixes{
 	my $ip = shift;
 	
@@ -559,7 +561,51 @@ sub getOutputOfQuery{
 	return;
 
 }
-#Share running_subscriptions hash with all other child process. So they can put pid in it.
+
+sub pushOutputToQueryServer{
+	my $socket = shift;
+	my $opts = shift;
+    
+	my $subscriptionName = $$opts{'subscriptionName'};
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
+    my @pids;
+
+	foreach my $subscription (keys %$running_subscriptions){
+
+		my %mandatory_queries = %{$running_subscriptions->{$subscription}{'mandatory'}};
+		my %optional_queries = %{$running_subscriptions->{$subscription}{'optional'}};
+
+		foreach my $query_id (keys %mandatory_queries){
+			my $pid = $mandatory_queries{$query_id};
+	        my @outputOfQuery = &parseOutputOfPid($pid);
+            
+            foreach my $ref (@outputOfQuery){
+                my %table = %{$ref};
+                if ($table{'srcip_alert_prefix'} || $table{'dstip_alert_prefix'}){
+                    push @pids, $query_id;
+                    last;
+                }
+            }            
+		}
+
+		foreach my $query_id (keys %optional_queries){
+			my $pid = $optional_queries{$query_id};
+	        my @outputOfQuery = &parseOutputOfPid($pid);
+            
+            foreach my $ref (@outputOfQuery){
+                my %table = %{$ref};
+                if ($table{'srcip_alert_prefix'} || $table{'dstip_alert_prefix'}){
+                    push @pids, $query_id;
+                    last;
+                }
+            }            
+		}
+
+	}
+
+    my $result = $rpc->call($uri,'pushAlerts',[$plugin_ip, \@pids]);
+	syslog('debug', 'PUSH ALERTS');
+}
 
 sub runQueries{
 	my $socket = shift;
