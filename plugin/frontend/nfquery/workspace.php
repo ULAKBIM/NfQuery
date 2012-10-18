@@ -28,13 +28,15 @@
 					echo '</tr></table>';
 					echo '</div>';
 						echo '<div id="'.$s.'" style="padding-left:30px;" class="accordion-body collapse in subscriptionBody">';
-						echo '<div class="accordion-inner filters">';
-					if ($squeries[$s]){
-						foreach($squeries[$s] as $k1=>$package){	
-							$has_query = false;
+                        echo '<div class="accordion-inner filters">';
+                    $print_no_queries = true;
+                    if ($squeries[$s]){
+                        foreach($squeries[$s] as $k1=>$package){
+                            $has_query = false;
 							foreach($package as $index=>$query){
 							  if (strcmp($query['category_name'], 'mandatory') == 0){
-								$has_query = true;
+                                $has_query = true;
+                                $print_no_queries = false;
 								echo '<input type=checkbox class="mandatory_filter" name="'.$query['query_id'].'" >';
 								echo '<span class="mandatory_query" style="border-radius: 3px 3px 3px 3px;cursor:pointer" data-toggle="collapse" data-target="#optional'.$query['query_id'].$s.'"><i class="icon-chevron-down"></i>'.$query['filter'].'</span><span class="mandatory_query_popover badge badge-warning">M</span></input>';
 								echo '<div style="padding-left:30px;" id=optional'.$query['query_id'].$s.' class="collapse in">';
@@ -45,9 +47,10 @@
 							  }
 							}
 							if ($has_query)
-								echo '</div>';
+                                echo '</div>';
 						}
-					}else{
+                    }
+                    if(!$squeries[$s] || $print_no_queries){
 						echo 'No queries found...';
 					}
 						echo '</div>';
