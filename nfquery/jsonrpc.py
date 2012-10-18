@@ -61,6 +61,10 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         """
         raise jsonrpc.Fault(123, "The fault procedure is faulty.")
 
+    def jsonrpc_push_alert(self, query_id_list, plugin_ip ):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.queryManager.pushAlert(query_id_list, plugin_ip)
+
     def jsonrpc_register(self,plugin_ip):
         result = []
         print plugin_ip
