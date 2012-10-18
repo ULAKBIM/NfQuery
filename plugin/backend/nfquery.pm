@@ -605,7 +605,12 @@ sub pushOutputToQueryServer{
 
 	}
     
+        
     my $result = $rpc->call($uri,'push_alerts',[$plugin_ip, \@pids]);
+
+    #Alerts pushed to queryserver. So no longer keep pids in data structure.
+    $running_subscriptions->{$subscriptionName} = {};
+
 	syslog('debug', 'PUSH ALERTS');
 	Nfcomm::socket_send_ok($socket, \%args);
 }

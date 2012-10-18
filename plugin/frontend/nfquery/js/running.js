@@ -92,7 +92,8 @@ function pushOutput(subscriptionName){
     $.get("/nfsen/plugins/nfquery/ajaxhandler.php", 
           {pushOutput:1, subscriptionName:subscriptionName},
           function(data){
-              //TODO redirect here
+              $("#nfqueryTab").val("Running");
+              $("#navigationForm").submit();
           }
     );
 }
