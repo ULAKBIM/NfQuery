@@ -45,17 +45,8 @@ use feature 'say';
 my $cfg;
 my $rpc;
 
-#Shared memory options
-#my %options = (
-#	create => 'yes',
-#	mode => 0644,
-#	exclusive => 0,
-#	destroy => 'yes'
-#);
-#
-#tie %running_subscriptions, 'IPC::Shareable', 'running', {%options};
-#tie %stats, 'IPC::Shareable', 'stats', {%options};
 my $Config;
+
 # assign values
 my $organization;
 my $adm_name;
@@ -154,19 +145,13 @@ sub Cleanup {
 sub get_connection {
     $Net::HTTPS::SSL_SOCKET_CLASS = "Net::SSL"; # Force use of Net::SSL
 
-    $ENV{HTTPS_DEBUG} = 1;
     # CA cert peer verification
-     $ENV{HTTPS_CA_FILE}   = $$cfg{'https_ca_file'};
-     $ENV{HTTPS_CA_DIR}    = $$cfg{'https_ca_dir'};
-    # Client PKCS12 cert support
-     $ENV{HTTPS_PKCS12_FILE}  = $$cfg{'https_pkcs12_file'};
-     $ENV{HTTPS_PKCS12_PASSWORD} = $$cfg{'https_pkcs12_password'};
-   # $ENV{HTTPS_CA_FILE}   = '/home/serhat/nfquery/cfg/certs/cacert.pem';
-   # $ENV{HTTPS_CA_DIR}    = '/home/serhat/nfquery/cfg/certs/';
+    $ENV{HTTPS_CA_FILE}   = $$cfg{'https_ca_file'};
+    $ENV{HTTPS_CA_DIR}    = $$cfg{'https_ca_dir'};
 
-   # # Client PKCS12 cert support
-   # $ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/nfquery/cfg/certs/plugin-cert.p12';
-   # $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat1991';
+    # Client PKCS12 cert support 
+    $ENV{HTTPS_PKCS12_FILE}  = $$cfg{'https_pkcs12_file'};
+    $ENV{HTTPS_PKCS12_PASSWORD} = $$cfg{'https_pkcs12_password'};
 
     # Prepare user agent
     my $ua = eval { LWP::UserAgent->new() }
@@ -199,15 +184,6 @@ sub isRegistered{
 sub checkPIDState{
 	my $nfdumpPid = shift;
 	my $state = kill 0, $nfdumpPid;
-#	my $t = new Proc::ProcessTable;
-#	foreach my $process (@{$t->table}){
-#		my $current_pid = $process->pid;
-#		my $current_pid_state = $process->state;
-#		if ($nfdumpPid == $current_pid){
-#			syslog('debug', "EQUAL $current_pid -> $current_pid_state");	
-#			$state = $process->state;			
-#		}
-#	}
 	return $state;
 }
 
@@ -431,6 +407,7 @@ sub humanReadableBytes{
 		return $bytes / (1024 * 1024);
 	}
 }
+
 sub getStatisticsOfSubscription{
 	my $socket = shift;
 	my $opts = shift;
@@ -686,10 +663,6 @@ sub runQueries{
 				}
 			}
 			close FILE;
-
-            #my $json = encode_json \%running_subscriptions;	
-            #syslog('debug', "$json");
-
             
             $pm->finish;
 		}
@@ -720,9 +693,6 @@ sub runQueries{
 				}
 			}
 			close FILE;
-
-            #my $json = encode_json \%running_subscriptions;	
-            #syslog('debug', "$json");
             
             $pm->finish;
 		}
@@ -797,29 +767,13 @@ sub getSubscriptionDetail{
     syslog('debug', "$uri");
     syslog('debug', $$opts{'name'});
     my $result = $rpc->call($uri,'get_subscription',[$$opts{'name'}]);
+
     my $r = $result->result;
     my %args;
 	my $reff = \%{$r};	
 	my $json = encode_json \%{$r};
-	my @chars = split('', $json);
-	my $counter = 0;
-	my $index = 0;
-	my $line = "";
-	#Send part by part json string.
-	#Because frontend expects key=value and max line size 1024.
-	for my $char (@chars){
-	    $line = $line .$char ;
-	    if ($counter == 1000){
-		$counter = 0;
-		$args{"$index"} = $line;
-		
-		$index = $index +1;
-        	##syslog('debug', "$line");
-		$line = "";
-	    }
-	    $counter = $counter + 1 ;
-	}
-    $args{"$index"} = $line;
+    %args = &divideJsonToParts($json);
+
 	if (defined $result->result){
         syslog('debug', 'Response To frontend. - GETSUBSCRIPTIONDETAIL');
    		Nfcomm::socket_send_ok($socket, \%args);
