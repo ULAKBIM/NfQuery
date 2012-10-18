@@ -125,7 +125,6 @@ sub Init {
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 
     @prefixes = &getPrefixes();
-    IPC::Shareable->clean_up_all;	
     return 1;
   
     
@@ -539,6 +538,27 @@ sub getOutputOfQuery{
 
 }
 
+sub findAlertsInOutputOfQuery{
+    my $ref = shift;
+    my @pids;
+    my %queries = %{$ref};
+
+	foreach my $query_id (keys %queries){
+		my $pid = $queries{$query_id};
+	    my @outputOfQuery = &parseOutputOfPid($pid);
+        
+        foreach my $ref (@outputOfQuery){
+            my %table = %{$ref};
+            if ($table{'srcip_alert_prefix'} || $table{'dstip_alert_prefix'}){
+                push @pids, $query_id;
+                last;
+            }
+        }            
+	}
+
+    return @pids;
+}
+
 sub pushOutputToQueryServer{
 	my $socket = shift;
 	my $opts = shift;
@@ -548,40 +568,16 @@ sub pushOutputToQueryServer{
     my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
     my @pids;
 
-	foreach my $subscription (keys %$running_subscriptions){
 
-		my %mandatory_queries = %{$running_subscriptions->{$subscription}{'mandatory'}};
-		my %optional_queries = %{$running_subscriptions->{$subscription}{'optional'}};
+	my %mandatory_queries = %{$running_subscriptions->{$subscriptionName}{'mandatory'}};
+	my %optional_queries = %{$running_subscriptions->{$subscriptionName}{'optional'}};
 
-		foreach my $query_id (keys %mandatory_queries){
-			my $pid = $mandatory_queries{$query_id};
-	        my @outputOfQuery = &parseOutputOfPid($pid);
-            
-            foreach my $ref (@outputOfQuery){
-                my %table = %{$ref};
-                if ($table{'srcip_alert_prefix'} || $table{'dstip_alert_prefix'}){
-                    push @pids, $query_id;
-                    last;
-                }
-            }            
-		}
+    my @temp = &findAlertsInOutputOfQuery(\%mandatory_queries);
+    push @pids, @temp;
 
-		foreach my $query_id (keys %optional_queries){
-			my $pid = $optional_queries{$query_id};
-	        my @outputOfQuery = &parseOutputOfPid($pid);
-            
-            foreach my $ref (@outputOfQuery){
-                my %table = %{$ref};
-                if ($table{'srcip_alert_prefix'} || $table{'dstip_alert_prefix'}){
-                    push @pids, $query_id;
-                    last;
-                }
-            }            
-		}
+    @temp = &findAlertsInOutputOfQuery(\%optional_queries);
+    push @pids, @temp;
 
-	}
-    
-        
     my $result = $rpc->call($uri,'push_alerts',[$plugin_ip, \@pids]);
 
     #Alerts pushed to queryserver. So no longer keep pids in data structure.
