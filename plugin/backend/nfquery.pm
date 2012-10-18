@@ -29,7 +29,6 @@ use Term::ANSIColor;
 use JSON;
 use JSON::Parse 'json_to_perl';
 use Sys::Syslog;
-use IPC::Shareable;
 use Proc::ProcessTable;
 use Config::Simple;
 use NetAddr::IP;
