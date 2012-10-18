@@ -566,6 +566,7 @@ sub getOutputOfQuery{
 sub pushOutputToQueryServer{
 	my $socket = shift;
 	my $opts = shift;
+	my %args;
     
 	my $subscriptionName = $$opts{'subscriptionName'};
     my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
@@ -603,9 +604,10 @@ sub pushOutputToQueryServer{
 		}
 
 	}
-
-    my $result = $rpc->call($uri,'pushAlerts',[$plugin_ip, \@pids]);
+    
+    my $result = $rpc->call($uri,'push_alerts',[$plugin_ip, \@pids]);
 	syslog('debug', 'PUSH ALERTS');
+	Nfcomm::socket_send_ok($socket, \%args);
 }
 
 sub runQueries{

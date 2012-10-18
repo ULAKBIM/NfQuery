@@ -560,7 +560,7 @@ class QueryManager:
         return list(subscription_list)
 
 
-    def pushAlert(self, query_id_list, plugin_ip):
+    def pushAlerts(self, plugin_ip, query_id_list):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         print plugin_id
         for query_id in query_id_list:
