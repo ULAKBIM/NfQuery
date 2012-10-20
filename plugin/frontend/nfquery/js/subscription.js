@@ -95,7 +95,7 @@ function runQueries(){
 	var subscriptions = $('#subscripted').val() || [];
 	subscriptions = subscriptions.join(',');
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {run:1, subscriptions: subscriptions}, function(data){ 
-		alert(data);
+		//alert(data);
 	 });
 }
 
@@ -109,8 +109,10 @@ function markMandatoryQueries(button, category){
 }
 
 function getFilters(){
-	queryMap = {};
+    var isNull = true;
+	var queryMap = {};
 	queryMap['queries'] = {};
+    
 	$('#queryDiv .accordion-body').each(function(){
 		subscriptionName = $(this).attr('id');
 		queryMap['queries'][subscriptionName] = {};
@@ -118,22 +120,29 @@ function getFilters(){
 		queryMap['queries'][subscriptionName]['optional'] = []
 		$(this).find('.mandatory_filter').each(function(){
 			if($(this).attr('checked')){
+                isNull = false;
 				queryMap['queries'][subscriptionName]['mandatory'].push($(this).attr('name'));
 			}
 		});
 
 		$(this).find('.optional_filter').each(function(){
 			if($(this).attr('checked')){
+                isNull = false;
 				queryMap['queries'][subscriptionName]['optional'].push($(this).attr('name'));
 			}
 		});
 	});
+
 	//send them to the server.
 	queryMap['source'] = $('#flowSource').val();
-	$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap}, function(data){});
-		
-	$('#nfqueryTab').val('Running');
-	$('#navigationForm').submit();
+    if (isNull){
+       alert("Select a Query First !");
+    }else{
+	    $.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap}, function(data){});
+	    	
+	    $('#nfqueryTab').val('Running');
+	    $('#navigationForm').submit();
+    }
 
 }
 
