@@ -582,6 +582,7 @@ sub pushOutputToQueryServer{
 
     #Alerts pushed to queryserver. So no longer keep pids in data structure.
     delete $running_subscriptions->{$subscriptionName};
+    delete $stats->{$subscriptionName};
 
 	syslog('debug', 'PUSH ALERTS');
 	Nfcomm::socket_send_ok($socket, \%args);
