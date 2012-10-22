@@ -586,7 +586,7 @@ sub pushOutputToQueryServer{
     push @query_ids, @temp;
 
     foreach my $query_id (@query_ids){
-         my $matched_flows = $stats->{'subscriptionName'}{$query_id}{'total flows'};
+         my $matched_flows = $stats->{'subscriptionName'}{$query_id}{'total flows'} + 0;
          push @matched, $matched_flows; 
     }
 
