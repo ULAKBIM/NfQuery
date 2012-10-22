@@ -353,9 +353,12 @@
 
     	// From the argument checks, we know at least one source is selected
     	// multiple sources
-    	if ( $_SESSION['tleft'] == $_SESSION['tright'] ) {
+        if ( $_SESSION['tleft'] == $_SESSION['tright'] ) {
+
+            $cmd_opts['start_time'] = $_SESSION['tleft'];
+            $cmd_opts['end_time'] = $_SESSION['tright'];
         	// a single 5 min timeslice
-       		 $tslot1 = UNIX2ISO($_SESSION['tleft']);
+       		$tslot1 = UNIX2ISO($_SESSION['tleft']);
         	$subdirs = SubdirHierarchy($_SESSION['tleft']);
         	if ( strlen($subdirs) == 0 )
            	 	$args .= " -r nfcapd.$tslot1";
@@ -363,6 +366,8 @@
             	$args .= " -r $subdirs/nfcapd.$tslot1";
 
     	} else {
+            $cmd_opts['start_time'] = $_SESSION['tleft'];
+            $cmd_opts['end_time'] = $_SESSION['tright'];
         	// several 5 min timeslices
         	$tslot1 = UNIX2ISO($_SESSION['tleft']);
 			$subdirs1 = SubdirHierarchy($_SESSION['tleft']);

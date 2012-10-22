@@ -120,7 +120,11 @@ sub Init {
 
 	$uri = 'https://' . $qs_ip . ':' . $qs_port;
 	$rpc = &get_connection();
-     
+
+    ## 
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
+    my $stats = DBM::Deep->new( "/tmp/stats" );
+
     syslog('debug',"plugin_ip: $plugin_ip");
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 
@@ -540,7 +544,7 @@ sub getOutputOfQuery{
 
 sub findAlertsInOutputOfQuery{
     my $ref = shift;
-    my @pids;
+    my @query_ids;
     my %queries = %{$ref};
 
 	foreach my $query_id (keys %queries){
@@ -550,13 +554,13 @@ sub findAlertsInOutputOfQuery{
         foreach my $ref (@outputOfQuery){
             my %table = %{$ref};
             if ($table{'srcip_alert_prefix'} || $table{'dstip_alert_prefix'}){
-                push @pids, $query_id;
+                push @query_ids, $query_id;
                 last;
             }
         }            
 	}
 
-    return @pids;
+    return @query_ids;
 }
 
 sub pushOutputToQueryServer{
@@ -566,19 +570,27 @@ sub pushOutputToQueryServer{
     
 	my $subscriptionName = $$opts{'subscriptionName'};
     my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
-    my @pids;
-
-
+    my $stats = DBM::Deep->new( "/tmp/stats" );
+    my @query_ids;
+    my @matched;
+    
+    my $start_time = $running_subscriptions->{$subscriptionName}{'start_time'};
+    my $end_time = $running_subscriptions->{$subscriptionName}{'end_time'};
 	my %mandatory_queries = %{$running_subscriptions->{$subscriptionName}{'mandatory'}};
 	my %optional_queries = %{$running_subscriptions->{$subscriptionName}{'optional'}};
 
     my @temp = &findAlertsInOutputOfQuery(\%mandatory_queries);
-    push @pids, @temp;
+    push @query_ids, @temp;
 
     @temp = &findAlertsInOutputOfQuery(\%optional_queries);
-    push @pids, @temp;
+    push @query_ids, @temp;
 
-    my $result = $rpc->call($uri,'push_alerts',[$plugin_ip, \@pids]);
+    foreach my $query_id (@query_ids){
+         my $matched_flows = $stats->{'subscriptionName'}{$query_id}{'total flows'};
+         push @matched, $matched_flows; 
+    }
+
+    my $result = $rpc->call($uri,'push_alerts',[$plugin_ip, \@query_ids, \@matched, $start_time, $end_time]);
 
     #Alerts pushed to queryserver. So no longer keep pids in data structure.
     delete $running_subscriptions->{$subscriptionName};
@@ -598,6 +610,11 @@ sub runQueries{
 	#Get parameters to the run queries.
 	my $profile = $$opts{'profile'};
 	my @source = @{$queries{'source'}};
+
+    #Timestamps 
+    my $start_time = $$opts{'start_time'};
+    my $end_time = $$opts{'end_time'};
+
 	my $strSource = join(':', @source);
 	my %filters = %{$queries{'queries'}};#TODO check here any queries exist.
 	my $nfdump_args = $$opts{'args'};
@@ -627,6 +644,8 @@ sub runQueries{
 		}else{    
             syslog('debug', "INITIALIZING $subscription_name");
             $running_subscriptions->{$subscription_name} = {};
+            $running_subscriptions->{$subscription_name}{'start_time'} = $start_time;
+            $running_subscriptions->{$subscription_name}{'end_time'} = $end_time;
             $running_subscriptions->{$subscription_name}{'mandatory'} = {};
             $running_subscriptions->{$subscription_name}{'optional'} = {};
 		    $stats->{$subscription_name} = {};
