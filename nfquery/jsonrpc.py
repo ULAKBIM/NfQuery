@@ -166,20 +166,25 @@ class jsonRPCServer(jsonrpc.JSONRPC):
     def jsonrpc_get_prefixes(self, ip_address):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.rpclogger.debug('getting prefix list information')
-        prefix_id = self.store.find( Plugin.prefix_id, 
+        plugin = self.store.find( Plugin, 
                                      Plugin.plugin_ip == unicode(ip_address)
                                    ).one()
-        if not prefix_id:
+        if not plugin:
             self.rpclogger.warning('Plugin ip is not correct')
             self.rpclogger.warning('Can not return prefix list')
             return
         else:
-            prefix_list = self.store.find(Prefix.prefix)
-            p_list = []
-            for prefix in prefix_list:
-                p_list.append(prefix)
-            print p_list
-            return p_list
+             p_list = {}
+             p_list[plugin.id] = plugin.prefix.prefix
+             print p_list
+             return p_list
+          #  prefix_list = self.store.find(Prefix.prefix)
+          #  p_list = {}
+          #  p_list[plugin.id] = []
+          #  for prefix in prefix_list:
+          #      p_list[plugin.id].append(prefix)
+          #  print p_list
+          #  return p_list
 
 
     def jsonrpc_get_alert(self, alert):
