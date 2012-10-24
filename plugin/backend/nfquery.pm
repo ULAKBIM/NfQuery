@@ -65,7 +65,7 @@ my $uri;
 #output directory
 my $output_dir;
 my %outputTable;
-my @prefixes;
+my %prefixes;
 
 #communication functions
 
@@ -128,7 +128,7 @@ sub Init {
     syslog('debug',"plugin_ip: $plugin_ip");
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
 
-    @prefixes = &getPrefixes();
+    %prefixes = &getPrefixes();
     return 1;
   
     
@@ -254,11 +254,12 @@ sub checkQueries{
 sub ipInPrefixes{
 	my $ip = shift;
 	
-	foreach my $prefix (@prefixes){
+	foreach my $plugin_id (keys %prefixes){
+        my $prefix = $prefixes{$plugin_id};
 		my $block = NetAddr::IP->new($prefix);
 		my $ip_address = NetAddr::IP->new($ip);
 		if($ip_address->within($block)){
-			return $prefix;
+			return $plugin_id;
 		}
 	}
 
@@ -290,20 +291,20 @@ sub parseOutputOfPid{
 
 			#check ip adresses are in prefixes or not.
 			my @ip_port;
-			my $prefix;
+			my $plugin_id;
 
 			$table{'srcip_port'} = $vars[5];
 			@ip_port = split(':', $table{'srcip_port'});
-			$prefix = &ipInPrefixes($ip_port[0]);;	
-			if ($prefix){
-				$table{'srcip_alert_prefix'} = $prefix;
+			$plugin_id = &ipInPrefixes($ip_port[0]);;	
+			if ($plugin_id){
+				$table{'srcip_alert_prefix'} = $plugin_id;
 			}
 
 			$table{'dstip_port'} = $vars[8];
 			@ip_port = split(':', $table{'dstip_port'});
-			$prefix = &ipInPrefixes($ip_port[0]);;
-			if ($prefix){
-				$table{'dstip_alert_prefix'} = $prefix; 
+			$plugin_id = &ipInPrefixes($ip_port[0]);;
+			if ($plugin_id){
+				$table{'dstip_alert_prefix'} = $plugin_id; 
 			}
 
 			$table{'packets'} = $vars[9];
@@ -562,15 +563,13 @@ sub findAlertsInOutputOfQuery{
                 if(!$alerts{$query_id}{"src_ip_list"}){
                     $alerts{$query_id}{"src_ip_list"} = [];
                 }
-                my @ip_port = split(':', $table{'srcip_port'});
-                push $alerts{$query_id}{"src_ip_list"}, $ip_port[0];
+                push $alerts{$query_id}{"src_ip_list"}, $table{'srcip_alert_prefix'};
             }
             if ($table{'dstip_alert_prefix'}){
                 if(!$alerts{$query_id}{"dst_ip_list"}){
                     $alerts{$query_id}{"dst_ip_list"} = [];
                 }
-                my @ip_port = split(':', $table{'dstip_port'});
-                push $alerts{$query_id}{"dst_ip_list"}, $ip_port[0];
+                push $alerts{$query_id}{"dst_ip_list"}, $table{'dstip_alert_prefix'};
             }
         }            
 	}
@@ -745,7 +744,7 @@ sub getPrefixes{
 	syslog('debug', 'Response. - GETPREFIXES');
 	my $r = $result->result;
 	syslog('debug', "Response. - GETPREFIXES" ."".Dumper($r));
-	return @{$r};
+	return %{$r};
 }
 
 sub getSubscriptions{
