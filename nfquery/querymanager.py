@@ -581,12 +581,12 @@ class QueryManager:
         return alerts
 
 
-    def pushAlerts(self, plugin_ip, query_id_list, int(start_time), int(end_time)):
+    def pushAlerts(self, plugin_ip, query_id_list, start_time, end_time):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         for query_id, query_list in query_id_list.items():
             statistic = Statistics()
-            statistic.start_time = start_time
-            statistic.end_time = end_time
+            statistic.start_time = int(start_time)
+            statistic.end_time = int(end_time)
             statistic.number_of_flows = query_list["matched_flows"]
             statistic.number_of_packets = query_list["matched_bytes"]
             statistic.number_of_bytes = query_list["matched_packets"]
@@ -597,14 +597,14 @@ class QueryManager:
                 for identifed_id in query_list["src_ip_plugins"]:
                     alert = self.store.find( Alert,
                             Alert.identifier_id == unicode(plugin_id), Alert.identified == unicode(identifed_id),
-                            Alert.start_time == start_time, Alert.end_time == end_time
+                            Alert.start_time == int(start_time), Alert.end_time == int(end_time)
                             ).one()
                     if alert is None:
                         alert = Alert()
                         alert.identifier_id = plugin_id
                         alert.identified_id = identifier_id
-                        alert.start_time = start_time
-                        alert.end_time = end_time
+                        alert.start_time = int(start_time)
+                        alert.end_time = int(end_time)
                         self.store.add(alert)
         self.store.commit()
                 
