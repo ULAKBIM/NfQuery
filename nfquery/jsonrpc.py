@@ -192,21 +192,7 @@ class jsonRPCServer(jsonrpc.JSONRPC):
 
     def jsonrpc_get_my_alerts(self, plugin_ip):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
-        alert_list = ''
-        try:
-            plugin_id = self.store.find( Plugin.id,
-                                         Plugin.plugin_ip == unicode(plugin_ip)
-                                       ).one()
-            print plugin_id
-            alert_list = self.store.find( Alert,
-                                          Alert.plugin_id == plugin_id )
-            print list(alert_list)
-            self.rpclogger.debug('Returning alert list')
-        except Exception, e:
-            print e
-            return
-        #print list(alert_list)
-        return list(alert_list)
+        return self.queryManager.getMyAlerts(plugin_ip)
         
         
 

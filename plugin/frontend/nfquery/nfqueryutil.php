@@ -13,11 +13,10 @@
 	
 	
 	function getMyAlerts(){
-		$command = 'nfquery::getSubscriptions';
+		$command = 'nfquery::getMyAlerts';
 		$opts = array();
 		$out_list = nfsend_query($command, $opts);
-		$alerts = $out_list['subscriptions'];
-		return $alerts;
+		return $out_list;
 	}
 	
 	function lookup($ip_address){
