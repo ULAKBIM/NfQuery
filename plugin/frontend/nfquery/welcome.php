@@ -5,15 +5,8 @@
 		 <?php
                         require_once('nfqueryutil.php');
 
-/*			$alerts = getMyAlerts();
-			for($i = 0; $i < sizeof($subscriptions); ++$i) {
-                                echo "<div class ='alert alert-block alert-error fade-in'>".$subscriptions[$i]."</div>\n";
-			
-                        }
-
-                       require_once('nfqueryutil.php');
-		       $myalerts = getMyAlerts();
-		       var_dump($myalerts);*/
+			$alerts = getMyAlerts();
+		    var_dump($myalerts);
 		?>
 		<script type="text/javascript" language="JavaScript">
 			//getAlerts();
