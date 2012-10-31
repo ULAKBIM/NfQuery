@@ -100,6 +100,7 @@ sub ParseConfigFile {
 
 #Initialize plugin.
 sub Init {
+    syslog('debug',"AHMET CA");
     $cfg = $NfConf::PluginConf{'nfquery'};
 
     # assign values
