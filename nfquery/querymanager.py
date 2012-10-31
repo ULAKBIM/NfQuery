@@ -581,7 +581,7 @@ class QueryManager:
         return alerts
 
 
-    def pushAlerts(self, plugin_ip, query_id_list, start_time, end_time):
+    def pushAlerts(self, plugin_ip, query_id_list, int(start_time), int(end_time)):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         for query_id, query_list in query_id_list.items():
             statistic = Statistics()
