@@ -6,7 +6,7 @@
                         require_once('nfqueryutil.php');
 
 			$alerts = getMyAlerts();
-		    var_dump($myalerts);
+		    var_dump($alerts);
 		?>
 		<script type="text/javascript" language="JavaScript">
 			//getAlerts();

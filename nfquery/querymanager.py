@@ -576,9 +576,14 @@ class QueryManager:
             identifier_list["query_id"] = alert.query.id
             identifier_list["start_time"] = alert.start_time
             identifier_list["end_time"] = alert.end_time
+<<<<<<< HEAD
             alerts['identifier'].append(identifier_list)
         print list(alert_list)
 
+=======
+        alerts['identifier'] = identifier_list
+        
+>>>>>>> 60d45a7b31868444ea28977f4893afcf17f9a665
         #Identifier
         alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id )
         identified_list = {}
@@ -589,10 +594,16 @@ class QueryManager:
             identified_list["query_id"] = alert.query.id
             identified_list["start_time"] = alert.start_time
             identified_list["end_time"] = alert.end_time
+<<<<<<< HEAD
             alerts['identified'].append(identified_list)
         print list(alert)
 
 
+=======
+        alerts['identified'] = identified_list
+        
+        print alerts
+>>>>>>> 60d45a7b31868444ea28977f4893afcf17f9a665
         return alerts
 
 
