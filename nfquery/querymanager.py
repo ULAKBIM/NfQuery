@@ -590,8 +590,8 @@ class QueryManager:
             statistic.number_of_flows = query_list["matched_flows"]
             statistic.number_of_packets = query_list["matched_bytes"]
             statistic.number_of_bytes = query_list["matched_packets"]
-            statistic.query_id = query_id
-            statistic.plugin_id = plugin_id
+            statistic.query_id = int(query_id)
+            statistic.plugin_id = int(plugin_id)
             self.store.add(statistic)
             if query_list.has_key("src_ip_plugins"):
                 for identifed_id in query_list["src_ip_plugins"]:
