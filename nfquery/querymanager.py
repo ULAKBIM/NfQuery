@@ -558,6 +558,27 @@ class QueryManager:
         self.qmlogger.debug('Returning subscription list')
         #print list(subscription_list)
         return list(subscription_list)
+    
+    def getMyAlerts(self, plugin_ip):
+        plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
+        print plugin_id
+
+        alerts = {}
+        alert_list = ''
+
+        #Identifier
+        alert_list = self.store.find( Alert, Alert.identifier_plugin_id == plugin_id )
+        alerts['identifier'] = list(alert_list)
+        print list(alert_list)
+
+        #Identifier
+        alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id )
+        alerts['identified'] = list(alert_list)
+        print list(alert_list)
+
+        self.rpclogger.debug('Returning alert list')
+
+        return alerts
 
 
     def pushAlerts(self, plugin_ip, query_id_list, start_time, end_time):
