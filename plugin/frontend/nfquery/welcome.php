@@ -3,23 +3,15 @@
 	 	<fieldset><strong>Alerts</strong>
 		<div id="alertDiv">
 		 <?php
-                        require_once('nfqueryutil.php');
+            require_once('nfqueryutil.php');
 
-			$alerts = getMyAlerts();
-		    var_dump($alerts);
+            $alerts = getMyAlerts();
+            
+            $identifier_alerts = $alerts['identifier']; 
+            $identified_alerts = $alerts['identified']; 
+            
+            var_dump($identifier_alerts);
 		?>
-		<script type="text/javascript" language="JavaScript">
-			//getAlerts();
-		</script>
 		</div>
-	</div>
-</div>
-<div class="row-fluid">
-	<div class="span11">
-		<table>
-			<?php
-            ?>  
-       	</table>
-
 	</div>
 </div>

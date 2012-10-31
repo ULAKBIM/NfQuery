@@ -569,41 +569,30 @@ class QueryManager:
         #Identifier
         alert_list = self.store.find( Alert, Alert.identifier_plugin_id == plugin_id )
         identifier_list = {}
-        alert['identifier'] = []
+        alerts['identifier'] = []
         for alert in alert_list:
             identifier_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identifier_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
             identifier_list["query_id"] = alert.query.id
             identifier_list["start_time"] = alert.start_time
             identifier_list["end_time"] = alert.end_time
-<<<<<<< HEAD
             alerts['identifier'].append(identifier_list)
         print list(alert_list)
 
-=======
-        alerts['identifier'] = identifier_list
-        
->>>>>>> 60d45a7b31868444ea28977f4893afcf17f9a665
         #Identifier
         alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id )
         identified_list = {}
-        alert['identified'] = []
+        alerts['identified'] = []
         for alert in alert_list:
             identified_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identified_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
             identified_list["query_id"] = alert.query.id
             identified_list["start_time"] = alert.start_time
             identified_list["end_time"] = alert.end_time
-<<<<<<< HEAD
             alerts['identified'].append(identified_list)
-        print list(alert)
+        print list(alerts)
 
 
-=======
-        alerts['identified'] = identified_list
-        
-        print alerts
->>>>>>> 60d45a7b31868444ea28977f4893afcf17f9a665
         return alerts
 
 

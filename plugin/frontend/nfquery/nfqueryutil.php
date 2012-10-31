@@ -16,7 +16,15 @@
 		$command = 'nfquery::getMyAlerts';
 		$opts = array();
 		$out_list = nfsend_query($command, $opts);
-		return $out_list;
+		$output = "";
+		for($i=0;$i<sizeof($out_list);$i++){
+			$index="".$i;
+			$line = $out_list[$index];
+			$output = $output.$line;
+        }
+        $alerts = json_decode($output, true);
+
+		return $alerts;
 	}
 	
 	function lookup($ip_address){
