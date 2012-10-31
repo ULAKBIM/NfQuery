@@ -558,7 +558,7 @@ class QueryManager:
         self.qmlogger.debug('Returning subscription list')
         #print list(subscription_list)
         return list(subscription_list)
-    
+   
     def getMyAlerts(self, plugin_ip):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         print plugin_id
@@ -569,28 +569,29 @@ class QueryManager:
         #Identifier
         alert_list = self.store.find( Alert, Alert.identifier_plugin_id == plugin_id )
         identifier_list = {}
+        alert['identifier'] = []
         for alert in alert_list:
             identifier_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identifier_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
             identifier_list["query_id"] = alert.query.id
             identifier_list["start_time"] = alert.start_time
             identifier_list["end_time"] = alert.end_time
-        alerts['identifier'] = identifier_list
+            alerts['identifier'].append(identifier_list)
         print list(alert_list)
 
         #Identifier
         alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id )
         identified_list = {}
+        alert['identified'] = []
         for alert in alert_list:
             identified_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identified_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
             identified_list["query_id"] = alert.query.id
             identified_list["start_time"] = alert.start_time
             identified_list["end_time"] = alert.end_time
-        alerts['identified'] = identified_list
-        print list(alert_list)
+            alerts['identified'].append(identified_list)
+        print list(alert)
 
-        self.rpclogger.debug('Returning alert list')
 
         return alerts
 
