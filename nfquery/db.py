@@ -150,7 +150,7 @@ def initialize_db(store):
   		  "FOREIGN KEY (identfier_plugin_id) REFERENCES plugin(id),"         +
   		  "FOREIGN KEY (start_time) REFERENCES time(id),"                    +
   		  "FOREIGN KEY (end_time) REFERENCES time(id),"                      +
-  		  "CONSTRAINT alert_ibfk_1 FOREIGN KEY (query_id) REFERENCES query (id) ON DELETE CASCADE,"+
+  		  "CONSTRAINT alert_ibfk_1 FOREIGN KEY (query_id) REFERENCES query (id) ON DELETE CASCADE"+
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 		)
 
