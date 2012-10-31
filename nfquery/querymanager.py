@@ -562,15 +562,29 @@ class QueryManager:
 
     def pushAlerts(self, plugin_ip, query_id_list, start_time, end_time):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
-        #for query_id, query_list in query_id_list.items():
-        #    if query_list.has_key("src_ip_plugins"):
+        start_time = Time()
+        end_time = Time()
+        start_time.time = start_time
+        end_time.time = start_time
+        self.store.add(start_time)
+        self.store.add(end_time)
+        for query_id, query_list in query_id_list.items():
+            if query_list.has_key("src_ip_plugins"):
+                for identifed_id in query_list["src_ip_plugins"]:
+                    alert = self.store.find( Alert,
+                            Alert.identifier_id == unicode(plugin_id), Alert.identified == unicode(identifed_id),
+                            Alert.start_time_id == start_time.id, Alert.end_time_id == end_time.id
+                            ).one()
+                    if alert is None:
+                        alert = Alert()
+                        alert.identifier_id = plugin_id
+                        alert.identified_id = identifier_id
+                        alert.start_time_id = start_time.id
+                        alert.end_time_id = end_time.id
+                        self.store.add(alert)
+        self.store.commit()
                 
         print query_id_list
-        #for query_id in query_id_list:
-        #    alert = Alert()
-        #    alert.query_id = query_id
-        #    alert.plugin_id= plugin_id
-        #    self.store.add(alert)
 
     def registerAlert(self, alert):
         pp = pprint.PrettyPrinter(indent=4)
