@@ -378,10 +378,13 @@ def initialize_db(store):
                   "number_of_flows INT UNSIGNED NOT NULL,"                           +
                   "number_of_bytes INT UNSIGNED NOT NULL,"                           +
                   "number_of_packets INT UNSIGNED NOT NULL,"                         +
-                  "time_window VARCHAR(10) NOT NULL,"                                +
+  		  "start_time_id int unsigned NOT NULL,"                                +
+  		  "end_time_id int unsigned NOT NULL,"                                  +
                   "PRIMARY KEY (id),"                                                +
                   "FOREIGN KEY (query_id) REFERENCES query(id) ON DELETE CASCADE,"   +
                   "FOREIGN KEY (plugin_id) REFERENCES plugin(id) ON DELETE CASCADE"  +
+  		  "FOREIGN KEY (end_time_id) REFERENCES time(id) ON DELETE CASCADE,"                      +
+  		  "FOREIGN KEY (query_id) REFERENCES query(id) ON DELETE CASCADE" +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
     
