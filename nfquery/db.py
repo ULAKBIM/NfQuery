@@ -139,16 +139,16 @@ def initialize_db(store):
 		  "CREATE TABLE alert ("					     +
   		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
   		  "query_id int(10) unsigned NOT NULL,"                              +
-  		  "identfied_plugin_id int(10) unsigned NOT NULL,"                   +
-  		  "identfier_plugin_id int(10) unsigned NOT NULL,"                   +
-  		  "start_time int unsigned NOT NULL,"                                +
-  		  "end_time int unsigned NOT NULL,"                                  +
+  		  "identified_plugin_id int(10) unsigned NOT NULL,"                   +
+  		  "identifier_plugin_id int(10) unsigned NOT NULL,"                   +
+  		  "start_time int(11) unsigned NOT NULL,"                                +
+  		  "end_time int(11) unsigned NOT NULL,"                                  +
   		  "PRIMARY KEY (id),"                                                +
-  		  "FOREIGN KEY (identfied_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"         +
-  		  "FOREIGN KEY (identfier_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"         +
+  		  "FOREIGN KEY (identified_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"         +
+  		  "FOREIGN KEY (identifier_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"         +
   		 # "FOREIGN KEY (start_time_id) REFERENCES time(id) ON DELETE CASCADE,"                    +
   		 # "FOREIGN KEY (end_time_id) REFERENCES time(id) ON DELETE CASCADE,"                      +
-  		  "FOREIGN KEY (query_id) REFERENCES query(id) ON DELETE CASCADE" +
+  		  "FOREIGN KEY (query_id) REFERENCES query(id)" +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 		)
 
@@ -378,8 +378,8 @@ def initialize_db(store):
                   "number_of_flows INT UNSIGNED NOT NULL,"                           +
                   "number_of_bytes INT UNSIGNED NOT NULL,"                           +
                   "number_of_packets INT UNSIGNED NOT NULL,"                         +
-  		  "start_time int unsigned NOT NULL,"                                +
-  		  "end_time int unsigned NOT NULL,"                                  +
+  		  "start_time int(11) unsigned NOT NULL,"                                +
+  		  "end_time int(11) unsigned NOT NULL,"                                  +
                   "PRIMARY KEY (id),"                                                +
                   "FOREIGN KEY (query_id) REFERENCES query(id) ON DELETE CASCADE,"   +
                 #  "FOREIGN KEY (plugin_id) REFERENCES plugin(id) ON DELETE CASCADE"  +

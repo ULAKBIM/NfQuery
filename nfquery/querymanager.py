@@ -594,21 +594,22 @@ class QueryManager:
             statistic.plugin_id = int(plugin_id)
             self.store.add(statistic)
             if query_list.has_key("src_ip_plugins"):
-                for identifed_id in query_list["src_ip_plugins"]:
+                for identified_id in query_list["src_ip_plugins"]:
+                    print identified_id, query_id
                     alert = self.store.find( Alert,
-                            Alert.identifier_id == unicode(plugin_id), Alert.identified == unicode(identifed_id),
-                            Alert.start_time == int(start_time), Alert.end_time == int(end_time)
+                            Alert.identifier_plugin == int(plugin_id), Alert.identified_plugin_id == int(identified_id),
+                            Alert.start_time == int(start_time), Alert.end_time == int(end_time), Alert.query_id == int(query_id)
                             ).one()
                     if alert is None:
                         alert = Alert()
-                        alert.identifier_id = plugin_id
-                        alert.identified_id = identifier_id
+                        alert.identifier_plugin_id = int(plugin_id)
+                        alert.identified_plugin_id = int(identified_id)
                         alert.start_time = int(start_time)
                         alert.end_time = int(end_time)
+                        alert.query_id = int(query_id)
                         self.store.add(alert)
         self.store.commit()
                 
-        print query_id_list
 
     def registerAlert(self, alert):
         pp = pprint.PrettyPrinter(indent=4)
