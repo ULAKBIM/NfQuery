@@ -176,15 +176,7 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         else:
              p_list = {}
              p_list[plugin.id] = plugin.prefix.prefix
-             print p_list
              return p_list
-          #  prefix_list = self.store.find(Prefix.prefix)
-          #  p_list = {}
-          #  p_list[plugin.id] = []
-          #  for prefix in prefix_list:
-          #      p_list[plugin.id].append(prefix)
-          #  print p_list
-          #  return p_list
 
 
     def jsonrpc_get_alert(self, alert):
