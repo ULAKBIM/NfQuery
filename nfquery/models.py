@@ -159,8 +159,15 @@ class Statistics(object):
 
     id = Int(primary=True)
     query_id = Int()
+    number_of_flows = Int()
+    number_of_bytes = Int()
+    number_of_packets = Int()
+    start_time_id = Int()
+    end_time_id = Int()
 
     query = Reference(query_id, Query.id)
+    start_time = Reference(start_time_id, Time.id)
+    end_time = Reference(end_time_id, Time.id)
 
 
 class IP(object):
