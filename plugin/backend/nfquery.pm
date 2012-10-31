@@ -297,14 +297,14 @@ sub parseOutputOfPid{
 			@ip_port = split(':', $table{'srcip_port'});
 			$plugin_id = &ipInPrefixes($ip_port[0]);;	
 			if ($plugin_id){
-				$table{'srcip_alert_prefix'} = $plugin_id;
+				$table{'srcip_alert_plugin'} = $plugin_id;
 			}
 
 			$table{'dstip_port'} = $vars[8];
 			@ip_port = split(':', $table{'dstip_port'});
 			$plugin_id = &ipInPrefixes($ip_port[0]);;
 			if ($plugin_id){
-				$table{'dstip_alert_prefix'} = $plugin_id; 
+				$table{'dstip_alert_plugin'} = $plugin_id; 
 			}
 
 			$table{'packets'} = $vars[9];
@@ -559,17 +559,17 @@ sub findAlertsInOutputOfQuery{
 
         foreach my $ref (@outputOfQuery){
             my %table = %{$ref};
-            if ($table{'srcip_alert_prefix'}){
-                if(!$alerts{$query_id}{"src_ip_list"}){
-                    $alerts{$query_id}{"src_ip_list"} = [];
+            if ($table{'srcip_alert_plugin'}){
+                if(!$alerts{$query_id}{"src_ip_plugins"}){
+                    $alerts{$query_id}{"src_ip_plugins"} = [];
                 }
-                push $alerts{$query_id}{"src_ip_list"}, $table{'srcip_alert_prefix'};
+                push $alerts{$query_id}{"src_ip_plugins"}, $table{'srcip_alert_plugin'};
             }
-            if ($table{'dstip_alert_prefix'}){
-                if(!$alerts{$query_id}{"dst_ip_list"}){
-                    $alerts{$query_id}{"dst_ip_list"} = [];
+            if ($table{'dstip_alert_plugin'}){
+                if(!$alerts{$query_id}{"dst_ip_plugins"}){
+                    $alerts{$query_id}{"dst_ip_plugins"} = [];
                 }
-                push $alerts{$query_id}{"dst_ip_list"}, $table{'dstip_alert_prefix'};
+                push $alerts{$query_id}{"dst_ip_plugins"}, $table{'dstip_alert_plugin'};
             }
         }            
 	}
