@@ -558,7 +558,23 @@ class QueryManager:
         self.qmlogger.debug('Returning subscription list')
         #print list(subscription_list)
         return list(subscription_list)
-   
+  
+
+    def getStatistics(self, plugin_id, query_id, start_time, end_time):
+        plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
+        statistic_list = self.store.find(Statistics, Statistics.plugin_id == plugin_id, Statistics.query_id == query_id, 
+                                         Statistics.start_time == start_time, Statistics.end_time == end_time)
+        statistics = {}
+        for statistic in statistic_list:
+            if statistic.query_id not in  statistics:
+                statistics[statistic.query_id] = {}
+            statistics[statistic.query_id]["plugin_id"] = statistic.plugin_id
+            statistics[statistic.query_id]["plugin_ip"] = statistic.plugin_ip
+            statistics[statistic.query_id]["number_of_flows"] = statistic.number_of_flows
+            statistics[statistic.query_id]["number_of_bytes"] = statistic.number_of_bytes
+            statistics[statistic.query_id]["number_of_packets"] = statistic.number_of_packets
+        return statistics
+
     def getMyAlerts(self, plugin_ip):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         print plugin_id
