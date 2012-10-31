@@ -787,7 +787,8 @@ sub getMyAlerts{
 	my $r = $result->result;
 
 	if (defined $result->result) {
-        $args{'alerts'} = \@{$r};
+	    my $json = encode_json \%{$r};
+        %args = &divideJsonToParts($json);
         Nfcomm::socket_send_ok($socket, \%args);
         syslog('debug', 'Response To frontend. - GETMYALERTS');
     }else {

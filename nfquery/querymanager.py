@@ -576,8 +576,7 @@ class QueryManager:
             identifier_list["start_time"] = alert.start_time
             identifier_list["end_time"] = alert.end_time
         alerts['identifier'] = identifier_list
-        print list(alert_list)
-
+        
         #Identifier
         alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id )
         identified_list = {}
@@ -588,10 +587,8 @@ class QueryManager:
             identified_list["start_time"] = alert.start_time
             identified_list["end_time"] = alert.end_time
         alerts['identified'] = identified_list
-        print list(alert_list)
-
-        self.rpclogger.debug('Returning alert list')
-
+        
+        print alerts
         return alerts
 
 
