@@ -141,13 +141,13 @@ def initialize_db(store):
   		  "query_id int(10) unsigned NOT NULL,"                              +
   		  "identfied_plugin_id int(10) unsigned NOT NULL,"                   +
   		  "identfier_plugin_id int(10) unsigned NOT NULL,"                   +
-  		  "start_time_id int unsigned NOT NULL,"                                +
-  		  "end_time_id int unsigned NOT NULL,"                                  +
+  		  "start_time int unsigned NOT NULL,"                                +
+  		  "end_time int unsigned NOT NULL,"                                  +
   		  "PRIMARY KEY (id),"                                                +
   		  "FOREIGN KEY (identfied_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"         +
   		  "FOREIGN KEY (identfier_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"         +
-  		  "FOREIGN KEY (start_time_id) REFERENCES time(id) ON DELETE CASCADE,"                    +
-  		  "FOREIGN KEY (end_time_id) REFERENCES time(id) ON DELETE CASCADE,"                      +
+  		 # "FOREIGN KEY (start_time_id) REFERENCES time(id) ON DELETE CASCADE,"                    +
+  		 # "FOREIGN KEY (end_time_id) REFERENCES time(id) ON DELETE CASCADE,"                      +
   		  "FOREIGN KEY (query_id) REFERENCES query(id) ON DELETE CASCADE" +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 		)
