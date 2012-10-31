@@ -592,6 +592,8 @@ class QueryManager:
             identifier_list["query_id"] = alert.query.id
             identifier_list["start_time"] = alert.start_time
             identifier_list["end_time"] = alert.end_time
+            identifier_list["query_category"] = alert.query.category.category
+            identifier_list["query_filter"] = getFilter(alert.query.id)
             alerts['identifier'].append(identifier_list)
         print list(alert_list)
 
@@ -605,6 +607,8 @@ class QueryManager:
             identified_list["query_id"] = alert.query.id
             identified_list["start_time"] = alert.start_time
             identified_list["end_time"] = alert.end_time
+            identified_list["query_category"] = alert.query.category.category
+            identified_list["query_filter"] = getFilter(alert.query.id)
             alerts['identified'].append(identified_list)
         print list(alerts)
 
