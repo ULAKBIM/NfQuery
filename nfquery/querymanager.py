@@ -569,6 +569,15 @@ class QueryManager:
         self.store.add(start_time)
         self.store.add(end_time)
         for query_id, query_list in query_id_list.items():
+            statistic = Statistics()
+            statistic.start_time_id = start_time.id
+            statistic.end_time_id = end_time.id
+            statistic.number_of_flows = query_list["matched_flows"]
+            statistic.number_of_packets = query_list["matched_bytes"]
+            statistic.number_of_bytes = query_list["matched_packets"]
+            statistic.query_id = query_id
+            statistic.plugin_id = plugin_id
+            self.store.add(statistic)
             if query_list.has_key("src_ip_plugins"):
                 for identifed_id in query_list["src_ip_plugins"]:
                     alert = self.store.find( Alert,
