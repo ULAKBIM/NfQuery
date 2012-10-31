@@ -556,7 +556,11 @@ sub findAlertsInOutputOfQuery{
 	    my @outputOfQuery = &parseOutputOfPid($pid);
         $alerts{$query_id} = {};
         my $matched_flows = $stats->{$subscriptionName}{$query_id}{'total flows'} + 0;
+        my $matched_bytes = $stats->{$subscriptionName}{$query_id}{'total bytes'} + 0;
+        my $matched_packets = $stats->{$subscriptionName}{$query_id}{'total packets'} + 0;
         $alerts{$query_id}{'matched_flows'} = $matched_flows;  
+        $alerts{$query_id}{'matched_bytes'} = $matched_bytes;  
+        $alerts{$query_id}{'matched_packets'} = $matched_packets;  
 
         foreach my $ref (@outputOfQuery){
             my %table = %{$ref};
@@ -776,19 +780,19 @@ sub getSubscriptions{
 sub getMyAlerts{
 	my $socket = shift;
 	my $opts = shift;
-	my $host = '193.149.94.217';
+    my %args;
 	
 	syslog('debug',"$uri");
-	my $result = $rpc->call($uri,'get_my_alerts',[$host]);
+	my $result = $rpc->call($uri,'get_my_alerts',[$plugin_ip]);
 	my $r = $result->result;
-        my %args;
+
 	if (defined $result->result) {
-                $args{'alerts'} = \@{$r};
-                syslog('debug', 'Response To frontend. - GETMYALERTS');
-                Nfcomm::socket_send_ok($socket, \%args);
-        }else {
-                Nfcomm::socket_send_ok($socket, \%args);
-        }       
+        $args{'alerts'} = \@{$r};
+        Nfcomm::socket_send_ok($socket, \%args);
+        syslog('debug', 'Response To frontend. - GETMYALERTS');
+    }else {
+        Nfcomm::socket_send_ok($socket, \%args);
+    }       
 }
 
 sub getSubscriptionDetail{
