@@ -564,13 +564,17 @@ sub findAlertsInOutputOfQuery{
                 if(!$alerts{$query_id}{"src_ip_plugins"}){
                     $alerts{$query_id}{"src_ip_plugins"} = [];
                 }
-                push $alerts{$query_id}{"src_ip_plugins"}, $table{'srcip_alert_plugin'};
+                if ($table{'srcip_alert_plugin'} !~ $alerts{$query_id}{"src_ip_plugins"}){
+                    push $alerts{$query_id}{"src_ip_plugins"}, $table{'srcip_alert_plugin'};
+                }
             }
             if ($table{'dstip_alert_plugin'}){
                 if(!$alerts{$query_id}{"dst_ip_plugins"}){
                     $alerts{$query_id}{"dst_ip_plugins"} = [];
                 }
-                push $alerts{$query_id}{"dst_ip_plugins"}, $table{'dstip_alert_plugin'};
+                if ($table{'dstip_alert_plugin'} !~ $alerts{$query_id}{"dst_ip_plugins"}){
+                    push $alerts{$query_id}{"dst_ip_plugins"}, $table{'dstip_alert_plugin'};
+                }
             }
         }            
 	}
