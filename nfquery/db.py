@@ -135,22 +135,20 @@ def initialize_db(store):
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
 
-
     store.execute(
 		  "CREATE TABLE alert ("					     +
   		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
   		  "query_id int(10) unsigned NOT NULL,"                              +
   		  "identfied_plugin_id int(10) unsigned NOT NULL,"                   +
   		  "identfier_plugin_id int(10) unsigned NOT NULL,"                   +
-  		  "start_time int unsigned NOT NULL,"                                +
-  		  "end_time int unsigned NOT NULL,"                                  +
+  		  "start_time_id int unsigned NOT NULL,"                                +
+  		  "end_time_id int unsigned NOT NULL,"                                  +
   		  "PRIMARY KEY (id),"                                                +
-  		  "KEY query_id (query_id),"                                         +
-  		  "FOREIGN KEY (identfied_plugin_id) REFERENCES plugin(id),"         +
-  		  "FOREIGN KEY (identfier_plugin_id) REFERENCES plugin(id),"         +
-  		  "FOREIGN KEY (start_time) REFERENCES time(id),"                    +
-  		  "FOREIGN KEY (end_time) REFERENCES time(id),"                      +
-  		  "CONSTRAINT alert_ibfk_1 FOREIGN KEY (query_id) REFERENCES query (id) ON DELETE CASCADE"+
+  		  "FOREIGN KEY (identfied_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"         +
+  		  "FOREIGN KEY (identfier_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"         +
+  		  "FOREIGN KEY (start_time_id) REFERENCES time(id) ON DELETE CASCADE,"                    +
+  		  "FOREIGN KEY (end_time_id) REFERENCES time(id) ON DELETE CASCADE,"                      +
+  		  "FOREIGN KEY (query_id) REFERENCES query(id) ON DELETE CASCADE" +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 		)
 

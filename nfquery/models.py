@@ -368,8 +368,8 @@ class Alert(object):
     query_id = Int()
     identified_plugin_id = Int()
     identifier_plugin_id = Int()
-    start_time = Int()
-    end_time = Int()
+    start_time_id = Int()
+    end_time_id = Int()
 
     #plugin_id = Int()
 
@@ -377,3 +377,5 @@ class Alert(object):
 #    plugin = Reference(plugin_id, Plugin.id)
     identified_plugin = Reference(identified_plugin_id, Plugin.id)
     identifier_plugin = Reference(identifier_plugin_id, Plugin.id)
+    start_time = Reference(start_time_id, Time.id)
+    end_time = Reference(end_time_id, Time.id)
