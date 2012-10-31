@@ -65,6 +65,11 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.queryManager.pushAlerts(plugin_ip, query_id_list, start_time, end_time)
 
+    
+    def jsonrpc_push_statistics(self, plugin_id, query_id, number_of_flows, number_of_bytes, number_of_packets, time_window):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.queryManager.pushStatistics(plugin_ip, query_id_list, start_time, end_time)
+   
     def jsonrpc_register(self,plugin_ip):
         result = []
         print plugin_ip

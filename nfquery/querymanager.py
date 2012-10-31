@@ -562,6 +562,9 @@ class QueryManager:
 
     def pushAlerts(self, plugin_ip, query_id_list, start_time, end_time):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
+        #for query_id, query_list in query_id_list.items():
+        #    if query_list.has_key("src_ip_plugins"):
+                
         print query_id_list
         #for query_id in query_id_list:
         #    alert = Alert()

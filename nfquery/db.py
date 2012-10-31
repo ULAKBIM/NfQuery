@@ -140,12 +140,17 @@ def initialize_db(store):
 		  "CREATE TABLE alert ("					     +
   		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
   		  "query_id int(10) unsigned NOT NULL,"                              +
-  		  "plugin_id int(10) unsigned NOT NULL,"                            +
+  		  "identfied_plugin_id int(10) unsigned NOT NULL,"                   +
+  		  "identfier_plugin_id int(10) unsigned NOT NULL,"                   +
+  		  "start_time int unsigned NOT NULL,"                                +
+  		  "end_time int unsigned NOT NULL,"                                  +
   		  "PRIMARY KEY (id),"                                                +
   		  "KEY query_id (query_id),"                                         +
-  		  "KEY plugin_id (plugin_id),"                                       +
+  		  "FOREIGN KEY (identfied_plugin_id) REFERENCES plugin(id),"         +
+  		  "FOREIGN KEY (identfier_plugin_id) REFERENCES plugin(id),"         +
+  		  "FOREIGN KEY (start_time) REFERENCES time(id),"                    +
+  		  "FOREIGN KEY (end_time) REFERENCES time(id),"                      +
   		  "CONSTRAINT alert_ibfk_1 FOREIGN KEY (query_id) REFERENCES query (id) ON DELETE CASCADE,"+
-  		  "CONSTRAINT alert_ibfk_2 FOREIGN KEY (plugin_id) REFERENCES plugin (id)"+
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
 		)
 
