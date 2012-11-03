@@ -37,7 +37,8 @@ use Net::SSL ();
 use Parallel::ForkManager;
 use NfConf;
 use DBM::Deep;
-
+use Time::Local;
+use Digest::MD5  qw(md5_hex);
 use feature 'say';
 
 
@@ -267,6 +268,25 @@ sub ipInPrefixes{
 	return 0;	
 }
 
+sub dateToTimestamp{
+    my $date = shift;
+    my ($mday,$mon,$year,$hour,$min,$sec, $msec) = split(/[\s.:]+/, $date);
+    my $time = timelocal($sec,$min,$hour,$mday,$mon-1,$year);
+    return $time
+
+}
+
+sub fiveTupleHash{
+    my $srcip = shift;
+    my $dstip = shift;
+    my $srcip_port = shift;
+    my $dstip_port = shift;
+    my $proto = shift;
+
+    my $md5_hash = md5_hex($srcip.$dstip.$srcip_port.$dstip_port.$proto);
+    return $md5_hash;
+}
+
 sub parseOutputOfPid{
 	my $pid = shift;
     my @output;
@@ -286,28 +306,35 @@ sub parseOutputOfPid{
 		}else{
 			my %table;
 			$table{'date'} = $vars[0];
+            
+            #calculate unixtime stamp
+            $table{'timestamp'} = &dateToTimestamp($vars[0]);
+
 			$table{'flow_start'} = $vars[1];
 			$table{'duration'} = $vars[2];
 			$table{'proto'} = $vars[3];
 
 			#check ip adresses are in prefixes or not.
-			my @ip_port;
+			my @srcip_port;
+			my @dstip_port;
 			my $plugin_id;
 
 			$table{'srcip_port'} = $vars[5];
-			@ip_port = split(':', $table{'srcip_port'});
-			$plugin_id = &ipInPrefixes($ip_port[0]);;	
+			@srcip_port = split(':', $table{'srcip_port'});
+			$plugin_id = &ipInPrefixes($srcip_port[0]);	
 			if ($plugin_id){
 				$table{'srcip_alert_plugin'} = $plugin_id;
 			}
 
 			$table{'dstip_port'} = $vars[8];
-			@ip_port = split(':', $table{'dstip_port'});
-			$plugin_id = &ipInPrefixes($ip_port[0]);;
+			@dstip_port = split(':', $table{'dstip_port'});
+			$plugin_id = &ipInPrefixes($dstip_port[0]);
 			if ($plugin_id){
 				$table{'dstip_alert_plugin'} = $plugin_id; 
 			}
 
+            $table{'hash'} = &fiveTupleHash($srcip_port[0], $srcip_port[1], 
+                    $dstip_port[0], $dstip_port[1], $table{'proto'});
 			$table{'packets'} = $vars[9];
 			$table{'bytes'} = $vars[10];
 			$table{'flows'} = $vars[11];
@@ -695,6 +722,11 @@ sub runQueries{
 						$stats->{$subscription_name}{$query_id}{$key} = $value;
 					}
 				}
+				if ($line =~ /^Time Window/){
+					my @dates = split(/ - /, $line, 2);
+					$stats->{$subscription_name}{$query_id}{'first_seen'} = &dateToTimestamp($dates[0]);
+					$stats->{$subscription_name}{$query_id}{'last_seen'} = &dateToTimestamp($dates[1]);
+				}
 			}
 			close FILE;
             
@@ -725,6 +757,12 @@ sub runQueries{
 					}
 
 				}
+				if ($line =~ /^Time Window/){
+					my @dates = split(/ - /, $line, 2);
+					$stats->{$subscription_name}{$query_id}{'first_seen'} = &dateToTimestamp($dates[0]);
+					$stats->{$subscription_name}{$query_id}{'last_seen'} = &dateToTimestamp($dates[1]);
+				}
+
 			}
 			close FILE;
             
