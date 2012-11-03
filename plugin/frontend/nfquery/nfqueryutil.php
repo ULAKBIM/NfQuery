@@ -113,7 +113,7 @@
 		echo '<table class="table table-bordered table-condensed">';
 		echo '<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
 		foreach ($output as $table){
-				if ( $table['srcip_alert_prefix'] || $table['dstip_alert_prefix']){
+				if ( $table['srcip_alert_plugin']){
 					echo '<tr class="alert alert-error">';				
 				}else{
 					echo '<tr>';				
