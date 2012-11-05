@@ -620,8 +620,8 @@ class QueryManager:
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         for query_id, query_list in query_id_list.items():
             statistic = Statistics()
-            statistic.start_time = int(start_time)
-            statistic.end_time = int(end_time)
+            statistic.start_time = query_list["timewindow_start"]
+            statistic.end_time = query_list["timewindow_end"]
             statistic.number_of_flows = query_list["matched_flows"]
             statistic.number_of_packets = query_list["matched_bytes"]
             statistic.number_of_bytes = query_list["matched_packets"]
@@ -639,8 +639,8 @@ class QueryManager:
                         alert = Alert()
                         alert.identifier_plugin_id = int(plugin_id)
                         alert.identified_plugin_id = int(identified_id)
-                        alert.start_time = int(start_time)
-                        alert.end_time = int(end_time)
+                        alert.start_time = query_list["timewindow_start"]
+                        alert.end_time = query_list["timewindow_end"]
                         alert.query_id = int(query_id)
                         self.store.add(alert)
         self.store.commit()
