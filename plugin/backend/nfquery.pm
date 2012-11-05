@@ -308,12 +308,13 @@ sub parseOutputOfPid{
 			my %table;
 			$table{'date'} = $vars[0];
             
-            #calculate unixtime stamp
-            $table{'timestamp'} = &dateToTimestamp($vars[0]);
 
 			$table{'flow_start'} = $vars[1];
 			$table{'duration'} = $vars[2];
 			$table{'proto'} = $vars[3];
+
+            #calculate unixtime stamp
+            $table{'timestamp'} = &dateToTimestamp("$vars[0] $vars[1]");
 
 			#check ip adresses are in prefixes or not.
 			my @srcip_port;
@@ -583,24 +584,17 @@ sub findAlertsInOutputOfQuery{
 		my $pid = $queries{$query_id};
 	    my @outputOfQuery = &parseOutputOfPid($pid);
         $alerts{$query_id} = {};
-        my $matched_flows = $stats->{$subscriptionName}{$query_id}{'total flows'} + 0;
-        my $matched_bytes = $stats->{$subscriptionName}{$query_id}{'total bytes'} + 0;
-        my $matched_packets = $stats->{$subscriptionName}{$query_id}{'total packets'} + 0;
-        $alerts{$query_id}{'matched_flows'} = $matched_flows;  
-        $alerts{$query_id}{'matched_bytes'} = $matched_bytes;  
-        $alerts{$query_id}{'matched_packets'} = $matched_packets;  
+        $alerts{$query_id}{'alerts'} = {};
+        $alerts{$query_id}{'matched_flows'} = $stats->{$subscriptionName}{$query_id}{'total flows'} + 0;  
+        $alerts{$query_id}{'matched_bytes'} = $stats->{$subscriptionName}{$query_id}{'total bytes'} + 0;  
+        $alerts{$query_id}{'matched_packets'} = $stats->{$subscriptionName}{$query_id}{'total packets'} + 0;  
         $alerts{$query_id}{'timewindow_start'} = $stats->{$subscriptionName}{$query_id}{'first_seen'} + 0;  
         $alerts{$query_id}{'timewindow_end'} = $stats->{$subscriptionName}{$query_id}{'last_seen'} + 0;  
 
         foreach my $ref (@outputOfQuery){
             my %table = %{$ref};
             if ($table{'srcip_alert_plugin'}){
-                if(!$alerts{$query_id}{"src_ip_plugins"}){
-                    $alerts{$query_id}{"src_ip_plugins"} = [];
-                }
-                if ($table{'srcip_alert_plugin'} !~ $alerts{$query_id}{"src_ip_plugins"}){
-                    push $alerts{$query_id}{"src_ip_plugins"}, $table{'srcip_alert_plugin'};
-                }
+                $alerts{$query_id}{'alerts'}{$table{'hash'}} = \%table;
             }
         }            
 	}
