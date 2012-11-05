@@ -380,14 +380,12 @@ class Statistics(object):
 
     id = Int(primary=True)
     alert_id = Int()
-    plugin_id = Int()
     number_of_flows = Int()
     number_of_bytes = Int()
     number_of_packets = Int()
 #    start_time = Int()
 #    end_time = Int()
 
-    alert = Reference(query_id, Alert.id)
-    plugin = Reference(plugin_id, Plugin.id)
+    alert = Reference(alert_id, Alert.id)
     #start_time = Reference(start_time_id, Time.id)
     #end_time = Reference(end_time_id, Time.id)

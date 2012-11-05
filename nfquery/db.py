@@ -373,19 +373,12 @@ def initialize_db(store):
     store.execute(
                   "CREATE TABLE statistics("                                         + 
                   "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
-                  #"query_id INT UNSIGNED NOT NULL,"                                  +
-                  "alert INT UNSIGNED NOT NULL,"                                  +
-                  "plugin_id INT UNSIGNED NOT NULL,"                                 +
+                  "alert_id INT UNSIGNED NOT NULL,"                                  +
                   "number_of_flows INT UNSIGNED NOT NULL,"                           +
                   "number_of_bytes INT UNSIGNED NOT NULL,"                           +
                   "number_of_packets INT UNSIGNED NOT NULL,"                         +
-  	#	  "start_time int(11) unsigned NOT NULL,"                                +
-  	#	  "end_time int(11) unsigned NOT NULL,"                                  +
                   "PRIMARY KEY (id),"                                                +
-                  "FOREIGN KEY (alert_id) REFERENCES alert(id) ON DELETE CASCADE,"   +
-                #  "FOREIGN KEY (plugin_id) REFERENCES plugin(id) ON DELETE CASCADE"  +
-  		#  "FOREIGN KEY (end_time_id) REFERENCES time(id) ON DELETE CASCADE,"                      +
-  		  "FOREIGN KEY (query_id) REFERENCES query(id) ON DELETE CASCADE" +
+                  "FOREIGN KEY (alert_id) REFERENCES alert(id) ON DELETE CASCADE"   +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
     
