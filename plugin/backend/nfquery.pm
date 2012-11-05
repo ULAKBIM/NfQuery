@@ -74,6 +74,7 @@ our %cmd_lookup = (
 	'getSubscriptions' => \&getSubscriptions,
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
+	'getStatisticsOfQuery' => \&getStatisticsOfQuery,
 	'checkQueries'=>\&checkQueries,
 	'runQueries' => \&runQueries,
 	'isRegistered' => \&isRegistered,
@@ -814,8 +815,29 @@ sub getMyAlerts{
 	my $opts = shift;
     my %args;
 	
-	syslog('debug',"$uri");
 	my $result = $rpc->call($uri,'get_my_alerts',[$plugin_ip]);
+	my $r = $result->result;
+
+	if (defined $result->result) {
+	    my $json = encode_json \%{$r};
+        %args = &divideJsonToParts($json);
+        Nfcomm::socket_send_ok($socket, \%args);
+        syslog('debug', 'Response To frontend. - GETMYALERTS');
+    }else {
+        Nfcomm::socket_send_ok($socket, \%args);
+    }       
+}
+
+sub getStatisticsOfQuery{
+	my $socket = shift;
+	my $opts = shift;
+    my %args;
+	
+    my $query_id = $$opts{'query_id'};
+    my $start_time = $$opts{'start_time'};
+    my $end_time = $$opts{'end_time'};
+	
+    my $result = $rpc->call($uri,'get_my_alerts',[$plugin_ip, $query_id, $start_time, $end_time]);
 	my $r = $result->result;
 
 	if (defined $result->result) {
