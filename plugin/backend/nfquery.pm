@@ -588,6 +588,8 @@ sub findAlertsInOutputOfQuery{
         $alerts{$query_id}{'matched_flows'} = $matched_flows;  
         $alerts{$query_id}{'matched_bytes'} = $matched_bytes;  
         $alerts{$query_id}{'matched_packets'} = $matched_packets;  
+        $alerts{$query_id}{'timewindow_start'} = $stats->{$subscriptionName}{$query_id}{'first_seen'} + 0;  
+        $alerts{$query_id}{'timewindow_end'} = $stats->{$subscriptionName}{$query_id}{'last_seen'} + 0;  
 
         foreach my $ref (@outputOfQuery){
             my %table = %{$ref};
@@ -597,14 +599,6 @@ sub findAlertsInOutputOfQuery{
                 }
                 if ($table{'srcip_alert_plugin'} !~ $alerts{$query_id}{"src_ip_plugins"}){
                     push $alerts{$query_id}{"src_ip_plugins"}, $table{'srcip_alert_plugin'};
-                }
-            }
-            if ($table{'dstip_alert_plugin'}){
-                if(!$alerts{$query_id}{"dst_ip_plugins"}){
-                    $alerts{$query_id}{"dst_ip_plugins"} = [];
-                }
-                if ($table{'dstip_alert_plugin'} !~ $alerts{$query_id}{"dst_ip_plugins"}){
-                    push $alerts{$query_id}{"dst_ip_plugins"}, $table{'dstip_alert_plugin'};
                 }
             }
         }            
