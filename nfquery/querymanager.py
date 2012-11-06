@@ -560,15 +560,14 @@ class QueryManager:
         return list(subscription_list)
   
 
-    def getStatistics(self, plugin_id, alert_id):
-        plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
-        statistic_list = self.store.find(Statistics, Statistics.alert_id == alert_id).one()
-
+    def getStatistics(self, alert_id):
+        statistic = self.store.find(Statistics, Statistics.alert_id == int(alert_id)).one()
         statistics = {}
-        statistics[statistic.query_id]["alert_id"] = statistic.alert_id
-        statistics[statistic.query_id]["number_of_flows"] = statistic.number_of_flows
-        statistics[statistic.query_id]["number_of_bytes"] = statistic.number_of_bytes
-        statistics[statistic.query_id]["number_of_packets"] = statistic.number_of_packets
+        statistics["alert_id"] = int(statistic.alert_id)
+        statistics["number_of_flows"] = statistic.number_of_flows
+        statistics["number_of_bytes"] = statistic.number_of_bytes
+        statistics["number_of_packets"] = statistic.number_of_packets
+        return statistics
 
     def getMyAlerts(self, plugin_ip):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
@@ -592,6 +591,8 @@ class QueryManager:
             identifier["end_time"] = alert.end_time
             identifier["query_category"] = alert.query.category.category
             identifier["query_filter"] = self.getFilter(alert.query.id)
+            identifier["statistic"] = self.getStatistics(alert.id)
+            
             alerts['identifier'].append(identifier)
         print list(alert_list)
 
@@ -610,6 +611,7 @@ class QueryManager:
             identified["end_time"] = alert.end_time
             identified["query_category"] = alert.query.category.category
             identified["query_filter"] = self.getFilter(alert.query.id)
+            identified["statistic"] = self.getStatistics(alert.id)
             alerts['identified'].append(identified)
         print list(alerts)
 
@@ -638,15 +640,12 @@ class QueryManager:
                         alert.checksum = hash_key
                         alert.query_id = int(query_id)
                         self.store.add(alert)
-                        print "deneme1"
-                        print alert
-                        print "deneme2"
             	        statistic = Statistics()
             	        statistic.start_time = query_list["timewindow_start"]
             	        statistic.end_time = query_list["timewindow_end"]
-            	        statistic.number_of_flows = query_list["matched_flows"]
-            	        statistic.number_of_packets = query_list["matched_bytes"]
-            	        statistic.number_of_bytes = query_list["matched_packets"]
+            	        statistic.number_of_flows = int(row_data["flows"])
+            	        statistic.number_of_packets = int(row_data["bytes"])
+            	        statistic.number_of_bytes = int(row_data["packets"])
             	        statistic.query_id = int(query_id)
             	        statistic.plugin_id = int(plugin_id)
             	        statistic.alert = alert

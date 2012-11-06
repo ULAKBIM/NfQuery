@@ -144,9 +144,9 @@ class jsonRPCServer(jsonrpc.JSONRPC):
 #                return result
 #                #return self.jsonrpc_get_subscriptions()
 
-    def jsonrpc_get_statistics(self, plugin_id, query_id):
+    def jsonrpc_get_statistics(self, alert_id):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
-        result = self.queryManager.getStatistics(plugin_id, query_id)
+        result = self.queryManager.getStatistics(alert_id)
         return result
 
 
