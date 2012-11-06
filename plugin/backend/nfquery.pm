@@ -74,7 +74,7 @@ our %cmd_lookup = (
 	'getSubscriptions' => \&getSubscriptions,
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
-	'getStatisticsOfAlert' => \&getStatisticsOfQuery,
+	'getStatisticsOfAlert' => \&getStatisticsOfAlert,
 	'checkQueries'=>\&checkQueries,
 	'runQueries' => \&runQueries,
 	'isRegistered' => \&isRegistered,
@@ -829,7 +829,7 @@ sub getStatisticsOfAlert{
     my %args;
 	
     my $alert_id = $$opts{'alert_id'};
-    my $result = $rpc->call($uri,'get_my_alerts',[$plugin_ip, $alert_id]);
+    my $result = $rpc->call($uri,'get_statistics',[$plugin_ip, $alert_id]);
 	my $r = $result->result;
 
 	if (defined $result->result) {
