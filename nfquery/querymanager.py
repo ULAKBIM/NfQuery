@@ -597,11 +597,11 @@ class QueryManager:
         print list(alert_list)
 
         #Identified
-        alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id )
+        alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id, Alert.identifier_plugin_id != Alert.identified_plugin_id )
         alerts['identified'] = []
         for alert in alert_list:
             identified = {}
-            identifier['alert_id'] = alert.id
+            identified['alert_id'] = alert.id
             identified["identified_plugin_name"] = alert.identified_plugin.organization
             identified["identifier_plugin_name"] = alert.identifier_plugin.organization
             identifier["first_seen"] = alert.first_seen
