@@ -41,7 +41,8 @@
                 echo "<td>".$alert['statistic']['number_of_flows']."</td>";
                 echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
                 echo "<td>".$alert['checksum']."</td>";
-                echo "<td>"."<img class='run' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
+                echo "<td>"."<img class='run' query='".$alert['query_id']."' firstseen='".$alert['first_seen'].
+                        "' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
                 echo "</tr>";
             }
         ?>
@@ -59,6 +60,7 @@
         <tr>
             <th>Query Id</th>
             <th>Filter</th>
+            <th>Identifier Plugin</th>
             <th>Matched Bytes</th>
             <th>Matched Packets</th>
             <th>Matched Flows</th>
@@ -71,6 +73,7 @@
                 echo "<tr class='error'>";
                 echo "<td>".$alert['query_id']."</td>";
                 echo "<td>".$alert['query_filter']."</td>";
+                echo "<td>".$alert['identified_plugin_name']."</td>";
                 echo "<td>".$alert['statistic']['number_of_bytes']."</td>";
                 echo "<td>".$alert['statistic']['number_of_packets']."</td>";
                 echo "<td>".$alert['statistic']['number_of_flows']."</td>";

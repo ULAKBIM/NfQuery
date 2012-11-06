@@ -28,6 +28,8 @@
 					<ul class="nav nav-list">
 						<form method="post" action="/nfsen/nfsen.php" id="navigationForm"> 
 							<input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
+							<input type="hidden" name="firstseen" id="firstseen"/>
+							<input type="hidden" name="query" id="query"/>
 								<?php
 									$register = isRegistered();
 									/*

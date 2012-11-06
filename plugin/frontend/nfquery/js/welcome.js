@@ -127,4 +127,12 @@ $(document).ready(function() {
 	$(".collapse").collapse();
 	$('#runQueries').click(runQueries);
 
+    $('.run').click(function(){
+        $("#nfqueryTab").val("Verification");
+        $("#query").val($(this).attr('query'));
+        $("#firstseen").val($(this).attr('firstseen'));
+        $("#navigationForm").submit();
+
+    });
+
 });
