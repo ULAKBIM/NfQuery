@@ -143,7 +143,7 @@ def initialize_db(store):
   		  "identifier_plugin_id int(10) unsigned NOT NULL,"                  +
   		  "start_time int(11) unsigned NOT NULL,"                            +
   		  "end_time int(11) unsigned NOT NULL,"                              +
-  		  "firstseen int(11) unsigned NOT NULL,"                              +
+  		  "first_seen int(11) unsigned NOT NULL,"                              +
   		  "checksum varchar(32) COLLATE utf8_unicode_ci NOT NULL,"           +
   		  "PRIMARY KEY (id),"                                                +
   		  "FOREIGN KEY (identified_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"     +
