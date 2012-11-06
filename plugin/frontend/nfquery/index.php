@@ -28,6 +28,8 @@
 					<ul class="nav nav-list">
 						<form method="post" action="/nfsen/nfsen.php" id="navigationForm"> 
 							<input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
+							<input type="hidden" name="firstseen" id="firstseen"/>
+							<input type="hidden" name="query" id="query"/>
 								<?php
 									$register = isRegistered();
 									/*
@@ -101,6 +103,11 @@
 							</div>
 						</div>
 
+						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Verification") == 0) echo "active"?>" id="verification">
+							<div class="container-fluid">
+								<?php if (strcmp($tabName, "Verification") == 0)include('verification.php'); else{$tabName="Settings";}?>
+							</div>
+						</div>
 					</div>
 			
 				</div>
