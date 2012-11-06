@@ -582,8 +582,11 @@ class QueryManager:
         identifier_list = {}
         alerts['identifier'] = []
         for alert in alert_list:
+            identifier_list['alert_id'] = alert.alert_id
             identifier_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identifier_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
+            identifier_list["first_seen"] = alert.firt_seen
+            identifier_list["checksum"] = alert.checksum
             identifier_list["query_id"] = alert.query.id
             identifier_list["start_time"] = alert.start_time
             identifier_list["end_time"] = alert.end_time
@@ -597,8 +600,11 @@ class QueryManager:
         identified_list = {}
         alerts['identified'] = []
         for alert in alert_list:
+            identifier_list['alert_id'] = alert.alert_id
             identified_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identified_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
+            identifier_list["first_seen"] = alert.firt_seen
+            identifier_list["checksum"] = alert.checksum
             identified_list["query_id"] = alert.query.id
             identified_list["start_time"] = alert.start_time
             identified_list["end_time"] = alert.end_time
