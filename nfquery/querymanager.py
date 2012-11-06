@@ -579,38 +579,38 @@ class QueryManager:
 
         #Identifier
         alert_list = self.store.find( Alert, Alert.identifier_plugin_id == plugin_id )
-        identifier_list = {}
         alerts['identifier'] = []
         for alert in alert_list:
-            identifier_list['alert_id'] = alert.id
-            identifier_list["identified_plugin"] = alert.identified_plugin.plugin_ip
-            identifier_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
-            identifier_list["first_seen"] = alert.first_seen
-            identifier_list["checksum"] = alert.checksum
-            identifier_list["query_id"] = alert.query.id
-            identifier_list["start_time"] = alert.start_time
-            identifier_list["end_time"] = alert.end_time
-            identifier_list["query_category"] = alert.query.category.category
-            identifier_list["query_filter"] = self.getFilter(alert.query.id)
-            alerts['identifier'].append(identifier_list)
+            identifier = {}
+            identifier['alert_id'] = alert.id
+            identifier["identified_plugin_name"] = alert.identified_plugin.organization
+            identifier["identifier_plugin_name"] = alert.identifier_plugin.organization
+            identifier["first_seen"] = alert.first_seen
+            identifier["checksum"] = alert.checksum
+            identifier["query_id"] = alert.query.id
+            identifier["start_time"] = alert.start_time
+            identifier["end_time"] = alert.end_time
+            identifier["query_category"] = alert.query.category.category
+            identifier["query_filter"] = self.getFilter(alert.query.id)
+            alerts['identifier'].append(identifier)
         print list(alert_list)
 
         #Identified
         alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id )
-        identified_list = {}
         alerts['identified'] = []
         for alert in alert_list:
-            identifier_list['alert_id'] = alert.id
-            identified_list["identified_plugin"] = alert.identified_plugin.plugin_ip
-            identified_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
-            identifier_list["first_seen"] = alert.first_seen
-            identifier_list["checksum"] = alert.checksum
-            identified_list["query_id"] = alert.query.id
-            identified_list["start_time"] = alert.start_time
-            identified_list["end_time"] = alert.end_time
-            identified_list["query_category"] = alert.query.category.category
-            identified_list["query_filter"] = self.getFilter(alert.query.id)
-            alerts['identified'].append(identified_list)
+            identified = {}
+            identifier['alert_id'] = alert.id
+            identified["identified_plugin_name"] = alert.identified_plugin.organization
+            identified["identifier_plugin_name"] = alert.identifier_plugin.organization
+            identifier["first_seen"] = alert.first_seen
+            identifier["checksum"] = alert.checksum
+            identified["query_id"] = alert.query.id
+            identified["start_time"] = alert.start_time
+            identified["end_time"] = alert.end_time
+            identified["query_category"] = alert.query.category.category
+            identified["query_filter"] = self.getFilter(alert.query.id)
+            alerts['identified'].append(identified)
         print list(alerts)
 
 
