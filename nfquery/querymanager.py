@@ -582,7 +582,7 @@ class QueryManager:
         identifier_list = {}
         alerts['identifier'] = []
         for alert in alert_list:
-            identifier_list['alert_id'] = alert.alert_id
+            identifier_list['alert_id'] = alert.id
             identifier_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identifier_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
             identifier_list["first_seen"] = alert.first_seen
@@ -600,7 +600,7 @@ class QueryManager:
         identified_list = {}
         alerts['identified'] = []
         for alert in alert_list:
-            identifier_list['alert_id'] = alert.alert_id
+            identifier_list['alert_id'] = alert.id
             identified_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identified_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
             identifier_list["first_seen"] = alert.first_seen
