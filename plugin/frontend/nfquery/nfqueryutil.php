@@ -135,6 +135,22 @@
 
 	}
 
+	function getStatisticsOfAlert($subscriptionName, $alert_id){
+		$command = 'nfquery::getStatisticsOfAlert';
+		$opts = array();
+		$opts['alert_id'] = $alert_id;
+		$out_list = nfsend_query($command, $opts);
+		$output = "";
+		for($i=0;$i<sizeof($out_list);$i++){
+			$index="".$i;
+			$line = $out_list[$index];
+			$output = $output.$line;
+        }
+        $output = json_decode($output, true);
+
+        return $output;
+    }
+
 	function getOutputOfSubscription($subscriptionName, $total_query, $page_number){
 		$command = 'nfquery::getOutputOfSubscription';
 		$opts = array();

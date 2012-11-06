@@ -828,8 +828,8 @@ sub getStatisticsOfAlert{
 	my $opts = shift;
     my %args;
 	
-    my $query_id = $$opts{'query_id'};
-    my $result = $rpc->call($uri,'get_my_alerts',[$plugin_ip, $query_id]);
+    my $alert_id = $$opts{'alert_id'};
+    my $result = $rpc->call($uri,'get_my_alerts',[$plugin_ip, $alert_id]);
 	my $r = $result->result;
 
 	if (defined $result->result) {
