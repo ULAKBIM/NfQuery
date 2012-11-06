@@ -560,20 +560,15 @@ class QueryManager:
         return list(subscription_list)
   
 
-    def getStatistics(self, plugin_id, query_id, start_time, end_time):
+    def getStatistics(self, plugin_id, alert_id):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
-        statistic_list = self.store.find(Statistics, Statistics.plugin_id == plugin_id, Statistics.query_id == query_id, 
-                                         Statistics.start_time == start_time, Statistics.end_time == end_time)
+        statistic_list = self.store.find(Statistics, Statistics.alert_id == alert_id).one()
+
         statistics = {}
-        for statistic in statistic_list:
-            if statistic.query_id not in  statistics:
-                statistics[statistic.query_id] = {}
-            statistics[statistic.query_id]["plugin_id"] = statistic.plugin_id
-            statistics[statistic.query_id]["plugin_ip"] = statistic.plugin_ip
-            statistics[statistic.query_id]["number_of_flows"] = statistic.number_of_flows
-            statistics[statistic.query_id]["number_of_bytes"] = statistic.number_of_bytes
-            statistics[statistic.query_id]["number_of_packets"] = statistic.number_of_packets
-        return statistics
+        statistics[statistic.query_id]["alert_id"] = statistic.alert_id
+        statistics[statistic.query_id]["number_of_flows"] = statistic.number_of_flows
+        statistics[statistic.query_id]["number_of_bytes"] = statistic.number_of_bytes
+        statistics[statistic.query_id]["number_of_packets"] = statistic.number_of_packets
 
     def getMyAlerts(self, plugin_ip):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
