@@ -364,6 +364,7 @@ class Alert(object):
    # end_time_id = Int()
     start_time = Int()
     end_time = Int()
+    first_seen = Int()
     checksum = Unicode()
     #plugin_id = Int()
 
