@@ -40,6 +40,16 @@
 	overflow: auto;
 }
 
+.identifier_alerts, .identified_alerts{
+	max-height: 400px;
+	overflow: auto;
+}
+
+.run{
+    height: 40px;
+    width: 40px;
+	cursor:pointer;
+}
 .outputAll{
 	max-height: 350px;
 	overflow: auto;

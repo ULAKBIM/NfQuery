@@ -829,9 +829,10 @@ sub getStatisticsOfAlert{
     my %args;
 	
     my $alert_id = $$opts{'alert_id'};
-    my $result = $rpc->call($uri,'get_statistics',[$plugin_ip, $alert_id]);
+    my $result = $rpc->call($uri,'get_statistics',[$alert_id]);
 	my $r = $result->result;
 
+    syslog('debug', 'OLMADI');
 	if (defined $result->result) {
 	    my $json = encode_json \%{$r};
         %args = &divideJsonToParts($json);

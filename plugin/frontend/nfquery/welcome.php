@@ -16,8 +16,46 @@
 <div class="row-fluid">
     <div class="span11">
         <h4>Identifier Alerts</h4>
-        <div id="identifierAlertsDiv">
-        <table class="table">
+        <div class="identifier_alerts">
+        <table class="table table-condensed table-hover">
+        <tr>
+            <th>Query Id</th>
+            <th>Filter</th>
+            <th>Identified Plugin</th>
+            <th>Matched Bytes</th>
+            <th>Matched Packets</th>
+            <th>Matched Flows</th>
+            <th>First Seen</th>
+            <th>Checksum</th>
+            <th></th>
+        </tr>
+        <?php
+        
+            foreach($identifier_alerts as $alert){
+                echo "<tr class='error'>";
+                echo "<td>".$alert['query_id']."</td>";
+                echo "<td>".$alert['query_filter']."</td>";
+                echo "<td>".$alert['identified_plugin_name']."</td>";
+                echo "<td>".$alert['statistic']['number_of_bytes']."</td>";
+                echo "<td>".$alert['statistic']['number_of_packets']."</td>";
+                echo "<td>".$alert['statistic']['number_of_flows']."</td>";
+                echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
+                echo "<td>".$alert['checksum']."</td>";
+                echo "<td>"."<img class='run' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
+                echo "</tr>";
+            }
+        ?>
+        </table>
+		</div>
+	</div>
+</div>
+
+
+<div class="row-fluid">
+    <div class="span11">
+        <h4>Identified Alerts</h4>
+        <div class="identified_alerts">
+        <table class="table table-hover table-condensed">
         <tr>
             <th>Query Id</th>
             <th>Filter</th>
@@ -29,16 +67,16 @@
         </tr>
         <?php
         
-            foreach($identifier_alerts as $alert){
-                $statistics = getStatisticsOfAlert($alert['alert_id'])
-                echo "<tr>";
+            foreach($identified_alerts as $alert){
+                echo "<tr class='error'>";
                 echo "<td>".$alert['query_id']."</td>";
                 echo "<td>".$alert['query_filter']."</td>";
-                echo "<td>".$statistics['number_of_bytes']."</td>";
-                echo "<td>".$statistics['number_of_packets']."</td>";
-                echo "<td>".$statistics['number_of_flows']."</td>";
+                echo "<td>".$alert['statistic']['number_of_bytes']."</td>";
+                echo "<td>".$alert['statistic']['number_of_packets']."</td>";
+                echo "<td>".$alert['statistic']['number_of_flows']."</td>";
                 echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
                 echo "<td>".$alert['checksum']."</td>";
+                echo "<td>"."<img class='run' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
                 echo "</tr>";
             }
         ?>
