@@ -5,8 +5,6 @@
    
    $identifier_alerts = $alerts['identifier']; 
    $identified_alerts = $alerts['identified']; 
-   
-   var_dump($identifier_alerts);
 ?>
 
 <div class="row-fluid">
@@ -23,16 +21,24 @@
         <tr>
             <th>Query Id</th>
             <th>Filter</th>
-            <th>Start Time</th>
-            <th>End Time</th>
+            <th>Matched Bytes</th>
+            <th>Matched Packets</th>
+            <th>Matched Flows</th>
+            <th>First Seen</th>
+            <th>Checksum</th>
         </tr>
         <?php
-
-           foreach($identifier_alerts as $alert){
+        
+            foreach($identifier_alerts as $alert){
+                $statistics = getStatisticsOfAlert($alert['alert_id'])
                 echo "<tr>";
                 echo "<td>".$alert['query_id']."</td>";
                 echo "<td>".$alert['query_filter']."</td>";
+                echo "<td>".$statistics['number_of_bytes']."</td>";
+                echo "<td>".$statistics['number_of_packets']."</td>";
+                echo "<td>".$statistics['number_of_flows']."</td>";
                 echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
+                echo "<td>".$alert['checksum']."</td>";
                 echo "</tr>";
             }
         ?>

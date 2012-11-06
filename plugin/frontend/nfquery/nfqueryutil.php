@@ -135,7 +135,7 @@
 
 	}
 
-	function getStatisticsOfAlert($subscriptionName, $alert_id){
+	function getStatisticsOfAlert($alert_id){
 		$command = 'nfquery::getStatisticsOfAlert';
 		$opts = array();
 		$opts['alert_id'] = $alert_id;
