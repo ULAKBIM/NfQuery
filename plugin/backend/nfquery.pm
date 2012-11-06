@@ -74,7 +74,7 @@ our %cmd_lookup = (
 	'getSubscriptions' => \&getSubscriptions,
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
-	'getStatisticsOfQuery' => \&getStatisticsOfQuery,
+	'getStatisticsOfAlert' => \&getStatisticsOfQuery,
 	'checkQueries'=>\&checkQueries,
 	'runQueries' => \&runQueries,
 	'isRegistered' => \&isRegistered,
@@ -823,16 +823,13 @@ sub getMyAlerts{
     }       
 }
 
-sub getStatisticsOfQuery{
+sub getStatisticsOfAlert{
 	my $socket = shift;
 	my $opts = shift;
     my %args;
 	
-    my $query_id = $$opts{'query_id'};
-    my $start_time = $$opts{'start_time'};
-    my $end_time = $$opts{'end_time'};
-	
-    my $result = $rpc->call($uri,'get_my_alerts',[$plugin_ip, $query_id, $start_time, $end_time]);
+    my $alert_id = $$opts{'alert_id'};
+    my $result = $rpc->call($uri,'get_my_alerts',[$plugin_ip, $alert_id]);
 	my $r = $result->result;
 
 	if (defined $result->result) {
