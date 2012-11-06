@@ -271,7 +271,8 @@ sub ipInPrefixes{
 
 sub dateToTimestamp{
     my $date = shift;
-    my ($mday,$mon,$year,$hour,$min,$sec, $msec) = split(/[\s.:]+/, $date);
+    syslog('debug', "$date");
+    my ($year,$mon,$mday,$hour,$min,$sec, $msec) = split(/[\s-:\.]+/, $date);
     my $time = timelocal($sec,$min,$hour,$mday,$mon-1,$year);
     return $time
 
