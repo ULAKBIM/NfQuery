@@ -77,6 +77,7 @@ our %cmd_lookup = (
 	'getStatisticsOfAlert' => \&getStatisticsOfAlert,
 	'checkQueries'=>\&checkQueries,
 	'runQueries' => \&runQueries,
+	'runVerificationQueries' => \&runVerificationQueries,
 	'isRegistered' => \&isRegistered,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
 	'getOutputOfQuery' => \&getOutputOfQuery,
@@ -633,6 +634,62 @@ sub pushOutputToQueryServer{
     delete $stats->{$subscriptionName};
 
 	syslog('debug', 'PUSH ALERTS');
+	Nfcomm::socket_send_ok($socket, \%args);
+}
+
+sub runVerificationQueries{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+
+	#Get parameters to the run queries.
+	my $profile = $$opts{'profile'};
+	my @source = @{$$opts{'source'}};
+	my $nfdump_args = $$opts{'args'};
+	my $query = $$opts{'query'};
+	my $identifier = $$opts{'identifier'};
+
+	my $strSource = join(':', @source);
+	$profile = substr $profile, 2;
+
+	#Find path to the nfdump and flow files.
+	my $nfdump = "$NfConf::PREFIX/nfdump";
+	my $flowFiles = "$NfConf::PROFILEDATADIR/$profile/$strSource";
+
+
+    #Run verification query with ip filter and without ip filter.
+    my $identifier_prefix = $prefixes{$identifier}; 
+    my $verification_query = "$query and src net $identifier_prefix";
+    
+    
+    my $verification_command_with_ip = "$nfdump -M $flowFiles $nfdump_args '$verification_query'";
+    my $verification_command = "$nfdump -M $flowFiles $nfdump_args '$query'";
+     
+    syslog('debug', "$verification_command_with_ip"); 
+    my %output;
+    
+    $output{'verification_command_with_ip'} = $verification_command_with_ip;
+    $output{'verification_command'} = $verification_command;
+
+    open my $fh, "$verification_command_with_ip |";
+    {
+        local $/;
+        $output{'output1'} = <$fh>;
+    }
+    close $fh;
+
+    open my $fh, "$verification_command |";
+    {
+        local $/;
+        $output{'output2'} = <$fh>;
+    }
+    close $fh;
+    
+     
+    syslog('debug', "$output{'output1'}"); 
+	my $json = encode_json \%output;
+	%args = &divideJsonToParts($json);	
+     
 	Nfcomm::socket_send_ok($socket, \%args);
 }
 

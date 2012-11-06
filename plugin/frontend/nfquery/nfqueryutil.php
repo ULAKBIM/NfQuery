@@ -412,6 +412,68 @@
 
 	}
 	
+	function compileVerificationArgs($first_seen){
+		$cmd_opts = array();
+
+		$args = '';
+
+
+        #calculate new timestamp to find right flow file.
+        $time = $first_seen - ($first_seen % 300) + 300;
+        $cmd_opts['start_time'] = $time;
+        $cmd_opts['end_time'] = $time;
+
+        // a single 5 min timeslice
+       	$tslot1 = UNIX2ISO($time);
+        $subdirs = SubdirHierarchy($time);
+
+        if ( strlen($subdirs) == 0 )
+         	$args .= " -r nfcapd.$tslot1";
+        else	
+        	$args .= " -r $subdirs/nfcapd.$tslot1";
+
+		$args = $args.' -a';
+		$args = "-T $args";
+		
+		$cmd_opts['args']    = $args;
+		$cmd_opts['type']    = ($_SESSION['profileinfo']['type'] & 4) > 0 ? 'shadow' : 'real';
+        $cmd_opts['profile'] = $_SESSION['profileswitch'];
+
+        #Verification Queries Run On All Sources //TODO This may change !
+        $cmd_opts['source'] = array();
+        foreach($_SESSION['profileinfo']['channel'] as $channel=>$details){
+            array_push($cmd_opts['source'], $channel);
+        } 
+
+		return $cmd_opts;
+
+    }
+
+	function runVerificationQueries($query, $first_seen, $identifier){
+		$opts = array();
+		$json = json_encode($queries);
+		$cargs = compileVerificationArgs($first_seen);
+
+		$opts['query'] = $query;
+		$opts['identifier'] = $identifier;
+		
+		foreach($cargs  as $key=>$value){
+			$opts[$key] = $value;
+        }
+
+		$out_list = nfsend_query('nfquery::runVerificationQueries', $opts);
+        
+        $output = "";
+		for($i=0;$i<sizeof($out_list);$i++){
+			$index="".$i;
+			$line = $out_list[$index];
+			$output = $output.$line;
+		}
+		$output = json_decode($output, true);
+
+		return $output;
+	}
+
 	function runQueries($queries){
 		$opts = array();
 		$json = json_encode($queries);
@@ -425,7 +487,7 @@
 		$response = nfsend_query('nfquery::runQueries', $opts);
 
 		return true;
-	}
+    }
 
 	function getSubscriptionQueries($subscriptions){
 

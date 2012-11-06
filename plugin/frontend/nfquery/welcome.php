@@ -41,8 +41,8 @@
                 echo "<td>".$alert['statistic']['number_of_flows']."</td>";
                 echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
                 echo "<td>".$alert['checksum']."</td>";
-                echo "<td>"."<img class='run' query='".$alert['query_id']."' firstseen='".$alert['first_seen'].
-                        "' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
+                echo "<td>"."<img class='run' query='".$alert['query_filter']."' firstseen='".$alert['first_seen'].
+                        "' identifier='".$alert['identifier_plugin_id']."' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
                 echo "</tr>";
             }
         ?>

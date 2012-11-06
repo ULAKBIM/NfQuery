@@ -27,9 +27,12 @@
 					<img src="/nfsen/plugins/nfquery/img/logo2.png">
 					<ul class="nav nav-list">
 						<form method="post" action="/nfsen/nfsen.php" id="navigationForm"> 
-							<input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
+                            <input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
+
+                            <!-- This fields need to run verification queries.-->
 							<input type="hidden" name="firstseen" id="firstseen"/>
 							<input type="hidden" name="query" id="query"/>
+							<input type="hidden" name="identifier" id="identifier"/>
 								<?php
 									$register = isRegistered();
 									/*
@@ -99,13 +102,13 @@
 
 						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Running") == 0) echo "active"?>" id="running">
 							<div class="container-fluid">
-								<?php if (strcmp($tabName, "Running") == 0)include('running.php'); else{$tabName="Settings";}?>
+								<?php if (strcmp($tabName, "Running") == 0)include('running.php');?>
 							</div>
 						</div>
 
 						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Verification") == 0) echo "active"?>" id="verification">
 							<div class="container-fluid">
-								<?php if (strcmp($tabName, "Verification") == 0)include('verification.php'); else{$tabName="Settings";}?>
+								<?php if (strcmp($tabName, "Verification") == 0)include('verification.php');?>
 							</div>
 						</div>
 					</div>
