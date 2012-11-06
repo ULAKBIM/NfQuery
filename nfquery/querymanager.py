@@ -620,30 +620,32 @@ class QueryManager:
         print query_id_list
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         for query_id, query_list in query_id_list.items():
-            statistic = Statistics()
-            statistic.start_time = query_list["timewindow_start"]
-            statistic.end_time = query_list["timewindow_end"]
-            statistic.number_of_flows = query_list["matched_flows"]
-            statistic.number_of_packets = query_list["matched_bytes"]
-            statistic.number_of_bytes = query_list["matched_packets"]
-            statistic.query_id = int(query_id)
-            statistic.plugin_id = int(plugin_id)
-            self.store.add(statistic)
-            if query_list.has_key("src_ip_plugins"):
-                for identified_id in query_list["src_ip_plugins"]:
-                    print identified_id, query_id
+            if query_list.has_key("alerts"):
+                for hash_key, row_data in query_list["alerts"].items():
+                    print row_data, query_id
                     alert = self.store.find( Alert,
-                            Alert.identifier_plugin == int(plugin_id), Alert.identified_plugin_id == int(identified_id),
-                            Alert.start_time == int(start_time), Alert.end_time == int(end_time), Alert.query_id == int(query_id)
-                            ).one()
+                            Alert.checksum == hash_key, Alert.identified_plugin_id == int(identified_id),
+                            Alert.query_id == int(query_id)).one()
                     if alert is None:
                         alert = Alert()
                         alert.identifier_plugin_id = int(plugin_id)
-                        alert.identified_plugin_id = int(identified_id)
+                        alert.identified_plugin_id = int(row_data["srcip_alert_plugin"])
                         alert.start_time = query_list["timewindow_start"]
                         alert.end_time = query_list["timewindow_end"]
+                        alert.firstseen = row_data["timestamp"]
+                        alert.checksum = hash_key
                         alert.query_id = int(query_id)
                         self.store.add(alert)
+            	    statistic = Statistics()
+            	    statistic.start_time = query_list["timewindow_start"]
+            	    statistic.end_time = query_list["timewindow_end"]
+            	    statistic.number_of_flows = query_list["matched_flows"]
+            	    statistic.number_of_packets = query_list["matched_bytes"]
+            	    statistic.number_of_bytes = query_list["matched_packets"]
+            	    statistic.query_id = int(query_id)
+            	    statistic.plugin_id = int(plugin_id)
+            	    statistic.alert_id = alert.id
+            	    self.store.add(statistic)
         self.store.commit()
                 
 
