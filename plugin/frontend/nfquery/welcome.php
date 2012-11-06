@@ -32,8 +32,7 @@
                 echo "<tr>";
                 echo "<td>".$alert['query_id']."</td>";
                 echo "<td>".$alert['query_filter']."</td>";
-                echo "<td>".date("Y/m/d H:m:s", $alert['start_time'])."</td>";
-                echo "<td>".date("Y/m/d H:m:s", $alert['end_time'])."</td>";
+                echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
                 echo "</tr>";
             }
         ?>

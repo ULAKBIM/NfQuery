@@ -585,7 +585,7 @@ class QueryManager:
             identifier_list['alert_id'] = alert.alert_id
             identifier_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identifier_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
-            identifier_list["first_seen"] = alert.firt_seen
+            identifier_list["first_seen"] = alert.first_seen
             identifier_list["checksum"] = alert.checksum
             identifier_list["query_id"] = alert.query.id
             identifier_list["start_time"] = alert.start_time
@@ -595,7 +595,7 @@ class QueryManager:
             alerts['identifier'].append(identifier_list)
         print list(alert_list)
 
-        #Identifier
+        #Identified
         alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id )
         identified_list = {}
         alerts['identified'] = []
@@ -603,7 +603,7 @@ class QueryManager:
             identifier_list['alert_id'] = alert.alert_id
             identified_list["identified_plugin"] = alert.identified_plugin.plugin_ip
             identified_list["identifier_plugin"] = alert.identifier_plugin.plugin_ip
-            identifier_list["first_seen"] = alert.firt_seen
+            identifier_list["first_seen"] = alert.first_seen
             identifier_list["checksum"] = alert.checksum
             identified_list["query_id"] = alert.query.id
             identified_list["start_time"] = alert.start_time
