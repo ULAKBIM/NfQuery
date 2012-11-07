@@ -719,4 +719,7 @@ class QueryManager:
             #self.qmlogger.warning('Returning alert list ')
             print '\n'
             return message
-        
+       
+
+  
+    def generateNewQuery(self, query_info_list): 
