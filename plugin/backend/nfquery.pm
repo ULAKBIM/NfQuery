@@ -74,6 +74,7 @@ our %cmd_lookup = (
 	'getSubscriptions' => \&getSubscriptions,
 	'getSubscriptionDetail' => \&getSubscriptionDetail,
 	'getMyAlerts' => \&getMyAlerts,
+	'getTopNQuery' => \&getTopNQuery,
 	'getStatisticsOfAlert' => \&getStatisticsOfAlert,
 	'checkQueries'=>\&checkQueries,
 	'runQueries' => \&runQueries,
@@ -627,8 +628,6 @@ sub pushOutputToQueryServer{
     my %temp2 = &findAlertsInOutputOfQuery($subscriptionName, \%optional_queries);
 
     %alerts = (%temp, %temp2);
-    my $json = encode_json \%alerts;
-    syslog('debug', "$json");
     my $result = $rpc->call($uri,'push_alerts',[$plugin_ip, \%alerts, $start_time, $end_time]);
 
     #Alerts pushed to queryserver. So no longer keep pids in data structure.
@@ -636,6 +635,20 @@ sub pushOutputToQueryServer{
     delete $stats->{$subscriptionName};
 
 	syslog('debug', 'PUSH ALERTS');
+	Nfcomm::socket_send_ok($socket, \%args);
+}
+
+sub getTopNQuery{
+	my $socket = shift;
+	my $opts = shift;
+	my %args;
+
+    my $n = $$opts{'topN'};
+    my $result = $rpc->call($uri,'get_topn_query',[$n]);
+	my $r = $result->result;
+	my $json = encode_json \@$r;
+	%args = &divideJsonToParts($json);	
+     
 	Nfcomm::socket_send_ok($socket, \%args);
 }
 
