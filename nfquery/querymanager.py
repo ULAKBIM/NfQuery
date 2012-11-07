@@ -584,6 +584,8 @@ class QueryManager:
             identifier['alert_id'] = alert.id
             identifier["identified_plugin_name"] = alert.identified_plugin.organization
             identifier["identifier_plugin_name"] = alert.identifier_plugin.organization
+            identifier["identified_plugin_id"] = alert.identified_plugin.id
+            identifier["identifier_plugin_id"] = alert.identifier_plugin.id
             identifier["first_seen"] = alert.first_seen
             identifier["checksum"] = alert.checksum
             identifier["query_id"] = alert.query.id
@@ -604,8 +606,10 @@ class QueryManager:
             identified['alert_id'] = alert.id
             identified["identified_plugin_name"] = alert.identified_plugin.organization
             identified["identifier_plugin_name"] = alert.identifier_plugin.organization
-            identifier["first_seen"] = alert.first_seen
-            identifier["checksum"] = alert.checksum
+            identified["identified_plugin_id"] = alert.identified_plugin.id
+            identified["identifier_plugin_id"] = alert.identifier_plugin.id
+            identified["first_seen"] = alert.first_seen
+            identified["checksum"] = alert.checksum
             identified["query_id"] = alert.query.id
             identified["start_time"] = alert.start_time
             identified["end_time"] = alert.end_time
@@ -627,6 +631,7 @@ class QueryManager:
                     print row_data, query_id
                     alert = self.store.find( Alert,
                             Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
+                            Alert.identified_plugin_id == int(row_data['srcip_alert_plugin']),
                             Alert.query_id == int(query_id)).one()
                     print "Alerts"
                     print alert
