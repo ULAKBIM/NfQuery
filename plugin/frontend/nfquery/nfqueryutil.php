@@ -114,20 +114,20 @@
 		echo '<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
 		foreach ($output as $table){
 				if ( $table['srcip_alert_plugin']){
-					echo '<tr>';				
+					echo '<tr class="error">';				
 				}else{
 					echo '<tr>';				
 				}
-				echo '<td style="background-color:#F5A9A9;">'.$table['date'].'</td>';
-				echo '<td style="background-color:#F5A9A9;">'.$table['flow_start'].'</td>';
-				echo '<td style="background-color:#F5A9A9;">'.$table['duration'].'</td>';
-				echo '<td style="background-color:#F5A9A9;">'.$table['proto'].'</td>';
-				echo '<td style="background-color:#F5A9A9;"><a class="ip" onclick=lookup(this)>'.$table['srcip_port'].'</a></td>';
-				echo '<td style="background-color:#F5A9A9;"><a class="ip" onclick=lookup(this)>'.$table['dstip_port'].'</a></td>';
-				echo '<td style="background-color:#F5A9A9;">'.$table['packets'].'</td>';
-				echo '<td style="background-color:#F5A9A9;">'.$table['bytes'].'</td>';
-				echo '<td style="background-color:#F5A9A9;">'.$table['flows'].'</td>';
-				echo '<td style="background-color:#F5A9A9;">'.$query_id.'</td>';
+				echo '<td>'.$table['date'].'</td>';
+				echo '<td>'.$table['flow_start'].'</td>';
+				echo '<td>'.$table['duration'].'</td>';
+				echo '<td>'.$table['proto'].'</td>';
+				echo '<td><a class="ip" onclick=lookup(this)>'.$table['srcip_port'].'</a></td>';
+				echo '<td><a class="ip" onclick=lookup(this)>'.$table['dstip_port'].'</a></td>';
+				echo '<td>'.$table['packets'].'</td>';
+				echo '<td>'.$table['bytes'].'</td>';
+				echo '<td>'.$table['flows'].'</td>';
+				echo '<td>'.$query_id.'</td>';
 				echo '</tr>';
 		}
 		
