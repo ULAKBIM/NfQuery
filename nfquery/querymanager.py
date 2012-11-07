@@ -23,7 +23,7 @@ import hashlib
 import subprocess
 import time
 import pprint
-
+from datetime import datetime
 # nfquery imports
 import db
 import logger
@@ -742,6 +742,19 @@ class QueryManager:
        
 
   
-    def generateNewQuery(self, query_info_list):
-        self.QGenerator.generateQuery(query_info_list) 
+    def generateQuery(self, query_info_list, mandatory, plugin_ip):
+        plugin = self.store.find( Plugin, Plugin.plugin_ip == unicode(plugin_ip)).one()
+        current_time = datetime.today()
+        date_string = current_time.strftime("%Y-%m-%d %H:%M")
+        query_info = [{
+                             'date':  date_string,
+                             'expr_list' : [json.loads(query_info_list)],
+                             'mandatory_keys': json.loads(mandatory),
+                             'source_name': plugin.organization
+                          }]
+        source = self.store.find(Source, Source.name == unicode(query_info[0]['source_name'])).one()
+        query_info[0]['source_id'] = source.id
+        query_info[0]['date'] = datetime.strptime(query_info[0]['date'], '%Y-%m-%d %H:%M')
+        self.QGenerator.generateQuery(query_info)
+        return True 
         

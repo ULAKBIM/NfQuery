@@ -200,7 +200,9 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         return self.queryManager.getMyAlerts(plugin_ip)
         
-        
+    def jsonrpc_generate_query(self, query_info_list, mandatory, plugin_ip):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        return self.queryManager.generateQuery(query_info_list, mandatory, plugin_ip)
 
  
 #def getExampleService():

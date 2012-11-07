@@ -5,6 +5,7 @@
 		<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/bootstrap.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/welcome.js"></script>
+		<script src="/nfsen/plugins/nfquery/js/newquery.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/subscription.js"></script>
 		<script src="/nfsen/plugins/nfquery/js/iphone-style-checkboxes.js"></script>
 		<?php
@@ -59,6 +60,9 @@
 							<li class="navItem <?php if (strcmp($tabName, "Report") == 0) echo "active"?>">
 								<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-bullhorn"></i>Report</a>
 							</li>
+							<li class="navItem <?php if (strcmp($tabName, "AddQuery") == 0) echo "active"?>">
+								<a data-toggle="tab" href="#" class="nfqueryNav"><i class=" icon-certificate"></i>AddQuery</a>
+							</li>
 							<li class="navItem <?php if (strcmp($tabName, "Settings") == 0) echo "active"?>">
 								<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-wrench"></i>Settings</a>
 							</li>
@@ -97,6 +101,11 @@
 						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Workspace") == 0) echo "active"?>" id="workspace">
 							<div class="container-fluid">
 								<?php if (strcmp($tabName, "Workspace") == 0) include('workspace.php');?>
+							</div>
+						</div>
+						<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "AddQuery") == 0) echo "active"?>" id="addquery">
+							<div class="container-fluid">
+								<?php if (strcmp($tabName, "AddQuery") == 0) include('newquery.php');?>
 							</div>
 						</div>
 
