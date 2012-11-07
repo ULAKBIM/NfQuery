@@ -149,6 +149,11 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         result = self.queryManager.getStatistics(alert_id)
         return result
 
+    def jsonrpc_get_topn_query(self, n):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        result = self.queryManager.getTopNQuery(n)
+        return result
+
 
     def jsonrpc_get_query_filter(self,query_id):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)

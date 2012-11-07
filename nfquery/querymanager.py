@@ -568,6 +568,24 @@ class QueryManager:
         statistics["number_of_bytes"] = statistic.number_of_bytes
         statistics["number_of_packets"] = statistic.number_of_packets
         return statistics
+    
+    def getTopNQuery(self, n):
+        result = self.store.find((Alert, Count(Alert.query_id))).group_by(Alert.query_id).order_by(Desc(Count(Alert.query_id))).config(limit=int(n))
+
+        topN_list = []
+
+        for alert, count in result:
+            item = {}
+            item['query_id'] = alert.query_id
+            item['query'] = self.getFilter(alert.query_id)
+            item['query_category'] = alert.query.category.category
+            item['count'] = count
+            item['source_name'] = alert.query.source.name
+
+            #Append item to topNlist
+            topN_list.append(item)
+        
+        return topN_list
 
     def getMyAlerts(self, plugin_ip):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()

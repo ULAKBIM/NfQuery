@@ -151,6 +151,22 @@
         return $output;
     }
 
+	function getTopNQuery($n){
+		$command = 'nfquery::getTopNQuery';
+		$opts = array();
+		$opts['topN'] = $n;
+		$out_list = nfsend_query($command, $opts);
+		$output = "";
+		for($i=0;$i<sizeof($out_list);$i++){
+			$index="".$i;
+			$line = $out_list[$index];
+			$output = $output.$line;
+        }
+        $output = json_decode($output, true);
+
+        return $output;
+    }
+
 	function getOutputOfSubscription($subscriptionName, $total_query, $page_number){
 		$command = 'nfquery::getOutputOfSubscription';
 		$opts = array();
