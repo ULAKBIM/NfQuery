@@ -80,6 +80,7 @@ our %cmd_lookup = (
 	'getOutputOfQuery' => \&getOutputOfQuery,
 	'pushOutputToQueryServer' => \&pushOutputToQueryServer,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
+	'generateQuery' => \&generateQuery,
 );
 
 sub ParseConfigFile {
@@ -173,7 +174,7 @@ sub get_connection {
 
 
 sub isRegistered{
-	my $socket = shift;
+    my $socket = shift;
     my $opts = shift;
     my %args;
 	my $result = $rpc->call( $uri, 'register', [$plugin_ip ]);
@@ -183,6 +184,7 @@ sub isRegistered{
 		Nfcomm::socket_send_ok($socket, \%args);
 	}
 }
+
 
 sub checkPIDState{
 	my $nfdumpPid = shift;
@@ -936,6 +938,14 @@ sub getSubscriptionDetail{
 #                                            $adm_publickey_file, $prefix_list, $plugin_ip, ]);
 #}
 
+sub generateQuery{
+	my $socket = shift;
+	my $opts = shift;
+        syslog('debug',"generateQuery");
+	syslog('debug', "Response. - GETPREFIXES" ."".Dumper($opts));
+        my $result = $rpc->call($uri,'generate_query',[$$opts{'query_list'}, $$opts{'mandatory'}, $plugin_ip]);
+    
+}
 
 sub run{
 }

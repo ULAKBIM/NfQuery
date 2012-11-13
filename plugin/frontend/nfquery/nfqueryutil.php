@@ -11,7 +11,13 @@
 	
 	}
 	
-	
+        function generateQuery($query_info_list, $mandatory){
+                error_log($mandatory);
+		$command = 'nfquery::generateQuery';
+		$opts = array('query_list'=>$query_info_list, 'mandatory'=>$mandatory);
+		$out_list = nfsend_query($command, $opts);
+                return $out_list;
+        }	
 	function getMyAlerts(){
 		$command = 'nfquery::getMyAlerts';
 		$opts = array();
