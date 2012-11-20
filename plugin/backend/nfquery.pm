@@ -101,7 +101,6 @@ sub ParseConfigFile {
 
 #Initialize plugin.
 sub Init {
-    syslog('debug',"AHMET CA");
     $cfg = $NfConf::PluginConf{'nfquery'};
 
     # assign values
@@ -474,17 +473,17 @@ sub getStatisticsOfSubscription{
 		my %fields = %{$queries->{$query_id}};
 
 		if (int($fields{'total flows'}) > 0){
-			push $args{'matched_queries'}, $query_id;
+			push @{$args{'matched_queries'}}, $query_id;
 			$args{'matched_bytes'} += &humanReadableBytes($fields{'total bytes'});
 			$args{'matched_packets'} += int($fields{'total packets'});
 			$args{'matched_flows'} += int($fields{'total flows'});
 		}
 
-		push $args{'query_id'}, $query_id;
-		push $args{'total_flows'}, $fields{'total flows'};
-		push $args{'total_bytes'}, $fields{'total bytes'};
-		push $args{'total_packets'}, $fields{'total packets'};
-		push $args{'filters'}, &getFilter($query_id);
+		push @{$args{'query_id'}}, $query_id;
+		push @{$args{'total_flows'}}, $fields{'total flows'};
+		push @{$args{'total_bytes'}}, $fields{'total bytes'};
+		push @{$args{'total_packets'}}, $fields{'total packets'};
+		push @{$args{'filters'}}, &getFilter($query_id);
 	}
 
 	#
