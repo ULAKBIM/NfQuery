@@ -19,7 +19,6 @@ package nfquery;
 use NfProfile;
 use strict;
 use warnings;
-use LWP::UserAgent;
 use JSON::RPC::LWP;
 use Term::ANSIColor;
 use JSON;
@@ -32,6 +31,7 @@ use NfConf;
 use DBM::Deep;
 use Time::Local;
 use Digest::MD5  qw(md5_hex);
+use LWP::UserAgent;
 use feature 'say';
 
 
