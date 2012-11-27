@@ -289,7 +289,7 @@ sub parseOutputFile{
     my $fh = shift;
     my $subscription_name = shift;
     my $query_id = shift;
-
+   
     my @output;
 	my $summary;
             
@@ -305,7 +305,6 @@ sub parseOutputFile{
 		my @vars = split(/ +/, $line);
 
 		if ($line =~ /^Summary/){
-			syslog('debug', "SUMMARY $line");
 			my @sum = split(/: /, $line, 2);
 			my @fields = split(/, /, $sum[1]);
 			foreach my $field (@fields){
@@ -314,16 +313,18 @@ sub parseOutputFile{
 				    $stats->{$subscription_name}{$query_id}{$key} = $value;
                 }
 			}
+			syslog('debug', "SUMMARY $subscription_name $query_id");
+            next;
 		}elsif ($line =~ /^Time Window/){
         	my @dates = split(/ - /, $line, 2);
             if ($subscription_name){
         	    $stats->{$subscription_name}{$query_id}{'first_seen'} = &dateToTimestamp($dates[0]);
         	    $stats->{$subscription_name}{$query_id}{'last_seen'} = &dateToTimestamp($dates[1]);
             }
-        }if ($vars[0] =~ /[[:alpha:]]/ || !$line){
+            next;
+        }elsif ($vars[0] =~ /[[:alpha:]]/ || !$line){
 			next;
-        }
-        else{
+        }else{
 			my %table;
 			$table{'date'} = $vars[0];
             
@@ -372,7 +373,7 @@ sub parseOutputOfPid{
     my $query_id = shift;
 	
 	open my $fh, "<", "/tmp/$pid";
-	my $ref = &parseOutputFile($fh);
+	my $ref = &parseOutputFile($fh, $subscription_name, $query_id);
     return $ref;
 }
 
