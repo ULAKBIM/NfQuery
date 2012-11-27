@@ -42,6 +42,7 @@
 
 .identifier_alerts, .identified_alerts{
 	max-height: 400px;
+	min-height: 400px;
 	overflow: auto;
 }
 

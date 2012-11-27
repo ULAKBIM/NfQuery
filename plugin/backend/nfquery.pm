@@ -844,7 +844,6 @@ sub getPrefixes{
     my $result = $rpc->call($uri,'get_prefixes',[$plugin_ip]);
 	syslog('debug', 'Response. - GETPREFIXES');
 	my $r = $result->result;
-	syslog('debug', "Response. - GETPREFIXES" ."".Dumper($r));
 	return %{$r};
 }
 

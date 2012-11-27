@@ -30,20 +30,23 @@
             <th></th>
         </tr>
         <?php
-        
-            foreach($identifier_alerts as $alert){
-                echo "<tr class='error'>";
-                echo "<td>".$alert['query_id']."</td>";
-                echo "<td>".$alert['query_filter']."</td>";
-                echo "<td>".$alert['identified_plugin_name']."</td>";
-                echo "<td>".$alert['statistic']['number_of_bytes']."</td>";
-                echo "<td>".$alert['statistic']['number_of_packets']."</td>";
-                echo "<td>".$alert['statistic']['number_of_flows']."</td>";
-                echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
-                echo "<td>".$alert['checksum']."</td>";
-                echo "<td>"."<img class='run' query='".$alert['query_filter']."' firstseen='".$alert['first_seen'].
-                        "' identifier='".$alert['identifier_plugin_id']."' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
-                echo "</tr>";
+            if (count($identifier_alerts) == 0){
+                echo "<tr><td colspan=8>There is no identifier alert.</td></tr>";
+            }else{
+                foreach($identifier_alerts as $alert){
+                    echo "<tr class='error'>";
+                    echo "<td>".$alert['query_id']."</td>";
+                    echo "<td>".$alert['query_filter']."</td>";
+                    echo "<td><span class='label label-warning'>".$alert['identified_plugin_name']."</span></td>";
+                    echo "<td>".$alert['statistic']['number_of_bytes']."</td>";
+                    echo "<td>".$alert['statistic']['number_of_packets']."</td>";
+                    echo "<td>".$alert['statistic']['number_of_flows']."</td>";
+                    echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
+                    echo "<td>".$alert['checksum']."</td>";
+                    echo "<td>"."<img class='run' query='".$alert['query_filter']."' firstseen='".$alert['first_seen'].
+                            "' identifier='".$alert['identifier_plugin_id']."' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
+                    echo "</tr>";
+                }
             }
         ?>
         </table>
@@ -68,19 +71,22 @@
             <th>Checksum</th>
         </tr>
         <?php
-        
-            foreach($identified_alerts as $alert){
-                echo "<tr class='error'>";
-                echo "<td>".$alert['query_id']."</td>";
-                echo "<td>".$alert['query_filter']."</td>";
-                echo "<td>".$alert['identified_plugin_name']."</td>";
-                echo "<td>".$alert['statistic']['number_of_bytes']."</td>";
-                echo "<td>".$alert['statistic']['number_of_packets']."</td>";
-                echo "<td>".$alert['statistic']['number_of_flows']."</td>";
-                echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
-                echo "<td>".$alert['checksum']."</td>";
-                echo "<td>"."<img class='run' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
-                echo "</tr>";
+            if (count($identified_alerts) == 0){
+                echo "<tr><td colspan=8>There is no identified alert.</td></tr>";
+            }else{
+                foreach($identified_alerts as $alert){
+                    echo "<tr class='error'>";
+                    echo "<td>".$alert['query_id']."</td>";
+                    echo "<td>".$alert['query_filter']."</td>";
+                    echo "<td><span class='label label-warning'>".$alert['identified_plugin_name']."</span></td>";
+                    echo "<td>".$alert['statistic']['number_of_bytes']."</td>";
+                    echo "<td>".$alert['statistic']['number_of_packets']."</td>";
+                    echo "<td>".$alert['statistic']['number_of_flows']."</td>";
+                    echo "<td>".date("Y/m/d H:m:s", $alert['first_seen'])."</td>";
+                    echo "<td>".$alert['checksum']."</td>";
+                    echo "<td>"."<img class='run' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
+                    echo "</tr>";
+                }
             }
         ?>
         </table>
