@@ -642,24 +642,6 @@ class QueryManager:
 
 
     def pushAlerts(self, plugin_ip, query_id_list, start_time, end_time):
-        ## example for generate query
-        #query_info_list = [{
-        #                     'date': "2012-11-07 16:06",
-        #                     'expr_list' : [
-        #                                     {
-        #                                      "src_ip": "192.168.100.100",
-        #        			      "dst_ip": "10.10.0.1",
-        #        			      "src_port": "33456",
-        #        	                      "dst_port": "4101"
-        #   				      }
-        #                                     ],
-        #                     'mandatory_keys': [
-        #    					"src_ip",
-   	#			                "dst_port"
-        #					],
-        #		     'source_name': "ULAKBIM" 
-       	#	          }]
-        #self.generateQuery(query_info_list)  
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         for query_id, query_list in query_id_list.items():
             if query_list.has_key("alerts"):

@@ -5,10 +5,10 @@ use warnings;
 use LWP::UserAgent;
 #use LWP::Simple;
 use JSON::RPC::LWP;
+use JSON::RPC::Client;
 #use Net::SSL;
 use Net::SSL (); # From Crypt-SSLeay
-my @keys = %ENV;
-#print "@keys\n";
+
 #$Net::HTTPS::SSL_SOCKET_CLASS = "Net::SSL"; # Force use of Net::SSL
 $ENV{HTTPS_DEBUG} = 1;
 # CA cert peer verification
@@ -24,10 +24,6 @@ $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat1991';
 #$ENV{HTTPS_KEY_FILE}  = '/home/serhat/nfquery/cfg/certs/plugin-key.pem';
 
 
-#my $res = $ua->get("https://127.0.0.1");
-#my %rest = %{$res};
-#my @keys = keys %rest;
-#print "$rest{'_content'}\n";
 
 my $ua = eval { LWP::UserAgent->new() }
         or die "Could not make user-agent! $@";
@@ -38,5 +34,6 @@ my $rpc = JSON::RPC::LWP->new(
   ua => $ua,
   version => '2.0'
 );
-my $result = $rpc->call( 'https://193.140.100.96:7777', 'register', ['192.168.1.110']);
-print @{$result->result}, "\n";
+my $result = $rpc->call(  'https://193.140.100.96:7777', 'echo', '127.0.0.1');
+#my $result = $rpc->call( 'https://193.140.100.96:7777', {method=>'echo', params=>['127.0.0.1']});
+print $result->result, "\n";
