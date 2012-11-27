@@ -75,7 +75,7 @@ our %cmd_lookup = (
 	'isRegistered' => \&isRegistered,
 	'getOutputOfSubscription' => \&getOutputOfSubscription,
 	'getOutputOfQuery' => \&getOutputOfQuery,
-	'pushOutputToQueryServer' => \&pushOutputToQueryServer,
+    #'pushOutputToQueryServer' => \&pushOutputToQueryServer,
 	'getStatisticsOfSubscription' => \&getStatisticsOfSubscription,
 	'generateQuery' => \&generateQuery,
 );
@@ -285,23 +285,38 @@ sub fiveTupleHash{
     return $md5_hash;
 }
 
-sub parseOutputOfPid{
-	my $pid = shift;
+sub parseOutputFile{
+    my $fh = shift;
+    my $subscription_name = shift;
+    my $query_id = shift;
+
     my @output;
 	my $summary;
-	
-	open my $fh, "<", "/tmp/$pid";
-	syslog('debug', "PARSING $pid");
+            
+    my $stats = DBM::Deep->new( "/tmp/stats" );
+	$stats->{$subscription_name}{$query_id} = {};
+
 	foreach my $line (<$fh>){
 
 		chomp($line);
 		my @vars = split(/ +/, $line);
 
-		if ($vars[0] =~ /[[:alpha:]]/ || !$line){
+		if ($line =~ /^Summary/){
+			syslog('debug', "SUMMARY $line");
+			my @sum = split(/: /, $line, 2);
+			my @fields = split(/, /, $sum[1]);
+			foreach my $field (@fields){
+				my ($key, $value) = split(/: /, $field);
+				$stats->{$subscription_name}{$query_id}{$key} = $value;
+			}
+		}elsif ($line =~ /^Time Window/){
+        	my @dates = split(/ - /, $line, 2);
+        	$stats->{$subscription_name}{$query_id}{'first_seen'} = &dateToTimestamp($dates[0]);
+        	$stats->{$subscription_name}{$query_id}{'last_seen'} = &dateToTimestamp($dates[1]);
+        }if ($vars[0] =~ /[[:alpha:]]/ || !$line){
 			next;
-		}elsif ($vars[0] =~ /^Summary/ || $summary){
-			$summary = 1;
-		}else{
+        }
+        else{
 			my %table;
 			$table{'date'} = $vars[0];
             
@@ -341,8 +356,14 @@ sub parseOutputOfPid{
 		}
 	}
 	close $fh;
-	syslog('debug', "PARSED $pid");
-	return @output;
+    return @output;
+}
+
+sub parseOutputOfPid{
+	my $pid = shift;
+	
+	open my $fh, "<", "/tmp/$pid";
+	return &parseOutputFile($fh);
 }
 
 sub parseOutputsOfSubscription{
@@ -572,62 +593,53 @@ sub getOutputOfQuery{
 
 sub findAlertsInOutputOfQuery{
     my $subscriptionName = shift;
+    my $query_id = shift;
     my $ref = shift;
+
     my %alerts;
-    my %queries = %{$ref};
     my $stats = DBM::Deep->new( "/tmp/stats" );
+    my @outputOfQuery = @{$ref};
 
-	foreach my $query_id (keys %queries){
-		my $pid = $queries{$query_id};
-	    my @outputOfQuery = &parseOutputOfPid($pid);
-        $alerts{$query_id} = {};
-        $alerts{$query_id}{'alerts'} = {};
-        $alerts{$query_id}{'matched_flows'} = $stats->{$subscriptionName}{$query_id}{'total flows'} + 0;  
-        $alerts{$query_id}{'matched_bytes'} = $stats->{$subscriptionName}{$query_id}{'total bytes'} + 0;  
-        $alerts{$query_id}{'matched_packets'} = $stats->{$subscriptionName}{$query_id}{'total packets'} + 0;  
-        $alerts{$query_id}{'timewindow_start'} = $stats->{$subscriptionName}{$query_id}{'first_seen'} + 0;  
-        $alerts{$query_id}{'timewindow_end'} = $stats->{$subscriptionName}{$query_id}{'last_seen'} + 0;  
+    $alerts{$query_id} = {};
+    $alerts{$query_id}{'alerts'} = {};
+    $alerts{$query_id}{'matched_flows'} = $stats->{$subscriptionName}{$query_id}{'total flows'} + 0;  
+    $alerts{$query_id}{'matched_bytes'} = $stats->{$subscriptionName}{$query_id}{'total bytes'} + 0;  
+    $alerts{$query_id}{'matched_packets'} = $stats->{$subscriptionName}{$query_id}{'total packets'} + 0;  
+    $alerts{$query_id}{'timewindow_start'} = $stats->{$subscriptionName}{$query_id}{'first_seen'} + 0;  
+    $alerts{$query_id}{'timewindow_end'} = $stats->{$subscriptionName}{$query_id}{'last_seen'} + 0;  
 
-        foreach my $ref (@outputOfQuery){
-            my %table = %{$ref};
-            if ($table{'srcip_alert_plugin'}){
-                $alerts{$query_id}{'alerts'}{$table{'hash'}} = \%table;
-            }
-        }            
-	}
+    foreach my $ref (@outputOfQuery){
+        my %table = %{$ref};
+        if ($table{'srcip_alert_plugin'} || $table{'dstip_alert_plugin'}){
+            $alerts{$query_id}{'alerts'}{$table{'hash'}} = \%table;
+        }
+    }            
 
     return %alerts;
 }
 
 sub pushOutputToQueryServer{
-	my $socket = shift;
-	my $opts = shift;
-	my %args;
-    
-	my $subscriptionName = $$opts{'subscriptionName'};
+	my $subscriptionName = shift;
+    my $query_id = shift;
+    my $output_ref = shift;
+
     my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
     my $stats = DBM::Deep->new( "/tmp/stats" );
     my %alerts;
-    my %info;
     
     my $start_time = $running_subscriptions->{$subscriptionName}{'start_time'};
     my $end_time = $running_subscriptions->{$subscriptionName}{'end_time'};
-	my %mandatory_queries = %{$running_subscriptions->{$subscriptionName}{'mandatory'}};
-	my %optional_queries = %{$running_subscriptions->{$subscriptionName}{'optional'}};
 
-    my %temp = &findAlertsInOutputOfQuery($subscriptionName, \%mandatory_queries);
+    my %alerts = &findAlertsInOutputOfQuery($subscriptionName, $output_ref);
 
-    my %temp2 = &findAlertsInOutputOfQuery($subscriptionName, \%optional_queries);
 
-    %alerts = (%temp, %temp2);
     my $result = $rpc->call($uri,'push_alerts',[$plugin_ip, \%alerts, $start_time, $end_time]);
 
     #Alerts pushed to queryserver. So no longer keep pids in data structure.
-    delete $running_subscriptions->{$subscriptionName};
-    delete $stats->{$subscriptionName};
+    #delete $running_subscriptions->{$subscriptionName};
+    #delete $stats->{$subscriptionName};
 
 	syslog('debug', 'PUSH ALERTS');
-	Nfcomm::socket_send_ok($socket, \%args);
 }
 
 sub getTopNQuery{
@@ -757,8 +769,6 @@ sub runQueries{
 			$pm->start and next;
 
             my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
-            my $stats = DBM::Deep->new( "/tmp/stats" );
-			$stats->{$subscription_name}{$query_id} = {};
 			my $filter = &getFilter($query_id);
 			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
 			my $nfdump_pid = open(OUT, "nice -n 7 $command |");
@@ -767,23 +777,13 @@ sub runQueries{
 			open FILE, ">", "/tmp/$nfdump_pid";
 			while (defined(my $line = <OUT>)){
 				print FILE $line;
-				if ($line =~ /^Summary/){
-					syslog('debug', "SUMMARY $line");
-					my @sum = split(/: /, $line, 2);
-					my @fields = split(/, /, $sum[1]);
-					foreach my $field (@fields){
-						my ($key, $value) = split(/: /, $field);
-						$stats->{$subscription_name}{$query_id}{$key} = $value;
-					}
-				}
-				if ($line =~ /^Time Window/){
-					my @dates = split(/ - /, $line, 2);
-					$stats->{$subscription_name}{$query_id}{'first_seen'} = &dateToTimestamp($dates[0]);
-					$stats->{$subscription_name}{$query_id}{'last_seen'} = &dateToTimestamp($dates[1]);
-				}
 			}
 			close FILE;
-            
+
+            seek(OUT, 0, 0);
+            my @output = &parseOutputFile(\*OUT);
+            &pushOutputToQueryServer(\@output, $subscription_name, $query_id); 
+
             $pm->finish;
 		}
 
@@ -792,8 +792,6 @@ sub runQueries{
             #start the job.
 			$pm->start and next;
             my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
-            my $stats = DBM::Deep->new( "/tmp/stats" );
-			$stats->{$subscription_name}{$query_id} = {};
 			my $filter = &getFilter(int($query_id));
 			my $command = "$nfdump -M $flowFiles $nfdump_args '$filter'";
 			my $nfdump_pid = open(OUT, " nice -n 7 $command |");
@@ -802,24 +800,13 @@ sub runQueries{
 			open FILE, ">", "/tmp/$nfdump_pid";
 			while (defined(my $line = <OUT>)){
 				print FILE $line;
-				if ($line =~ /^Summary/){
-					my @sum = split(/: /, $line, 2);
-					my @fields = split(/, /, $sum[1]);
-					foreach my $field (@fields){
-						my ($key, $value) = split(/: /, $field);
-						$stats->{$subscription_name}{$query_id}{$key} = $value;
-					}
-
-				}
-				if ($line =~ /^Time Window/){
-					my @dates = split(/ - /, $line, 2);
-					$stats->{$subscription_name}{$query_id}{'first_seen'} = &dateToTimestamp($dates[0]);
-					$stats->{$subscription_name}{$query_id}{'last_seen'} = &dateToTimestamp($dates[1]);
-				}
-
 			}
 			close FILE;
             
+            seek(OUT, 0, 0);
+            my @output = &parseOutputFile(\*OUT);
+            &pushOutputToQueryServer(\@output, $subscription_name, $query_id); 
+
             $pm->finish;
 		}
 	
