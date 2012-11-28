@@ -86,7 +86,6 @@
 		}
 		echo '</tbody>';
 		echo '</table>';
-		echo '<button class="btn btn-success pushOutput" onClick=pushOutput("'.$subscriptionName.'")>Send Output To Query Server</button>';
 		#echo '<button class="btn btn-success" data-toggle="collapse" data-target="#'.$subscriptionName.'OutputTable">Send Output To Query Server</button>';
 		echo '</div>';
 		#echo '<div id="'.$subscriptionName.'OutputTable" class="collapse">';
