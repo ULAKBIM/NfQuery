@@ -31,7 +31,7 @@
         </tr>
         <?php
             if (count($identifier_alerts) == 0){
-                echo "<tr><td colspan=8>There is no identifier alert.</td></tr>";
+                echo "<tr><td colspan=8><span class='label label-important'>There is no identifier alert.</span></td></tr>";
             }else{
                 foreach($identifier_alerts as $alert){
                     echo "<tr class='error'>";
@@ -71,7 +71,7 @@
         </tr>
         <?php
             if (count($identified_alerts) == 0){
-                echo "<tr><td colspan=8>There is no identified alert.</td></tr>";
+                echo "<tr><td colspan=8><span class='label label-important'>There is no identified alert.</span></td></tr>";
             }else{
                 foreach($identified_alerts as $alert){
                     echo "<tr class='error'>";
