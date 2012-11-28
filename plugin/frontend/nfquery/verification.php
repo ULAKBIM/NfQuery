@@ -1,6 +1,6 @@
 <?php
-    if ($_POST['query'] && $_POST['firstseen'] && $_POST['identifier']){
-        $output = runVerificationQueries($_POST['query'], $_POST['firstseen'], $_POST['identifier']);
+    if ($_POST['query'] && $_POST['firstseen'] && $_POST['identifier'] && $_POST['queryid']){
+        $output = runVerificationQueries($_POST['query'], $_POST['firstseen'], $_POST['identifier'], $_POST['queryid']);
     }else{
         exit('<div class="alert alert-error">Check parameters !</div>');
     }
@@ -15,7 +15,7 @@
                 Query: <? echo $output['verification_command']; ?>
             </div>
             <?php 
-                echo nl2br($output['output2']);
+                var_dump($output['output2']);
             ?>
         </div>
     </div>

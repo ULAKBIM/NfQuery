@@ -471,12 +471,13 @@
 
     }
 
-	function runVerificationQueries($query, $first_seen, $identifier){
+	function runVerificationQueries($query, $first_seen, $identifier, $query_id){
 		$opts = array();
 		$json = json_encode($queries);
 		$cargs = compileVerificationArgs($first_seen);
 
 		$opts['query'] = $query;
+		$opts['query_id'] = $query_id;
 		$opts['identifier'] = $identifier;
 		
 		foreach($cargs  as $key=>$value){

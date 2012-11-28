@@ -33,6 +33,7 @@
                             <!-- This fields need to run verification queries.-->
 							<input type="hidden" name="firstseen" id="firstseen"/>
 							<input type="hidden" name="query" id="query"/>
+							<input type="hidden" name="queryid" id="queryid"/>
 							<input type="hidden" name="identifier" id="identifier"/>
 								<?php
 									$register = isRegistered();

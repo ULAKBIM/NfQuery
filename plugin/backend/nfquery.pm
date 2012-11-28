@@ -292,7 +292,8 @@ sub parseOutputFile{
    
     my @output;
 	my $summary;
-            
+    my %temp_stats;    
+
     my $stats = DBM::Deep->new( "/tmp/stats" );
 	
     if ($subscription_name){
@@ -311,6 +312,8 @@ sub parseOutputFile{
 				my ($key, $value) = split(/: /, $field);
                 if ($subscription_name){
 				    $stats->{$subscription_name}{$query_id}{$key} = $value;
+                }else{
+                    $temp_stats{$key} = $value; 
                 }
 			}
 			syslog('debug', "SUMMARY $subscription_name $query_id");
@@ -320,6 +323,9 @@ sub parseOutputFile{
             if ($subscription_name){
         	    $stats->{$subscription_name}{$query_id}{'first_seen'} = &dateToTimestamp($dates[0]);
         	    $stats->{$subscription_name}{$query_id}{'last_seen'} = &dateToTimestamp($dates[1]);
+            }else{
+                $temp_stats{'first_seen'} = &dateToTimestamp($dates[0]);
+                $temp_stats{'last_seen'} = &dateToTimestamp($dates[1]);
             }
             next;
         }elsif ($vars[0] =~ /[[:alpha:]]/ || !$line){
@@ -364,7 +370,11 @@ sub parseOutputFile{
 		}
 	}
 	close $fh;
-    return \@output;
+    if ($subscription_name){
+        return \@output;
+    }else{
+        return (\@output, \%temp_stats);
+    }
 }
 
 sub parseOutputOfPid{
@@ -606,18 +616,26 @@ sub findAlertsInOutputOfQuery{
     my $subscriptionName = shift;
     my $query_id = shift;
     my $output_ref = shift;
+    my $stats_ref = shift;
 
     my %alerts;
     my $stats = DBM::Deep->new( "/tmp/stats" );
+    my %stats;
     my @outputOfQuery = @{$output_ref};
+    
+    if ($subscriptionName){
+        %stats = %$stats->{$subscriptionName}{$query_id};
+    }else{
+        %stats = %{$stats_ref};
+    }
 
     $alerts{$query_id} = {};
     $alerts{$query_id}{'alerts'} = {};
-    $alerts{$query_id}{'matched_flows'} = $stats->{$subscriptionName}{$query_id}{'total flows'} + 0;  
-    $alerts{$query_id}{'matched_bytes'} = $stats->{$subscriptionName}{$query_id}{'total bytes'} + 0;  
-    $alerts{$query_id}{'matched_packets'} = $stats->{$subscriptionName}{$query_id}{'total packets'} + 0;  
-    $alerts{$query_id}{'timewindow_start'} = $stats->{$subscriptionName}{$query_id}{'first_seen'} + 0;  
-    $alerts{$query_id}{'timewindow_end'} = $stats->{$subscriptionName}{$query_id}{'last_seen'} + 0;  
+    $alerts{$query_id}{'matched_flows'} = $stats{'total flows'} + 0;  
+    $alerts{$query_id}{'matched_bytes'} = $stats{'total bytes'} + 0;  
+    $alerts{$query_id}{'matched_packets'} = $stats{'total packets'} + 0;  
+    $alerts{$query_id}{'timewindow_start'} = $stats{'first_seen'} + 0;  
+    $alerts{$query_id}{'timewindow_end'} = $stats{'last_seen'} + 0;  
 
     foreach my $ref (@outputOfQuery){
         syslog('debug', "ORADA");
@@ -634,6 +652,7 @@ sub pushOutputToQueryServer{
 	my $subscriptionName = shift;
     my $query_id = shift;
     my $output_ref = shift;
+    my $stats_ref = shift;
 
     my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
     my $stats = DBM::Deep->new( "/tmp/stats" );
@@ -642,7 +661,7 @@ sub pushOutputToQueryServer{
     my $start_time = $running_subscriptions->{$subscriptionName}{'start_time'};
     my $end_time = $running_subscriptions->{$subscriptionName}{'end_time'};
 
-    my $alerts = &findAlertsInOutputOfQuery($subscriptionName, $query_id, $output_ref);
+    my $alerts = &findAlertsInOutputOfQuery($subscriptionName, $query_id, $output_ref, $stats_ref);
 
 
     my $result = $rpc->call($uri,'push_alerts',[$plugin_ip, $alerts, $start_time, $end_time]);
@@ -678,6 +697,7 @@ sub runVerificationQueries{
 	my @source = @{$$opts{'source'}};
 	my $nfdump_args = $$opts{'args'};
 	my $query = $$opts{'query'};
+	my $query_id = $$opts{'query_id'};
 	my $identifier = $$opts{'identifier'};
 
 	my $strSource = join(':', @source);
@@ -703,18 +723,16 @@ sub runVerificationQueries{
     $output{'verification_command'} = $verification_command;
 
     open my $fh, "$verification_command_with_ip |";
-    {
-        local $/;
-        $output{'output1'} = <$fh>;
-    }
-    close $fh;
+    my ($output_ref, $stat_ref) = &parseOutputFile($fh);
+    &pushOutputToQueryServer('', $query_id, $output_ref,  $stat_ref);
+    $output{'output1'} = $output_ref;
+    $output{'stats1'} = $output_ref;
 
     open my $fh, "$verification_command |";
-    {
-        local $/;
-        $output{'output2'} = <$fh>;
-    }
-    close $fh;
+    my ($output_ref, $stat_ref) = &parseOutputFile($fh);
+    &pushOutputToQueryServer('', $query_id, $output_ref, $stat_ref);
+    $output{'output2'} = $output_ref;
+    $output{'stats2'} = $output_ref;
     
      
     syslog('debug', "$output{'output1'}"); 
