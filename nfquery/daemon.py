@@ -75,7 +75,8 @@ class Daemon:
         # redirect standard file descriptors
         sys.stdout.flush()
         sys.stderr.flush()
-        si = file(self.stdin, 'r')
+        #si = file(self.stdin, 'r')
+        si = file(self.stdin, 'a+')
         so = file(self.stdout, 'a+')
         se = file(self.stderr, 'a+', 0)
         os.dup2(si.fileno(), sys.stdin.fileno())
