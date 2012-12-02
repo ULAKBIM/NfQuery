@@ -4,3 +4,4 @@ nfquery/sources/honeypot/honeypotOutput.txt
 build/
 dist/
 nfquery.egg-info/
+*.pyc

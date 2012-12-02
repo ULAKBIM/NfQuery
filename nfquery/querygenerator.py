@@ -193,30 +193,33 @@ class QueryGenerator:
                 if not q_id:
                     continue
                 inserted_query_list.append(q_id)
-                if m_keys != expr.keys():
-                    m_query = {}
-                    for m in m_keys:
-                        m_query[m] = expr.pop(m)
-                    #self.qglogger.debug('m_query : %s' % str(m_query))
-                    #self.qglogger.info('m_query : %s' % str(m_query))
-                    length = len(expr) - 1
-                    opt_query_list = self.getExpressionCombinations( expr, 
-                                     m_query, length )
-                    try:
-                        # insert mandatory query
-                        
-                        self.qglogger.info(colored('Inserting mandatory query.', 'green', attrs=['bold']))
-                        self.insertQuery( s_id, date, m_query, category=2, 
+               
+                
+                #NOTE each verification query equal to mandatory query
+                #if m_keys != expr.keys():
+                m_query = {}
+                for m in m_keys:
+                    m_query[m] = expr.pop(m)
+                #self.qglogger.debug('m_query : %s' % str(m_query))
+                #self.qglogger.info('m_query : %s' % str(m_query))
+                length = len(expr) - 1
+                opt_query_list = self.getExpressionCombinations( expr, 
+                                 m_query, length )
+                try:
+                    # insert mandatory query
+                    
+                    self.qglogger.info(colored('Inserting mandatory query.', 'green', attrs=['bold']))
+                    self.insertQuery( s_id, date, m_query, category=2, 
+                                      query_id = q_id )
+                    #self.qglogger.debug('opt_query : %s' % str(m_query))
+                    for opt_query in opt_query_list:
+                        # insert optional query
+                        self.qglogger.info(colored('Inserting optional query.', 'green', attrs=['bold']))
+                        self.insertQuery( s_id, date, opt_query, category=3,
                                           query_id = q_id )
-                        #self.qglogger.debug('opt_query : %s' % str(m_query))
-                        for opt_query in opt_query_list:
-                            # insert optional query
-                            self.qglogger.info(colored('Inserting optional query.', 'green', attrs=['bold']))
-                            self.insertQuery( s_id, date, opt_query, category=3,
-                                              query_id = q_id )
-                            #self.qglogger.debug('opt_query : %s' % str(opt_query))
-                    except Exception, e:
-                        self.qglogger.error(e)
+                        #self.qglogger.debug('opt_query : %s' % str(opt_query))
+                except Exception, e:
+                    self.qglogger.error(e)
         return inserted_query_list
 
 
@@ -238,7 +241,8 @@ class QueryGenerator:
         md5hash.update(str(expr) + str(source_id))
         checksum = md5hash.hexdigest()
         query = self.store.find( Query, (Query.source_id == source_id) & 
-                                        (Query.checksum == unicode(checksum))
+                                        (Query.checksum == unicode(checksum)) &
+                                        (Query.category == category)
                                ).one()
         if not query:
             '''
