@@ -1,6 +1,5 @@
 cfg/nfquery.conf
-nfquery/sources/amada/amadaOutput.txt
-nfquery/sources/honeypot/honeypotOutput.txt
+nfquery/sources/*
 build/
 dist/
 nfquery.egg-info/
