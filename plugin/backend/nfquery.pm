@@ -725,13 +725,13 @@ sub runVerificationQueries{
     my ($output_ref, $stat_ref) = &parseOutputFile($fh);
     &pushOutputToQueryServer('', $query_id, $output_ref,  $stat_ref);
     $output{'output1'} = $output_ref;
-    $output{'stats1'} = $output_ref;
+    $output{'stats1'} = $stat_ref;
 
     open my $fh, "$verification_command |";
     my ($output_ref, $stat_ref) = &parseOutputFile($fh);
     &pushOutputToQueryServer('', $query_id, $output_ref, $stat_ref);
     $output{'output2'} = $output_ref;
-    $output{'stats2'} = $output_ref;
+    $output{'stats2'} = $stat_ref;
     
      
     syslog('debug', "$output{'output1'}"); 

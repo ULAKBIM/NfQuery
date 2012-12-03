@@ -40,7 +40,7 @@
 	overflow: auto;
 }
 
-.identifier_alerts, .identified_alerts{
+.identifier_alerts, .identified_alerts, .verification_output{
 	max-height: 400px;
 	min-height: 400px;
 	overflow: auto;
