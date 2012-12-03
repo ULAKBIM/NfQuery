@@ -8,13 +8,13 @@
 ?>
 
 <div class="row-fluid">
-	<div class="span11">
+	<div class="span12">
         <h2>Alerts</h2>
 	</div>
 </div>
 
 <div class="row-fluid">
-    <div class="span11">
+    <div class="span12">
         <h4>Identifier Alerts</h4>
         <div class="identifier_alerts">
         <table class="table table-condensed table-hover">
@@ -55,7 +55,7 @@
 
 
 <div class="row-fluid">
-    <div class="span11">
+    <div class="span12">
         <h4>Identified Alerts</h4>
         <div class="identified_alerts">
         <table class="table table-hover table-condensed">

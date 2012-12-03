@@ -15,7 +15,12 @@
                 Query: <? echo $output['verification_command']; ?>
             </div>
             <?php 
-                var_dump($output['output2']);
+                $output2 = $output['output2'];
+                $stats2 = $output['stats2'];
+                foreach ($output2 as $table){
+                    var_dump($table);
+                    break;
+                }
             ?>
         </div>
     </div>
@@ -29,7 +34,8 @@
         </div>
         <div>
             <?php 
-                echo nl2br($output['output1']);
+                $output2 = $output['output2'];
+                $stats2 = $output['stats2'];
             ?>
         </div>
     </div>
