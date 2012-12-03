@@ -33,9 +33,9 @@ setup(
 	   zip_safe = False,
 	   #install_requires = ['MySQLdb',],
        data_files = [
-                # ('/etc/',['/home/serhat/nfquery/cfg/nfquery.conf'])
+             ('/etc/',['/home/serhat/nfquery/cfg/nfquery.conf'])
        		#('/etc/',['/home/ahmetcan/projects/conf/cfg/nfquery.conf'])
-                ('/etc/',['/home/hamza/nfquery/cfg/nfquery.conf'])
+            #    ('/etc/',['/home/hamza/nfquery/cfg/nfquery.conf'])
        ],
 	   #entry_points = {
 	   # 	'console_scripts': [

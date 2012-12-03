@@ -296,7 +296,7 @@ sub parseOutputFile{
 
     my $stats = DBM::Deep->new( "/tmp/stats" );
 	
-    if ($subscription_name){
+    if ($subscription_name && $query_id){
         $stats->{$subscription_name}{$query_id} = {};
     }
 
@@ -310,7 +310,7 @@ sub parseOutputFile{
 			my @fields = split(/, /, $sum[1]);
 			foreach my $field (@fields){
 				my ($key, $value) = split(/: /, $field);
-                if ($subscription_name){
+                if ($subscription_name && $query_id){
 				    $stats->{$subscription_name}{$query_id}{$key} = $value;
                 }else{
                     $temp_stats{$key} = $value; 
@@ -320,7 +320,7 @@ sub parseOutputFile{
             next;
 		}elsif ($line =~ /^Time Window/){
         	my @dates = split(/ - /, $line, 2);
-            if ($subscription_name){
+            if ($subscription_name && $query_id){
         	    $stats->{$subscription_name}{$query_id}{'first_seen'} = &dateToTimestamp($dates[0]);
         	    $stats->{$subscription_name}{$query_id}{'last_seen'} = &dateToTimestamp($dates[1]);
             }else{
@@ -601,9 +601,8 @@ sub getOutputOfQuery{
 	}	
 	
 
-	my $outputOfQuery = &parseOutputOfPid($pid);
+	my ($outputOfQuery, $stats) = &parseOutputOfPid($pid, $subscriptionName);
 	my $json = encode_json $outputOfQuery;
-	syslog('debug', "$json");
 	%args = &divideJsonToParts($json);	
 	
 	syslog('debug', 'Response To frontend. GETOUTPUT OF QUERY');
@@ -726,13 +725,13 @@ sub runVerificationQueries{
     my ($output_ref, $stat_ref) = &parseOutputFile($fh);
     &pushOutputToQueryServer('', $query_id, $output_ref,  $stat_ref);
     $output{'output1'} = $output_ref;
-    $output{'stats1'} = $output_ref;
+    $output{'stats1'} = $stat_ref;
 
     open my $fh, "$verification_command |";
     my ($output_ref, $stat_ref) = &parseOutputFile($fh);
     &pushOutputToQueryServer('', $query_id, $output_ref, $stat_ref);
     $output{'output2'} = $output_ref;
-    $output{'stats2'} = $output_ref;
+    $output{'stats2'} = $stat_ref;
     
      
     syslog('debug', "$output{'output1'}"); 
