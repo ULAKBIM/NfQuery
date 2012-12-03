@@ -157,14 +157,20 @@ class QueryGenerator:
 
     def getExpressionCombinations(self, optional, mandatory, length):
         comb_list = []
-        base_expr = dict(mandatory)
-        while(length > 0):
-            for combination in itertools.combinations(optional, length):
-                for key in combination: 
-                    base_expr.update({key : optional[key]})
+        for e_key in optional.keys():
+            base_expr = dict(mandatory)
+            if e_key not in mandatory.keys():
+                base_expr[e_key] = optional[e_key]
                 comb_list.append(base_expr)
-                base_expr = dict(mandatory)
-            length -= 1
+ 
+       # base_expr = dict(mandatory)
+       # while length > 0: 
+       #     for combination in itertools.combinations(optional, length):
+       #         for key in combination: 
+       #             base_expr.update({key : optional[key]})
+       #         comb_list.append(base_expr)
+       #         base_expr = dict(mandatory)
+       #     length -= 1
         return comb_list
  
 
@@ -198,12 +204,13 @@ class QueryGenerator:
                 #NOTE each verification query equal to mandatory query
                 #if m_keys != expr.keys():
                 m_query = {}
+                a=expr
                 for m in m_keys:
                     m_query[m] = expr.pop(m)
                 #self.qglogger.debug('m_query : %s' % str(m_query))
                 #self.qglogger.info('m_query : %s' % str(m_query))
                 length = len(expr) - 1
-                opt_query_list = self.getExpressionCombinations( expr, 
+                opt_query_list = self.getExpressionCombinations( a, 
                                  m_query, length )
                 try:
                     # insert mandatory query
