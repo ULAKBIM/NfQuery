@@ -8,7 +8,7 @@
 
 <script src="/nfsen/plugins/nfquery/js/running.js"></script>
 <div class="row-fluid">
-    <div class="span11">
+    <div class="span12">
         <h4>Output Of Verification Query</h4>
         <div class="alert alert-info">
             Query: <? echo $output['verification_command']; ?>
@@ -53,7 +53,7 @@
 </div>
 
 <div class="row-fluid" style="margin-top:22px">
-    <div class="span11">
+    <div class="span12">
         <h4>Output Of Verification Query With Identifier Plugin IP</h4>
         <div class="alert alert-info">
             Query: <? echo $output['verification_command_with_ip']; ?>
