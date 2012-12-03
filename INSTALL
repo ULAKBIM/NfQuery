@@ -11,30 +11,78 @@ you can clone and install from the github repository.
         $ git clone https://github.com/ulakbim/nfquery
 
 
-Easy Install
+Requirements
 ------------
-You can use the setuptools easy_install script to get NfQuery and other python modules on your system :
+    Python
+    ------
+    NfQuery requires python-2.7 or later on the server. Python-2.7.3 is recommended.
 
-        $ sudo easy_install NfQuery
+
+    MySQL Server
+    ------------
+    You need to install MySQL Server 5.2 or never version. Create a database named nfquery and a user with the same name 
+    whose all permissions on nfquery database. After then you should add to nfquery.conf database name, username and user password informations.
+
+
+    Python Twisted Module
+    ---------------------
+    Packages of Twisted are available in Ubuntu and Debian as 'python-twisted'. 
+    Packages of Twisted are available in FreeBSD ports as 'devel/py-twisted'. You can choose what component of Twisted you install using command 'make config', you can simply install the Twisted package with pkg_add devel/py-twisted.
+
+  
+    Python Storm Module
+    -------------------
+    Storm is packaged for Ubuntu as 'python-storm'.
+
+
+    Python MySQL Module
+    -------------------
+    Python MySQL module is packaged for Ubuntu as 'python-mysqldb'. You can install Ubuntu package of python mysqldb module or you can run following command:
         $ sudo easy_install MySQLdb
-        $ sudo easy_install txJSON-RPC
-                    ......
 
 
+    Python Configuration Module
+    ---------------------------
+    You need Python Configuration Module for handling configuration file of NfQuery. You can visit http://pypi.python.org/pypi/config/0.3.7 and install python-config module.
 
-MySQL
------
-You need to install MySQL Server 5.2 or newer version. Additional instructions : 
-
-    1) Create a database named nfquery and a user with the same name whose all permissions on nfquery
-    database.
-
-    2) Import nfquery database with using nfquery.sql file placed in 'WHERE IS IT!!' 
-    by using the command : 
-            
-                    mysql -u nfquery -p nfquery < nfquery.sql
-
-    3) ....
+    Python Termcolor Module
+    -----------------------
+    You need Python Termcolor Module to give colored output.You can visit http://pypi.python.org/pypi/termcolor/ and install python-termcolor module.
 
 
+    Python Setuptool Module
+    -----------------------
+    You need to install NfQuery. Python Setuptools module packaged as python-setuptools for Ubuntu. You can visit http://pypi.python.org/pypi/setuptools and install python-setuptools module.
+
+
+Installation and Running
+------------------------
+     After required python modules are installed you edited nfquery configuration file. Configuration file located at cfg/nfquery.conf. Configuration file contains the source, plugin, database informations.
+     Run command from a terminal as root for install NfQuery:
+     
+         #python setup.py install
+     
+     This command configuration file copy to under /etc.     
+
+     Add Plugins
+     -----------
+         Defined in configuration file to add plugins to Query Server, run following command:
+         $nfqueryd --reconfig plugins
+
+     Add Source
+     ----------
+         Defined in configuration file to add sources to Query Server, run following command:
+         $nfqueryd --reconfig sources
+
+     Run Query Server of NfQuery
+     ---------------------------
+         $nfquery --start
+
+     Specify configuration file while running(default /etc/nfquery.conf)
+     ----------------------------------------
+         $nfqueryd --conf configuration_file_path --start
+
+    Display output in console while running
+    ---------------------------------------
+        $nfqueryd --console --start
 
