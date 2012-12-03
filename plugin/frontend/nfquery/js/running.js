@@ -75,14 +75,14 @@ function lookup(anchor){
 	if ($(anchor).hasClass('filled')) return;
 	var ip_port = $(anchor).html();
 	var ip = ip_port.split(":")[0];
-	$(anchor).popover({title:'Lookup', content:'Content Loading', trigger: 'hover'});
+	$(anchor).popover({title:'Lookup', content:'Content Loading...', trigger: 'hover'});
 	$(anchor).popover('show');
 	$(anchor).addClass('filled');
 	$.get("/nfsen/plugins/nfquery/ajaxhandler.php", {lookup:1, ip:ip},
 		function (data){
 			$(anchor).popover('hide');
 			$(anchor).data('popover', null)
-			$(anchor).popover({title:'Lookup', content:data, trigger: 'hover'});
+			$(anchor).popover({title:'Lookup', content:data, trigger: 'hover', html:true});
 			$(anchor).popover('show');
 			$(anchor).addClass('filled');
 		});
