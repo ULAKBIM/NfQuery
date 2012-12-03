@@ -1,0 +1,52 @@
+=======================================
+== Required Perl Modules For Backend ==
+=======================================
+
+    -LWP::UserAgent
+    -JSON::RPC::LWP
+    -Term::ANSIColor
+    -JSON
+    -JSON::Parse 'json_to_perl'
+    -NetAddr::IP
+    -Net::SSL ()
+    -Parallel::ForkManager
+    -NfConf
+    -DBM::Deep
+
+
+====================
+== Install Plugin ==
+====================
+
+    After required perl modules are installed run:
+
+    ./install.sh 
+    
+    This script copy backend and plugin files to their
+    locations(according to your nfsen directory layout).
+    
+    After files installed, you need to enable and set backend 
+    configuration parameters in Nfsen configuration file.
+
+    Configuration parameters are:
+
+    nfquery => {
+        #Make sure nfsen have write permission to this directory.
+        output_dir => '/tmp', 
+
+        # Certificates
+        https_ca_file => 'root certificate file'
+        https_ca_dir => 'root certificate directory'
+        https_pkcs12_file => 'plugins pkcs12 file'
+        https_pkcs12_password => 'password',
+
+        # Prefix List
+        prefix_list => 'a.b.c.d',
+
+        # Ip Address Of This Plugin             
+        plugin_ip => 'a.b.c.d',
+
+        # Query Server Information
+        queryserver_ip => 'a.b.c.d/e',
+        queryserver_port => 'a',
+    }
