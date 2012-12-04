@@ -641,36 +641,78 @@ class QueryManager:
         return alerts
 
 
+    def insertAlert(self, alert_info):
+       alert = Alert()
+       alert.identifier_plugin_id = alert_info['identified_plugin_id']
+       alert.identified_plugin_id = alert_info['identifier_plugin_id']
+       alert.start_time = alert_info["timewindow_start"]
+       alert.end_time = alert_info["timewindow_end"]
+       alert.first_seen = alert_info["timestamp"]
+       alert.checksum = alert_info['checksum']
+       alert.query_id = alert_info['query_id']
+       self.store.add(alert)
+       statistic = Statistics()
+       statistic.start_time = alert_info["timewindow_start"]
+       statistic.end_time = alert_info["timewindow_end"]
+       statistic.number_of_flows = alert_info["flows"]
+       statistic.number_of_packets = alert_info["bytes"]
+       statistic.number_of_bytes = alert_info["packets"]
+       statistic.query_id = alert_info['query_id']
+       statistic.plugin_id = alert_info['plugin_id']
+       statistic.alert = alert
+       self.store.add(statistic)
+       self.store.commit()
+
     def pushAlerts(self, plugin_ip, query_id_list, start_time, end_time):
+        print query_id_list
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         for query_id, query_list in query_id_list.items():
             if query_list.has_key("alerts"):
                 for hash_key, row_data in query_list["alerts"].items():
-                    alert = self.store.find( Alert,
+                    if 'srcip_alert_plugin' and 'dstip_alert_plugin' in row_data.keys():
+                        plugin_id_list = [row_data['srcip_alert_plugin'],row_data['dstip_alert_plugin']]
+                        for id in plugin_id_list:
+                            alert = self.store.find( Alert,
+                                Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
+                                Alert.identified_plugin_id == int(id),
+                                Alert.query_id == int(query_id)).one()
+                            
+                            if alert is None:
+                                alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : ip, 
+                                              'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
+                                              'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
+                                              'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
+                                              'packets' : int(row_data["packets"])}
+                                insertAlert(alert_info)        
+                    elif 'dstip_alert_plugin' in row_data.keys():
+                        alert = self.store.find( Alert,
+                            Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
+                            Alert.identified_plugin_id == int(row_data['dst_alert_plugin']),
+                            Alert.query_id == int(query_id)).one()
+                        
+                        if alert is None:
+                            alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(row_data['dst_alert_plugin']), 
+                                          'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
+                                          'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
+                                          'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
+                                          'packets' : int(row_data["packets"])}
+                            insertAlert(alert_info)        
+                    elif 'srcip_alert_plugin' in row_data.keys():
+                        alert = self.store.find( Alert,
                             Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
                             Alert.identified_plugin_id == int(row_data['srcip_alert_plugin']),
                             Alert.query_id == int(query_id)).one()
-                    if alert is None:
-                        alert = Alert()
-                        alert.identifier_plugin_id = int(plugin_id)
-                        alert.identified_plugin_id = int(row_data["srcip_alert_plugin"])
-                        alert.start_time = query_list["timewindow_start"]
-                        alert.end_time = query_list["timewindow_end"]
-                        alert.first_seen = row_data["timestamp"]
-                        alert.checksum = hash_key
-                        alert.query_id = int(query_id)
-                        self.store.add(alert)
-            	        statistic = Statistics()
-            	        statistic.start_time = query_list["timewindow_start"]
-            	        statistic.end_time = query_list["timewindow_end"]
-            	        statistic.number_of_flows = int(row_data["flows"])
-            	        statistic.number_of_packets = int(row_data["bytes"])
-            	        statistic.number_of_bytes = int(row_data["packets"])
-            	        statistic.query_id = int(query_id)
-            	        statistic.plugin_id = int(plugin_id)
-            	        statistic.alert = alert
-            	        self.store.add(statistic)
-        self.store.commit()
+                        
+                        if alert is None:
+                            alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(row_data['srcip_alert_plugin']), 
+                                          'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
+                                          'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
+                                          'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
+                                          'packets' : int(row_data["packets"])}
+                            print alert_info
+                            insertAlert(alert_info)        
+              
+
                 
 
     def registerAlert(self, alert):
