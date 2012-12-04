@@ -1,5 +1,4 @@
 cfg/nfquery.conf
-nfquery/sources/*
 build/
 dist/
 nfquery.egg-info/
