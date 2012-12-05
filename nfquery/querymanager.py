@@ -643,8 +643,8 @@ class QueryManager:
 
     def insertAlert(self, alert_info):
        alert = Alert()
-       alert.identifier_plugin_id = alert_info['identified_plugin_id']
-       alert.identified_plugin_id = alert_info['identifier_plugin_id']
+       alert.identified_plugin_id = alert_info['identified_plugin_id']
+       alert.identifier_plugin_id = alert_info['identifier_plugin_id']
        alert.start_time = alert_info["timewindow_start"]
        alert.end_time = alert_info["timewindow_end"]
        alert.first_seen = alert_info["timestamp"]
