@@ -345,20 +345,21 @@ sub parseOutputFile{
 			#check ip adresses are in prefixes or not.
 			my @srcip_port;
 			my @dstip_port;
-			my $plugin_id;
+			my $src_plugin_id;
+			my $dst_plugin_id;
 
 			$table{'srcip_port'} = $vars[5];
 			@srcip_port = split(':', $table{'srcip_port'});
-			$plugin_id = &ipInPrefixes($srcip_port[0]);	
-			if ($plugin_id){
-				$table{'srcip_alert_plugin'} = $plugin_id;
+			$src_plugin_id = &ipInPrefixes($srcip_port[0]);	
+			if ($src_plugin_id){
+				$table{'srcip_alert_plugin'} = $src_plugin_id;
 			}
 
 			$table{'dstip_port'} = $vars[8];
 			@dstip_port = split(':', $table{'dstip_port'});
-			$plugin_id = &ipInPrefixes($dstip_port[0]);
-			if ($plugin_id){
-				$table{'dstip_alert_plugin'} = $plugin_id; 
+			$dst_plugin_id = &ipInPrefixes($dstip_port[0]);
+			if ($dst_plugin_id){
+				$table{'dstip_alert_plugin'} = $dst_plugin_id; 
 			}
 
             $table{'hash'} = &fiveTupleHash($srcip_port[0], $srcip_port[1], 
@@ -856,7 +857,7 @@ sub getFilter{
 }
 
 sub getPrefixes{
-    my $result = $rpc->call($uri,'get_prefixes',[$plugin_ip]);
+    my $result = $rpc->call($uri,'get_all_prefixes',[]);
 	syslog('debug', 'Response. - GETPREFIXES');
 	my $r = $result->result;
 	return %{$r};
