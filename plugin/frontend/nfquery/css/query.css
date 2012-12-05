@@ -46,11 +46,13 @@
 	overflow: auto;
 }
 
-.run{
+
+/*.run{
     height: 40px;
     width: 40px;
 	cursor:pointer;
 }
+*/
 .outputAll{
 	max-height: 350px;
 	overflow: auto;
