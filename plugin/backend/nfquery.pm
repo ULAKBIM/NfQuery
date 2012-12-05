@@ -640,7 +640,7 @@ sub findAlertsInOutputOfQuery{
     foreach my $ref (@outputOfQuery){
         syslog('debug', "ORADA");
         my %table = %{$ref};
-        if ($table{'srcip_alert_plugin'} || $table{'dstip_alert_plugin'}){
+        if ($table{'srcip_alert_plugin'} && $table{'dstip_alert_plugin'}){
             $alerts{$query_id}{'alerts'}{$table{'hash'}} = \%table;
         }
     }            

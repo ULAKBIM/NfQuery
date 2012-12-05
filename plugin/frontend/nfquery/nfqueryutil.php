@@ -118,7 +118,7 @@
 		echo '<table class="table table-bordered table-condensed">';
 		echo '<tr><th>Date</th><th>Start</th><th>Duration</th><th>Proto</th><th>Src Ip:Port</th><th>Dst Ip:Port</th><th>Packets</th><th>Bytes</th><th>Flow</th><th>Query Id</th></tr>';
 		foreach ($output as $table){
-				if ( $table['srcip_alert_plugin'] || $table['dstip_alert_plugin']){
+				if ( $table['srcip_alert_plugin'] && $table['dstip_alert_plugin']){
 					echo '<tr class="error">';				
 				}else{
 					echo '<tr>';				
@@ -433,25 +433,38 @@
 
 	}
 	
-	function compileVerificationArgs($first_seen){
+	function compileVerificationArgs($starttime, $endtime){
 		$cmd_opts = array();
 
 		$args = '';
 
 
-        #calculate new timestamp to find right flow file.
-        $time = $first_seen - ($first_seen % 300) + 300;
-        $cmd_opts['start_time'] = $time;
-        $cmd_opts['end_time'] = $time;
+        if ( $starttime == $endtime ) {
 
-        // a single 5 min timeslice
-       	$tslot1 = UNIX2ISO($time);
-        $subdirs = SubdirHierarchy($time);
+            $cmd_opts['start_time'] = $starttime;
+            $cmd_opts['end_time'] = $endtime;
+        	// a single 5 min timeslice
+       		$tslot1 = UNIX2ISO($starttime);
+        	$subdirs = SubdirHierarchy($starttime);
+        	if ( strlen($subdirs) == 0 )
+           	 	$args .= " -r nfcapd.$tslot1";
+        	else	
+            	$args .= " -r $subdirs/nfcapd.$tslot1";
 
-        if ( strlen($subdirs) == 0 )
-         	$args .= " -r nfcapd.$tslot1";
-        else	
-        	$args .= " -r $subdirs/nfcapd.$tslot1";
+    	} else {
+            $cmd_opts['start_time'] = $starttime;
+            $cmd_opts['end_time'] = $endtime;
+        	// several 5 min timeslices
+        	$tslot1 = UNIX2ISO($starttime);
+			$subdirs1 = SubdirHierarchy($starttime);
+        	$tslot2 = UNIX2ISO($endtime);
+            $subdirs2 = SubdirHierarchy($endtime);
+
+        	if ( strlen($subdirs1) == 0 )
+         	  	 $args .= " -R nfcapd.$tslot1:nfcapd.$tslot2";
+        	else
+            	$args .= " -R $subdirs1/nfcapd.$tslot1:$subdirs2/nfcapd.$tslot2";
+    	}
 
 		$args = $args.' -a';
 		$args = "-T $args";
@@ -470,10 +483,10 @@
 
     }
 
-	function runVerificationQueries($query, $first_seen, $identifier, $query_id){
+	function runVerificationQueries($query, $starttime, $endtime, $identifier, $query_id){
 		$opts = array();
 		$json = json_encode($queries);
-		$cargs = compileVerificationArgs($first_seen);
+		$cargs = compileVerificationArgs($starttime, $endtime);
 
 		$opts['query'] = $query;
 		$opts['query_id'] = $query_id;

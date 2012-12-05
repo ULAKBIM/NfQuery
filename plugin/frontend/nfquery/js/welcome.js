@@ -131,7 +131,8 @@ $(document).ready(function() {
         $("#nfqueryTab").val("Verification");
         $("#query").val($(this).attr('query'));
         $("#queryid").val($(this).attr('queryid'));
-        $("#firstseen").val($(this).attr('firstseen'));
+        $("#starttime").val($(this).attr('starttime'));
+        $("#endtime").val($(this).attr('endtime'));
         $("#identifier").val($(this).attr('identifier'));
         $("#navigationForm").submit();
 

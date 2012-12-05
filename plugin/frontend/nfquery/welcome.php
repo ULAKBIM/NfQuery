@@ -22,7 +22,7 @@
             <th>Query Id</th>
             <th>Filter</th>
             <th>Identified Plugin</th>
-            <th>First Seen</th>
+            <th>Time Interval</th>
             <th></th>
         </tr>
         <?php
@@ -34,8 +34,8 @@
                     echo "<td>".$alert['query_id']."</td>";
                     echo "<td>".$alert['query_filter']."</td>";
                     echo "<td><span class='label label-warning'>".$alert['identified_plugin_name']."</span></td>";
-                    echo "<td>".date("Y/m/d H:i:s", $alert['first_seen'])."</td>";
-                    echo "<td>"."<img class='run' queryid='".$alert['query_id']."' query='".$alert['query_filter']."' firstseen='".$alert['first_seen']."' identifier='".$alert['identifier_plugin_id']."' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
+                    echo "<td>".date("Y/m/d H:i:s", $alert['start_time'])." - ".date("Y/m/d H:i:s", $alert['end_time'])."</td>";
+                    echo "<td>"."<button class='btn btn-small btn-primary run' queryid='".$alert['query_id']."' query='".$alert['query_filter']."' starttime='".$alert['start_time']."' endtime='".$alert['end_time']."' identifier='".$alert['identifier_plugin_id']."' src='/nfsen/plugins/nfquery/img/run.png'>Run this query at the given interval</button>"."</td>";
                     echo "</tr>";
                 }
             }
@@ -55,7 +55,8 @@
             <th>Query Id</th>
             <th>Filter</th>
             <th>Identifier Plugin</th>
-            <th>First Seen</th>
+            <th>Time Interval</th>
+            <th></th>
         </tr>
         <?php
             if (count($identified_alerts) == 0){
@@ -66,8 +67,8 @@
                     echo "<td>".$alert['query_id']."</td>";
                     echo "<td>".$alert['query_filter']."</td>";
                     echo "<td><span class='label label-warning'>".$alert['identifier_plugin_name']."</span></td>";
-                    echo "<td>".date("Y/m/d H:i:s", $alert['first_seen'])."</td>";
-                    echo "<td>"."<img class='run' queryid='".$alert['query_id']."' query='".$alert['query_filter']."' firstseen='".$alert['first_seen']."' identifier='".$alert['identifier_plugin_id']."' src='/nfsen/plugins/nfquery/img/run.png'>"."</td>";
+                    echo "<td>".date("Y/m/d H:i:s", $alert['start_time'])." - ".date("Y/m/d H:i:s", $alert['end_time'])."</td>";
+                    echo "<td>"."<button class='btn btn-small btn-primary run' queryid='".$alert['query_id']."' query='".$alert['query_filter']."' starttime='".$alert['start_time']."' endtime='".$alert['end_time']."' identifier='".$alert['identifier_plugin_id']."' src='/nfsen/plugins/nfquery/img/run.png'>Run this query at the given interval</button>"."</td>";
                     echo "</tr>";
                 }
             }
