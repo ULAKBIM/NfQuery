@@ -1,6 +1,6 @@
 <?php
-    if ($_POST['query'] && $_POST['starttime'] && $_POST['endttime'] && $_POST['identifier'] && $_POST['queryid']){
-        $output = runVerificationQueries($_POST['query'], $_POST['starttime'], $_POST['endttime'], $_POST['identifier'], $_POST['queryid']);
+    if ($_POST['query'] && $_POST['starttime'] && $_POST['endtime'] && $_POST['identifier'] && $_POST['queryid']){
+        $output = runVerificationQueries($_POST['query'], $_POST['starttime'], $_POST['endtime'], $_POST['identifier'], $_POST['queryid']);
     }else{
         exit('<div class="alert alert-error">Check parameters !</div>');
     }
