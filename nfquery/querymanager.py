@@ -681,7 +681,7 @@ class QueryManager:
                                 alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : ip, 
                                               'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
                                               'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
-                                              'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
+                                              'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
                                               'packets' : int(row_data["packets"])}
                                 self.insertAlert(alert_info)        
                     elif 'dstip_alert_plugin' in row_data.keys():
