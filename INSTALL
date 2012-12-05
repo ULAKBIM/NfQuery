@@ -54,6 +54,10 @@ Requirements
     -----------------------
     You need to install NfQuery. Python Setuptools module packaged as python-setuptools for Ubuntu. You can visit http://pypi.python.org/pypi/setuptools and install python-setuptools module.
 
+    Python txJSON-RPC Module
+    ------------------------
+    You can install python-txJSON-RPC module by running following command:
+        $ sudo easy_install txJSON-RPC 
 
 Installation and Running
 ------------------------
