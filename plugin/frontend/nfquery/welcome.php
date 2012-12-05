@@ -77,7 +77,7 @@
                     echo "<tr class='error'>";
                     echo "<td>".$alert['query_id']."</td>";
                     echo "<td>".$alert['query_filter']."</td>";
-                    echo "<td><span class='label label-warning'>".$alert['identified_plugin_name']."</span></td>";
+                    echo "<td><span class='label label-warning'>".$alert['identifier_plugin_name']."</span></td>";
                     echo "<td>".$alert['statistic']['number_of_bytes']."</td>";
                     echo "<td>".$alert['statistic']['number_of_packets']."</td>";
                     echo "<td>".$alert['statistic']['number_of_flows']."</td>";
