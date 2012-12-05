@@ -179,6 +179,17 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         return self.queryManager.getSubscription(name)
 
 
+
+    def jsonrpc_get_all_prefixes(self):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('getting all prefix list information')
+        plugin_list = self.store.find(Plugin)
+        prefix_list = {}
+        for plugin in plugin_list:
+            prefix_list[plugin.id] = plugin.prefix.prefix
+        print prefix_list
+        return prefix_list
+ 
     def jsonrpc_get_prefixes(self, ip_address):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.rpclogger.debug('getting prefix list information')

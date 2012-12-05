@@ -678,11 +678,11 @@ class QueryManager:
                                 Alert.query_id == int(query_id)).one()
                             
                             if alert is None:
-                                alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : ip, 
+                                alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(id), 
                                               'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
                                               'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                               'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
-                                              'packets' : int(row_data["packets"])}
+                                              'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id)}
                                 self.insertAlert(alert_info)        
                     elif 'dstip_alert_plugin' in row_data.keys():
                         alert = self.store.find( Alert,
@@ -694,8 +694,8 @@ class QueryManager:
                             alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(row_data['dst_alert_plugin']), 
                                           'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
                                           'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
-                                          'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
-                                          'packets' : int(row_data["packets"])}
+                                          'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
+                                          'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id)}
                             self.insertAlert(alert_info)        
                     elif 'srcip_alert_plugin' in row_data.keys():
                         alert = self.store.find( Alert,
@@ -707,8 +707,8 @@ class QueryManager:
                             alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(row_data['srcip_alert_plugin']), 
                                           'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
                                           'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
-                                          'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
-                                          'packets' : int(row_data["packets"])}
+                                          'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
+                                          'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id)}
                             print alert_info
                             self.insertAlert(alert_info)        
               
