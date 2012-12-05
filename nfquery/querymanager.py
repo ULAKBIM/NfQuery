@@ -683,7 +683,7 @@ class QueryManager:
                                               'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                               'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
                                               'packets' : int(row_data["packets"])}
-                                insertAlert(alert_info)        
+                                self.insertAlert(alert_info)        
                     elif 'dstip_alert_plugin' in row_data.keys():
                         alert = self.store.find( Alert,
                             Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
@@ -696,7 +696,7 @@ class QueryManager:
                                           'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                           'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
                                           'packets' : int(row_data["packets"])}
-                            insertAlert(alert_info)        
+                            self.insertAlert(alert_info)        
                     elif 'srcip_alert_plugin' in row_data.keys():
                         alert = self.store.find( Alert,
                             Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
@@ -710,7 +710,7 @@ class QueryManager:
                                           'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'packets': int(row_data["bytes"]),
                                           'packets' : int(row_data["packets"])}
                             print alert_info
-                            insertAlert(alert_info)        
+                            self.insertAlert(alert_info)        
               
 
                 
