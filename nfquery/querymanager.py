@@ -679,7 +679,7 @@ class QueryManager:
                             
                             if alert is None:
                                 alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(id), 
-                                              'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
+                                              'timewindow_start' : int(start_time), 'timewindow_end' : int(end_time), 
                                               'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                               'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
                                               'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id)}
@@ -692,7 +692,7 @@ class QueryManager:
                         
                         if alert is None:
                             alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(row_data['dst_alert_plugin']), 
-                                          'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
+                                          'timewindow_start' : int(start_time), 'timewindow_end' : int(end_time), 
                                           'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                           'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
                                           'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id)}
@@ -705,7 +705,7 @@ class QueryManager:
                         
                         if alert is None:
                             alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(row_data['srcip_alert_plugin']), 
-                                          'timewindow_start' : query_list["timewindow_start"], 'timewindow_end' : query_list['timewindow_end'], 
+                                          'timewindow_start' : int(start_time), 'timewindow_end' : int(end_time), 
                                           'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                           'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
                                           'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id)}
