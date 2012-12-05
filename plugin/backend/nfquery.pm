@@ -857,7 +857,7 @@ sub getFilter{
 }
 
 sub getPrefixes{
-    my $result = $rpc->call($uri,'get_all_prefixes',[$plugin_ip]);
+    my $result = $rpc->call($uri,'get_all_prefixes',[]);
 	syslog('debug', 'Response. - GETPREFIXES');
 	my $r = $result->result;
 	return %{$r};
