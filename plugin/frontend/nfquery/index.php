@@ -31,7 +31,8 @@
                             <input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
 
                             <!-- This fields need to run verification queries.-->
-							<input type="hidden" name="firstseen" id="firstseen"/>
+							<input type="hidden" name="starttime" id="starttime"/>
+							<input type="hidden" name="endtime" id="endtime"/>
 							<input type="hidden" name="query" id="query"/>
 							<input type="hidden" name="queryid" id="queryid"/>
 							<input type="hidden" name="identifier" id="identifier"/>
