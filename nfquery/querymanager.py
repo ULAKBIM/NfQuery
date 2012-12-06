@@ -579,10 +579,10 @@ class QueryManager:
 
     def getAllSubscriptions(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        subscription_list = self.store.find(Subscription.name)
+        subscription_list = self.store.find((Subscription.id, Subscription.name))
         self.qmlogger.debug('Returning subscription list')
-        #print list(subscription_list)
-        return list(subscription_list)
+            
+        return dict(subscription_list)
   
 
     def getStatistics(self, alert_id):

@@ -875,7 +875,10 @@ sub getSubscriptions{
 	my %args;
 	syslog('debug', 'Response. - GETFILTER');
 	if (defined $result->result) {
-		$args{'subscriptions'} = \@{$r};
+        my %subscriptions = %{$r};
+        foreach my $id (keys %subscriptions){
+		    $args{$id} = $subscriptions{$id};
+        }
 		syslog('debug', 'Response To frontend. - GETSUBSCRIPTION');
 		Nfcomm::socket_send_ok($socket, \%args);
 	}else {

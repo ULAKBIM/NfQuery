@@ -1,6 +1,6 @@
 <?php
-    if ($_POST['query'] && $_POST['starttime'] && $_POST['endttime'] && $_POST['identifier'] && $_POST['queryid']){
-        $output = runVerificationQueries($_POST['query'], $_POST['starttime'], $_POST['endttime'], $_POST['identifier'], $_POST['queryid']);
+    if ($_POST['query'] && $_POST['starttime'] && $_POST['endtime'] && $_POST['identifier'] && $_POST['queryid']){
+        $output = runVerificationQueries($_POST['query'], $_POST['starttime'], $_POST['endtime'], $_POST['identifier'], $_POST['queryid']);
     }else{
         exit('<div class="alert alert-error">Check parameters !</div>');
     }
@@ -22,7 +22,7 @@
                  <td>Proto</td>
                  <td>Src Ip Addr:Port</td>
                  <td>Dst IP Addr:Port</td>
-                 <td>Packtes</td>
+                 <td>Packets</td>
                  <td>Bytes</td>
                  <td>Flows</td>
                  </tr>
@@ -68,7 +68,7 @@
                       <td>Proto</td>
                       <td>Src Ip Addr:Port</td>
                       <td>Dst IP Addr:Port</td>
-                      <td>Packtes</td>
+                      <td>Packets</td>
                       <td>Bytes</td>
                       <td>Flows</td>
                       </tr>
