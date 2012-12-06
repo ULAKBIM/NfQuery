@@ -16,14 +16,15 @@
 
 				require_once('nfqueryutil.php');
 
-				$subscriptions = getSubscriptions();
+                $subscriptions = getSubscriptions();
+                asort($subscriptions);
 				$remember = parseRememberFile();
-				for($i = 0; $i < sizeof($subscriptions); ++$i) {
-					echo '<tr onclick=getSubscriptionDetail3("'.$subscriptions[$i].'")><td>'.$subscriptions[$i].'</td>';
-					if ($remember[$i+1] == 1){ 
-						echo '<td>'.'<input type="checkbox" checked="checked" id="'.($i+1).'" class="subscription_toggle"/>'.'</td></tr>';
+				foreach($subscriptions as $id=>$name) {
+					echo '<tr onclick=getSubscriptionDetail3("'.$name.'")><td>'.$name.'</td>';
+					if (isset($remember[$id]) && $remember[$id] == 1){ 
+						echo '<td>'.'<input type="checkbox" checked="checked" id="'.($id).'" class="subscription_toggle"/>'.'</td></tr>';
 					}else{
-						echo '<td>'.'<input type="checkbox" id="'.($i+1).'" class="subscription_toggle"/>'.'</td></tr>';
+						echo '<td>'.'<input type="checkbox" id="'.($id).'" class="subscription_toggle"/>'.'</td></tr>';
 					}
 				}
 

@@ -22,7 +22,7 @@
                  <td>Proto</td>
                  <td>Src Ip Addr:Port</td>
                  <td>Dst IP Addr:Port</td>
-                 <td>Packtes</td>
+                 <td>Packets</td>
                  <td>Bytes</td>
                  <td>Flows</td>
                  </tr>
@@ -68,7 +68,7 @@
                       <td>Proto</td>
                       <td>Src Ip Addr:Port</td>
                       <td>Dst IP Addr:Port</td>
-                      <td>Packtes</td>
+                      <td>Packets</td>
                       <td>Bytes</td>
                       <td>Flows</td>
                       </tr>

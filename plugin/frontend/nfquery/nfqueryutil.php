@@ -306,7 +306,10 @@
 		$command = 'nfquery::getSubscriptions';
 		$opts = array();
 		$out_list = nfsend_query($command, $opts);
-		$subscriptions = $out_list['subscriptions'];
+        $subscriptions = array();
+        foreach($out_list as $id=>$name){
+            $subscriptions[$id] = $name;
+        }
 		return $subscriptions;
 	}
 	
@@ -334,44 +337,21 @@
 	function parseRememberFile(){
 		$conf = parse_ini_file('/var/www/nfsen/plugins/nfquery/remember.conf',1);
 		return $conf["remember"];
-#		$remember = array();
-#		$remember2 = array();
-##		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf", "r");
-##		while (!feof($file)){
-##
-##			$line = fgets($file);
-##			list($id, $status) = explode('=', $line);
-##			$remember[$id] = substr($status, 0, strlen($status) - 1);
-##		}
-##		fclose($file);
-#		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf", "r");
-#		$data = fread($file,filesize("/var/www/nfsen/plugins/nfquery/remember.conf"));
-#		$mydata=json_decode($data);
-#		$remember = $mydata->{'remember'};
-#		foreach($remember as $key => $value){
-#			$remember2[$key] = $value;
-#		}
-#		fclose($file);
-#		return $remember2;
 	}
 
 
 	function editRememberFile(){	
 		$conf = parse_ini_file('/var/www/nfsen/plugins/nfquery/remember.conf',1);
-	        $remember = $conf["remember"];	
-		$conf = parse_ini_file('/var/www/nfsen/plugins/nfquery/remember.conf',1);
-	        $prefix = $conf["prefix"];
-		var_dump($remember);	
+        $remember = $conf["remember"];	
+
 		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf","w");
 		$button_id = $_POST['button_id'];
 		$button_status = $_POST['button_status'];
 		$remember["$button_id"] = (strcmp($button_status, "On") == 0) ? 1 : 0;
 		fwrite($file,"[remember]\n");
-		for($i = 1; $i <= sizeof($remember); $i++){
-			fwrite($file, "$i=$remember[$i]\n");
+		foreach($remember as $id=>$status){
+			fwrite($file, "$id=$status\n");
 		}
-		fwrite($file,"[prefix]\n");
-		fwrite($file,"1=$prefix[1]\n");
 		
 		fclose($file);
 	}
@@ -381,9 +361,9 @@
 		$subscriptions = getSubscriptions();
 		$subscripted = array();
 
-		for($i=1; $i < sizeof($remember); $i++){
-			if (strcmp($remember[$i], "1") == 0){
-				array_push($subscripted, $subscriptions[$i - 1]);
+		foreach($remember as $id=>$status){
+			if (strcmp($status, "1") == 0){
+				array_push($subscripted, $subscriptions[$id]);
 			}
 		}
 
