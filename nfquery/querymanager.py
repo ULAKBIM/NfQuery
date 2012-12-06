@@ -199,6 +199,9 @@ class QueryManager:
                         source_name = source.name
                         threat_id = source.threat_id
                         parser_id = source.parser_id
+                       # subscription = self.store.find(Subscription, Subscription.name == source_name).one()
+                       # self.store.find(SubscriptionPacket, SubscriptionPacket.subscription_id == subscription.id).remove()
+                       # self.store.find(Subscription, Subscription.name == source_name).remove()
                         self.store.find( Source, 
                                          Source.name == source.name 
                                        ).remove()
@@ -210,6 +213,27 @@ class QueryManager:
                                                source_name )
                     else:
                         self.qmlogger.info('Not deleted any source.')
+                    
+        dbsubscriptions = self.store.find(Subscription.name)
+        if not dbsubscriptions.count() == 0:
+            subscription_list = []
+            for subs in dbsubscriptions:
+                subscription_list.append(subs)
+            print subscription_list
+            for subscription_name in dbsubscriptions:
+                if not subscription_name in(sources_list):
+                    self.qmlogger.info('Do you want delete subscription %s from QS' %subscription_name)
+                    flag = ask_yes_no('', default="no")
+                    if flag is True:
+                        subscription_id = self.store.find(Subscription.id, Subscription.name == subscription_name).one()
+                         
+                        self.store.find(SubscriptionPacket, SubscriptionPacket.subscription_id == subscription_id).remove()
+                        print self.store.find(Subscription, Subscription.name == subscription_name).remove()
+                        self.store.commit()
+                        self.qmlogger.warning( 'Subscription %s is deleted' % 
+                                                  subscription_name )
+                    else:
+                        self.qmlogger.info('Not deleted any subscription.')
                         
         for index in range(len(self.sources)):
             # Check list type
@@ -376,6 +400,7 @@ class QueryManager:
             subscription = self.store.find( Subscription.id, 
                                             Subscription.name == '%s' % 
                                             (source_name) )
+            
             if subscription.is_empty():
                 subscription = Subscription()
                 subscription.type = subscription_type
