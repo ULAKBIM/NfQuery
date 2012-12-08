@@ -188,6 +188,55 @@ sub checkPIDState{
 	return $state;
 }
 
+sub checkPidStatesOfSubscription{
+    my $subscription = shift;
+    my %args;
+
+	$args{"$subscription-mandatory"} = [];
+	$args{"$subscription-optional"} = [];
+
+	$args{"$subscription-mandatory-status"} = [];
+	$args{"$subscription-optional-status"} = [];
+
+    my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
+	my %mandatory_queries = %{$running_subscriptions->{$subscription}{'mandatory'}};
+	my %optional_queries = %{$running_subscriptions->{$subscription}{'optional'}};
+	my @query_statuses;
+	my $finished = 1;
+
+	foreach my $query_id (keys %mandatory_queries){
+		my $pid = $mandatory_queries{$query_id};
+		my $pid_state = &checkPIDState($pid);
+		push @{$args{"$subscription-mandatory"}}, $query_id;
+		if ($pid_state){
+			push @{$args{"$subscription-mandatory-status"}}, $pid_state;
+			$finished = 0;
+		}else{
+			push @{$args{"$subscription-mandatory-status"}}, 0;
+		}
+
+	}
+
+	foreach my $query_id (keys %optional_queries){
+		my $pid = $optional_queries{$query_id};
+		my $pid_state = &checkPIDState($pid);
+		push @{$args{"$subscription-optional"}}, $query_id;
+		if ($pid_state){
+			push @{$args{"$subscription-optional-status"}}, $pid_state;
+			$finished = 0;
+		}else{
+			push @{$args{"$subscription-optional-status"}}, 0;
+		}
+
+	}
+
+	if ($finished){
+		#if all queries of subscription finished remove from running subscription.
+	    $args{"$subscription-finished"} = $finished;
+	}
+    return %args;
+}
+
 sub checkQueries{
 	my $socket = shift;
 	my $opts = shift;
@@ -199,48 +248,8 @@ sub checkQueries{
 
 	foreach my $subscription (keys %$running_subscriptions){
 		push @{$args{'subscriptions'}}, $subscription;
-		$args{"$subscription-mandatory"} = [];
-		$args{"$subscription-optional"} = [];
-
-		$args{"$subscription-mandatory-status"} = [];
-		$args{"$subscription-optional-status"} = [];
-
-		my %mandatory_queries = %{$running_subscriptions->{$subscription}{'mandatory'}};
-		my %optional_queries = %{$running_subscriptions->{$subscription}{'optional'}};
-		my @query_statuses;
-		my $finished = 1;
-
-		foreach my $query_id (keys %mandatory_queries){
-			my $pid = $mandatory_queries{$query_id};
-			my $pid_state = &checkPIDState($pid);
-			push @{$args{"$subscription-mandatory"}}, $query_id;
-			if ($pid_state){
-				push @{$args{"$subscription-mandatory-status"}}, $pid_state;
-				$finished = 0;
-			}else{
-				push @{$args{"$subscription-mandatory-status"}}, 0;
-			}
-
-		}
-
-		foreach my $query_id (keys %optional_queries){
-			my $pid = $optional_queries{$query_id};
-			my $pid_state = &checkPIDState($pid);
-			push @{$args{"$subscription-optional"}}, $query_id;
-			if ($pid_state){
-				push @{$args{"$subscription-optional-status"}}, $pid_state;
-				$finished = 0;
-			}else{
-				push @{$args{"$subscription-optional-status"}}, 0;
-			}
-
-		}
-
-		if ($finished){
-			#if all queries of subscription finished remove from running subscription.
-			#TODO ParseOutput files.
-			#delete ($running_subscriptions{$subscription});
-		}
+        my %states = &checkPidStatesOfSubscription($subscription);
+        @args{keys %states} = values %states;
 	}
 		
 
@@ -781,17 +790,24 @@ sub runQueries{
 		
 		#Check $subscription name is already running.
 		if ($running_subscriptions->{$subscription_name}){
-			syslog('debug', "$subscription_name is already running.");
-			next;
-		}else{    
-            syslog('debug', "INITIALIZING $subscription_name");
-            $running_subscriptions->{$subscription_name} = {};
-            $running_subscriptions->{$subscription_name}{'start_time'} = $start_time;
-            $running_subscriptions->{$subscription_name}{'end_time'} = $end_time;
-            $running_subscriptions->{$subscription_name}{'mandatory'} = {};
-            $running_subscriptions->{$subscription_name}{'optional'} = {};
-		    $stats->{$subscription_name} = {};
-        }
+            my %states = &checkPidStatesOfSubscription($subscription_name);
+            if ($states{"$subscription_name-finished"} == 0){
+			    syslog('debug', "$subscription_name is already running.");
+                next;
+            }else{
+                delete $running_subscriptions->{$subscription_name};
+                delete $stats->{$subscription_name};
+            }
+		}    
+
+        syslog('debug', "INITIALIZING $subscription_name");
+        $running_subscriptions->{$subscription_name} = {};
+        $running_subscriptions->{$subscription_name}{'start_time'} = $start_time;
+        $running_subscriptions->{$subscription_name}{'end_time'} = $end_time;
+        $running_subscriptions->{$subscription_name}{'mandatory'} = {};
+        $running_subscriptions->{$subscription_name}{'optional'} = {};
+		$stats->{$subscription_name} = {};
+        
 	    
 		foreach my $query_id (@{$category{'mandatory'}}){
             
