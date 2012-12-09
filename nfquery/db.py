@@ -113,6 +113,7 @@ def initialize_db(store):
                   "parser_id INT UNSIGNED NOT NULL,"                                 +
                   "checksum VARCHAR(32) COLLATE utf8_unicode_ci NOT NULL,"           +
                   "link VARCHAR(75) COLLATE utf8_unicode_ci NOT NULL,"               +
+                  "is_active INT UNSIGNED NOT NULL,"                                 +
                   "threat_id int unsigned NOT NULL,"                                 +
                   "FOREIGN KEY (threat_id) REFERENCES threat (id),"		     +
                   "FOREIGN KEY (parser_id) REFERENCES parser (id) ON UPDATE CASCADE,"+

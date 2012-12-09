@@ -70,7 +70,7 @@ class Source(object):
     checksum = Unicode()
     threat_id = Int()
     parser_id = Int()
-
+    is_active = Int()
     threat = Reference(threat_id, Threat.id)
     parser =  Reference(parser_id, Parser.id)
 

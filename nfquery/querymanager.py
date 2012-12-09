@@ -202,19 +202,24 @@ class QueryManager:
                        # subscription = self.store.find(Subscription, Subscription.name == source_name).one()
                        # self.store.find(SubscriptionPacket, SubscriptionPacket.subscription_id == subscription.id).remove()
                        # self.store.find(Subscription, Subscription.name == source_name).remove()
-                        self.store.find( Source, 
-                                         Source.name == source.name 
-                                       ).remove()
-                        self.store.find( Parser, 
-                                         Parser.id == parser_id 
-                                       ).remove()
+                      
+                        source = self.store.find( Source,
+                                            Source.name == source.name
+                                           ).one()
+                        source.is_active = 0
+                       # source = self.store.find( Source, 
+                       #                  Source.name == source.name 
+                       #                ).remove()
+                       # self.store.find( Parser, 
+                       #                  Parser.id == parser_id 
+                       #                ).remove()
                         self.store.commit()
                         self.qmlogger.warning( 'Source %s is deleted' % 
                                                source_name )
                     else:
                         self.qmlogger.info('Not deleted any source.')
                     
-        dbsubscriptions = self.store.find(Subscription.name)
+        dbsubscriptions = self.store.find(Subscription.name, Subscription.type == 1)
         if not dbsubscriptions.count() == 0:
             subscription_list = []
             for subs in dbsubscriptions:
@@ -228,7 +233,7 @@ class QueryManager:
                         subscription_id = self.store.find(Subscription.id, Subscription.name == subscription_name).one()
                          
                         self.store.find(SubscriptionPacket, SubscriptionPacket.subscription_id == subscription_id).remove()
-                        print self.store.find(Subscription, Subscription.name == subscription_name).remove()
+                        self.store.find(Subscription, Subscription.name == subscription_name).remove()
                         self.store.commit()
                         self.qmlogger.warning( 'Subscription %s is deleted' % 
                                                   subscription_name )
@@ -276,6 +281,7 @@ class QueryManager:
                 source.link = unicode(self.sources[index].source_link)
                 source.threat_id = threat_id
                 source.parser_id = parser.id
+                source.is_active = 1
                 source.checksum = unicode(conf_checksum.hexdigest())
                 self.store.add(source)
                 # Commit changes
@@ -394,7 +400,7 @@ class QueryManager:
     
         # 1) Source Name
         subscription_type=1
-        source_name_list = self.store.find(Source.name)
+        source_name_list = self.store.find(Source.name, Source.is_active == 1)
         source_name_list.group_by(Source.name)
         for source_name in source_name_list:
             subscription = self.store.find( Subscription.id, 
