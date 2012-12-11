@@ -44,6 +44,8 @@
 		$opts['subscriptionName'] = $subscriptionName;
 		$out_list = nfsend_query($command, $opts);
 		echo '<div class="alert alert-info">';
+		echo "Sources: ".implode(",", $out_list["sources"])."</br>";
+		echo "Time Interval: ".date("Y/m/d H:i:s", $out_list["start_time"])." - ".date("Y/m/d H:i:s", $out_list["end_time"])."</br>";
 		echo '<table class="table">';
 		echo '<tr><th>#</th><th>Matched</th><th>Total</th><th>Percent</th></tr>';
 
@@ -286,7 +288,7 @@
 			}else{
 				$result = $result.'<td>'.'<a class="btn btn-small pull-right showStatistics"  id="'.$subs.'Output" disabled="disabled" >Show Statistics</a>'.'</td>';
 			}
-			
+		    	
 			$result = $result."</tr>";
 			$result = $result.'</table>';
 			$result = $result.'</div>';

@@ -250,6 +250,7 @@ sub checkQueries{
 		push @{$args{'subscriptions'}}, $subscription;
         my %states = &checkPidStatesOfSubscription($subscription);
         @args{keys %states} = values %states;
+
 	}
 		
 
@@ -381,17 +382,18 @@ sub parseOutputFile{
                 $A = $dst_plugin_id;
             }
 
-            $table{'A'} = $A;
-            $table{'B'} = $B;
 
             #Checks for determine alert type (multi/single)
             if ($A == $current_plugin_id){
                 if ($B == $current_plugin_id){
                     #single domain alert
+                    $table{'A'} = $A;
                     $table{'alert_type'} = 1;
                 }else{
                     if ($B && ($B != $current_plugin_id)){
                         #multi domain alert
+                        $table{'A'} = $A;
+                        $table{'B'} = $B;
                         $table{'alert_type'} = 2;
                     }
                 }
@@ -399,7 +401,9 @@ sub parseOutputFile{
                 if ($B == $current_plugin_id){
                     if ($A && ($A != $current_plugin_id)){
                         #multi domain alert
-                        $table{'alert_type'} = 3;
+                        $table{'A'} = $A;
+                        $table{'B'} = $B;
+                        $table{'alert_type'} = 2;
                     }
                 }
             }
@@ -550,6 +554,18 @@ sub getStatisticsOfSubscription{
     my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
 
 	my $queries = $stats->{$subscriptionName};
+
+
+    my @temp = @{$running_subscriptions->{$subscriptionName}{'sources'}};
+    my @sources;
+
+    foreach my $source (@temp){
+        push @sources, $source;
+    }
+
+    $args{"sources"} = \@sources;
+    $args{"start_time"} = $running_subscriptions->{$subscriptionName}{'start_time'};
+    $args{"end_time"} = $running_subscriptions->{$subscriptionName}{'end_time'};
 
 	foreach my $query_id ( keys %$queries ){
 		my %fields = %{$queries->{$query_id}};
@@ -835,6 +851,7 @@ sub runQueries{
 
         syslog('debug', "INITIALIZING $subscription_name");
         $running_subscriptions->{$subscription_name} = {};
+        $running_subscriptions->{$subscription_name}{'sources'} = \@source;
         $running_subscriptions->{$subscription_name}{'start_time'} = $start_time;
         $running_subscriptions->{$subscription_name}{'end_time'} = $end_time;
         $running_subscriptions->{$subscription_name}{'mandatory'} = {};
