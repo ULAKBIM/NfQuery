@@ -32,6 +32,8 @@ from storm.locals import *
 from utils import *
 from datetime import datetime
 from termcolor import colored
+from netaddr import *
+import time
 
 __all__ = ['QueryGenerator']
 
@@ -237,6 +239,19 @@ class QueryGenerator:
             self.query_type += ',' + str(type_)
 
 
+
+    def insertAlert(self, alert_info):
+        alert_ = Alert()
+        alert.identified_plugin_id = alert_info['identified_plugin_id']
+        alert.start_time = alert_info["timewindow_start"]
+        alert.end_time = alert_info["timewindow_end"]
+        alert.first_seen = alert_info["timestamp"]
+        alert.checksum = alert_info['checksum']
+        alert.query_id = alert_info['query_id']
+        alert.alert_type = alert_info['alert_type']
+        self.store.add(alert)
+
+
     def insertQuery(self, source_id, date, expr, category=1, query_id=None):
         '''
            Insert/Update query.
@@ -297,6 +312,64 @@ class QueryGenerator:
                 its type will be '0,3' in query table.
             '''
             self.query_type = ''
+             
+            plugins = self.store.find(Plugin)
+            if 'src_ip' and 'dst_ip' in expr.keys():
+                src_ip = expr['src_ip']
+                dst_ip = expr['dst_ip']
+                for plugin in list(plugins):
+                    if IPAddress(src_ip) and IPAddress(dst_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                        md5hash = hashlib.md5()
+                        md5hash.update(str(src_ip) + str(dst_ip))
+                        checksum = md5hash.hexdigest()       
+                        alert = self.store.find(Alert, alert.checksum == checksum, 
+                                                Alert.identified_plugin_id == int(plugin.id), 
+                                                Alert.query_id == int(query.id)).one()
+                        if alert is None:
+                            time_ int(time.time())
+                            alert_info = {'identified_plugin_id' : int(plugin.id),
+                                          'timewindow_start' : time_, 'timewindow_end' : time_,
+                                          'timestamp' : time_, 'checksum' : checksum,
+                                          'query_id' : int(query.id), 'alert_type': 1}
+                            self.insertAlert(alert_info)
+
+            if 'src_ip' and  in expr.keys():
+                src_ip = expr['src_ip']
+                for plugin in list(plugins):
+                    if IPAddress(src_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                        md5hash = hashlib.md5()
+                        md5hash.update(str(src_ip))
+                        checksum = md5hash.hexdigest()       
+                        alert = self.store.find(Alert, alert.checksum == checksum, 
+                                                Alert.identified_plugin_id == int(plugin.id), 
+                                                Alert.query_id == int(query.id)).one()
+                        if alert is None:
+                            time_ int(time.time())
+                            alert_info = {'identified_plugin_id' : int(plugin.id),
+                                          'timewindow_start' : time_, 'timewindow_end' : time_,
+                                          'timestamp' : time_, 'checksum' : checksum,
+                                          'query_id' : int(query.id), 'alert_type': 1}
+                            self.insertAlert(alert_info)
+
+            if 'dst_ip' and  in expr.keys():
+                src_ip = expr['dst_ip']
+                for plugin in list(plugins):
+                    if IPAddress(dst_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                        md5hash = hashlib.md5()
+                        md5hash.update(str(src_ip))
+                        checksum = md5hash.hexdigest()       
+                        alert = self.store.find(Alert, alert.checksum == checksum, 
+                                                Alert.identified_plugin_id == int(plugin.id), 
+                                                Alert.query_id == int(query.id)).one()
+                        if alert is None:
+                            time_ int(time.time())
+                            alert_info = {'identified_plugin_id' : int(plugin.id),
+                                          'timewindow_start' : time_, 'timewindow_end' : time_,
+                                          'timestamp' : time_, 'checksum' : checksum,
+                                          'query_id' : int(query.id), 'alert_type': 1}
+                            self.insertAlert(alert_info)
+
+
             for filter in expr.keys():
                 try:
                     # src_ip

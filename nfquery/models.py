@@ -357,6 +357,7 @@ class Alert(object):
   
     id = Int(primary=True)
     #alert_id = Int()
+    alert_type = Int()
     query_id = Int()
     identified_plugin_id = Int()
     identifier_plugin_id = Int()

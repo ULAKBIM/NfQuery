@@ -71,12 +71,12 @@ Installation and Running
      Add Plugins
      -----------
          Defined in configuration file to add plugins to Query Server, run following command:
-         $nfqueryd --reconfig plugins
+             $nfqueryd --reconfig plugins
 
      Add Source
      ----------
          Defined in configuration file to add sources to Query Server, run following command:
-         $nfqueryd --reconfig sources
+             $nfqueryd --reconfig sources
 
      Run Query Server of NfQuery
      ---------------------------
@@ -86,7 +86,7 @@ Installation and Running
      ----------------------------------------
          $nfqueryd --conf configuration_file_path --start
 
-    Display output in console while running
-    ---------------------------------------
+     Display output in console while running
+     ---------------------------------------
         $nfqueryd --console --start
 
