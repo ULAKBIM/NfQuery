@@ -679,6 +679,7 @@ class QueryManager:
        alert.first_seen = alert_info["timestamp"]
        alert.checksum = alert_info['checksum']
        alert.query_id = alert_info['query_id']
+       alert.alert_type = alert_info['alert_type']
        self.store.add(alert)
        statistic = Statistics()
        statistic.start_time = alert_info["timewindow_start"]
@@ -698,8 +699,8 @@ class QueryManager:
         for query_id, query_list in query_id_list.items():
             if query_list.has_key("alerts"):
                 for hash_key, row_data in query_list["alerts"].items():
-                    if 'srcip_alert_plugin' and 'dstip_alert_plugin' in row_data.keys():
-                        plugin_id_list = [row_data['srcip_alert_plugin'],row_data['dstip_alert_plugin']]
+                    if row_data['alert_type'] == 2:
+                        plugin_id_list = [row_data['A'],row_data['B']]
                         for id in plugin_id_list:
                             alert = self.store.find( Alert,
                                 Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
@@ -711,7 +712,23 @@ class QueryManager:
                                               'timewindow_start' : int(start_time), 'timewindow_end' : int(end_time), 
                                               'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                               'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
-                                              'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id)}
+                                              'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id), 'alert_type': row_data['alert_type']}
+                                self.insertAlert(alert_info)        
+                    
+                    if row_data['alert_type'] == 1:
+                        plugin_id_list = [row_data['A']]
+                        for id in plugin_id_list:
+                            alert = self.store.find( Alert,
+                                Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
+                                Alert.identified_plugin_id == int(id),
+                                Alert.query_id == int(query_id)).one()
+                            
+                            if alert is None:
+                                alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(id), 
+                                              'timewindow_start' : int(start_time), 'timewindow_end' : int(end_time), 
+                                              'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
+                                              'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
+                                              'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id), 'alert_type': row_data['alert_type']}
                                 self.insertAlert(alert_info)        
               
 
