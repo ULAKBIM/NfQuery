@@ -298,7 +298,8 @@ sub parseOutputFile{
     my $fh = shift;
     my $subscription_name = shift;
     my $query_id = shift;
-   
+  
+    my $current_plugin_id = &ipInPrefixes($plugin_ip);
     my @output;
 	my $summary;
     my %temp_stats;    
@@ -370,6 +371,26 @@ sub parseOutputFile{
 			if ($dst_plugin_id){
 				$table{'dstip_alert_plugin'} = $dst_plugin_id; 
 			}
+            
+            #Checks for determine alert type (multi/single)
+            if ($src_plugin_id == $current_plugin_id){
+                if ($dst_plugin_id == $current_plugin_id){
+                    #single domain alert
+                    $table{'alert_type'} = 1;
+                }else{
+                    if ($dst_plugin_id && ($dst_plugin_id != $current_plugin_id)){
+                        #multi domain alert
+                        $table{'alert_type'} = 2;
+                    }
+                }
+            }else{
+                if ($dst_plugin_id == $current_plugin_id){
+                    if ($src_plugin_id && ($src_plugin_id != $current_plugin_id)){
+                        #multi domain alert
+                        $table{'alert_type'} = 3;
+                    }
+                }
+            }
 
             $table{'hash'} = &fiveTupleHash($srcip_port[0], $srcip_port[1], 
                     $dstip_port[0], $dstip_port[1], $table{'proto'});
@@ -649,7 +670,7 @@ sub findAlertsInOutputOfQuery{
     foreach my $ref (@outputOfQuery){
         syslog('debug', "ORADA");
         my %table = %{$ref};
-        if ($table{'srcip_alert_plugin'} && $table{'dstip_alert_plugin'}){
+        if ($table{'alert_type'}){
             $alerts{$query_id}{'alerts'}{$table{'hash'}} = \%table;
         }
     }            
