@@ -300,6 +300,8 @@ sub parseOutputFile{
     my $query_id = shift;
   
     my $current_plugin_id = &ipInPrefixes($plugin_ip);
+    my $filter = &getFilter($query_id);
+
     my @output;
 	my $summary;
     my %temp_stats;    
@@ -361,37 +363,47 @@ sub parseOutputFile{
 			$table{'srcip_port'} = $vars[5];
 			@srcip_port = split(':', $table{'srcip_port'});
 			$src_plugin_id = &ipInPrefixes($srcip_port[0]);	
-			if ($src_plugin_id){
-				$table{'srcip_alert_plugin'} = $src_plugin_id;
-			}
 
 			$table{'dstip_port'} = $vars[8];
 			@dstip_port = split(':', $table{'dstip_port'});
 			$dst_plugin_id = &ipInPrefixes($dstip_port[0]);
-			if ($dst_plugin_id){
-				$table{'dstip_alert_plugin'} = $dst_plugin_id; 
-			}
-            
+           
+            my $A = 0;
+            my $B = 0;
+
+
+            if ($filter =~ /src ip/ && $filter =~ /dst ip/){
+                $A = $src_plugin_id;
+                $B = $dst_plugin_id;
+            }elsif($filter =~ /src ip/){
+                $A = $src_plugin_id;
+            }elsif($filter =~ /dst ip/){
+                $A = $dst_plugin_id;
+            }
+
+            $table{'A'} = $A;
+            $table{'B'} = $B;
+
             #Checks for determine alert type (multi/single)
-            if ($src_plugin_id == $current_plugin_id){
-                if ($dst_plugin_id == $current_plugin_id){
+            if ($A == $current_plugin_id){
+                if ($B == $current_plugin_id){
                     #single domain alert
                     $table{'alert_type'} = 1;
                 }else{
-                    if ($dst_plugin_id && ($dst_plugin_id != $current_plugin_id)){
+                    if ($B && ($B != $current_plugin_id)){
                         #multi domain alert
                         $table{'alert_type'} = 2;
                     }
                 }
             }else{
-                if ($dst_plugin_id == $current_plugin_id){
-                    if ($src_plugin_id && ($src_plugin_id != $current_plugin_id)){
+                if ($B == $current_plugin_id){
+                    if ($A && ($A != $current_plugin_id)){
                         #multi domain alert
                         $table{'alert_type'} = 3;
                     }
                 }
             }
-
+            
             $table{'hash'} = &fiveTupleHash($srcip_port[0], $srcip_port[1], 
                     $dstip_port[0], $dstip_port[1], $table{'proto'});
 			$table{'packets'} = $vars[9];
