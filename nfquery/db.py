@@ -76,7 +76,7 @@ def initialize_db(store):
   		"prefix_id int(10) unsigned NOT NULL,"                               +
   		"plugin_ip varchar(20) COLLATE utf8_unicode_ci NOT NULL,"            +
   		"checksum varchar(32) COLLATE utf8_unicode_ci NOT NULL,"             +
-  		"registered INT NOT NULL,"                                    +
+  		"registered INT NOT NULL,"                                           +
   		"PRIMARY KEY (id),"                                                  +
   		"UNIQUE KEY plugin_ip (plugin_ip),"                                  +
   		"KEY prefix_id (prefix_id),"                                         +
@@ -102,7 +102,7 @@ def initialize_db(store):
                   "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
                   "type VARCHAR(20) COLLATE utf8_unicode_ci NOT NULL,"               +
                   "UNIQUE KEY type (type),"                                          + 
-                  "PRIMARY KEY (id)"                                                +
+                  "PRIMARY KEY (id)"                                                 +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
 
@@ -117,7 +117,7 @@ def initialize_db(store):
                   "threat_id int unsigned NOT NULL,"                                 +
                   "FOREIGN KEY (threat_id) REFERENCES threat (id),"		     +
                   "FOREIGN KEY (parser_id) REFERENCES parser (id) ON UPDATE CASCADE,"+
-                  "PRIMARY KEY (id)"                                                +
+                  "PRIMARY KEY (id)"                                                 +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"
                  )
 
@@ -139,12 +139,13 @@ def initialize_db(store):
     store.execute(
 		  "CREATE TABLE alert ("					     +
   		  "id int(10) unsigned NOT NULL AUTO_INCREMENT,"                     +
+  		  "alert_type int(10) unsigned NOT NULL,"                              +
   		  "query_id int(10) unsigned NOT NULL,"                              +
   		  "identified_plugin_id int(10) unsigned NOT NULL,"                  +
-  		  "identifier_plugin_id int(10) unsigned NOT NULL,"                  +
+  		  "identifier_plugin_id int(10) unsigned,"                           +
   		  "start_time int(11) unsigned NOT NULL,"                            +
   		  "end_time int(11) unsigned NOT NULL,"                              +
-  		  "first_seen int(11) unsigned NOT NULL,"                              +
+  		  "first_seen int(11) unsigned NOT NULL,"                            +
   		  "checksum varchar(32) COLLATE utf8_unicode_ci NOT NULL,"           +
   		  "PRIMARY KEY (id),"                                                +
   		  "FOREIGN KEY (identified_plugin_id) REFERENCES plugin(id) ON DELETE CASCADE,"     +

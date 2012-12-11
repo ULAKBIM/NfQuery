@@ -587,9 +587,7 @@ class QueryManager:
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         subscription_list = self.store.find((Subscription.id, Subscription.name))
         self.qmlogger.debug('Returning subscription list')
-            
-        return dict(subscription_list)
-  
+        return dict(subscription_list)  
 
     def getStatistics(self, alert_id):
         statistic = self.store.find(Statistics, Statistics.alert_id == int(alert_id)).one()
