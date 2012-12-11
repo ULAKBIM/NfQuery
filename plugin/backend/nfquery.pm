@@ -382,17 +382,18 @@ sub parseOutputFile{
                 $A = $dst_plugin_id;
             }
 
-            $table{'A'} = $A;
-            $table{'B'} = $B;
 
             #Checks for determine alert type (multi/single)
             if ($A == $current_plugin_id){
                 if ($B == $current_plugin_id){
                     #single domain alert
+                    $table{'A'} = $A;
                     $table{'alert_type'} = 1;
                 }else{
                     if ($B && ($B != $current_plugin_id)){
                         #multi domain alert
+                        $table{'A'} = $A;
+                        $table{'B'} = $B;
                         $table{'alert_type'} = 2;
                     }
                 }
@@ -400,7 +401,9 @@ sub parseOutputFile{
                 if ($B == $current_plugin_id){
                     if ($A && ($A != $current_plugin_id)){
                         #multi domain alert
-                        $table{'alert_type'} = 3;
+                        $table{'A'} = $A;
+                        $table{'B'} = $B;
+                        $table{'alert_type'} = 2;
                     }
                 }
             }
