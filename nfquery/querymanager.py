@@ -634,7 +634,7 @@ class QueryManager:
             critic_alert['checksum'] = alert.checksum
             critic_alert['source_name'] = alert.query.source.name
             critic_alert['identified_plugin_name'] = alert.identified_plugin.organization
-            alerts['critical_alerts'].append(critic_alerts)
+            alerts['critical_alerts'].append(critic_alert)
 
 
         # get single-domain alert         
@@ -652,7 +652,7 @@ class QueryManager:
             single_domain_alert['identified_plugin_name'] = alert.identified_plugin.organization
             single_domain_alert['identifier_plugin_name'] = alert.identifier_plugin.organization
             single_domain_alert["statistic"] = self.getStatistics(alert.id)
-            alerts['single_domain_alerts'].append(single_domain_alerts)
+            alerts['single_domain_alerts'].append(single_domain_alert)
 
 
         # get multi-domain alert         
@@ -670,7 +670,7 @@ class QueryManager:
             multi_domain_alert['identified_plugin_name'] = alert.identified_plugin.organization
             multi_domain_alert['identifier_plugin_name'] = alert.identifier_plugin.organization
             multi_domain_alert["statistic"] = self.getStatistics(alert.id)
-            alerts['multi_domain_alerts'].append(single_domain_alerts)
+            alerts['multi_domain_alerts'].append(multi_domain_alert)
 
 
 #        #Identifier
