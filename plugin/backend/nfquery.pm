@@ -384,7 +384,6 @@ sub parseOutputFile{
                 $B = $src_plugin_id;
             }
 
-
             #Checks for determine alert type (multi/single)
             if ($A == $current_plugin_id){
                 if ($B == $current_plugin_id){
