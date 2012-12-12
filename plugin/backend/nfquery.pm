@@ -662,7 +662,7 @@ sub getOutputOfQuery{
 	}	
 	
 
-	my ($outputOfQuery, $stats) = &parseOutputOfPid($pid, $subscriptionName);
+	my ($outputOfQuery, $stats) = &parseOutputOfPid($pid, $subscriptionName, $query_id);
 	my $json = encode_json $outputOfQuery;
 	%args = &divideJsonToParts($json);	
 	
@@ -898,9 +898,7 @@ sub runQueries{
 sub getFilter{
 	my $query_id = shift;
     my $result = $rpc->call($uri,'get_query_filter',[$query_id]);
-	syslog('debug', 'Response. - GETFILTER');
 	my $r = $result->result;
-	syslog('debug',$r);
 	return $r;
 
 }
