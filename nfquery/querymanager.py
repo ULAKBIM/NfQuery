@@ -623,51 +623,64 @@ class QueryManager:
         alerts = {}
         alert_list = ''
 
-        #Identifier
-        alert_list = self.store.find( Alert, Alert.identifier_plugin_id == plugin_id )
-        alerts['identifier'] = []
-        for alert in alert_list:
-            identifier = {}
-            identifier['alert_id'] = alert.id
-            identifier["identified_plugin_name"] = alert.identified_plugin.organization
-            identifier["identifier_plugin_name"] = alert.identifier_plugin.organization
-            identifier["identified_plugin_id"] = alert.identified_plugin.id
-            identifier["identifier_plugin_id"] = alert.identifier_plugin.id
-            identifier["first_seen"] = alert.first_seen
-            identifier["checksum"] = alert.checksum
-            identifier["query_id"] = alert.query.id
-            identifier["start_time"] = alert.start_time
-            identifier["end_time"] = alert.end_time
-            identifier["query_category"] = alert.query.category.category
-            identifier["query_filter"] = self.getFilter(alert.query.id)
-            identifier["statistic"] = self.getStatistics(alert.id)
-            
-            alerts['identifier'].append(identifier)
-        print list(alert_list)
-
-        #Identified
-        alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id, Alert.identifier_plugin_id != Alert.identified_plugin_id )
-        alerts['identified'] = []
-        for alert in alert_list:
-            identified = {}
-            identified['alert_id'] = alert.id
-            identified["identified_plugin_name"] = alert.identified_plugin.organization
-            identified["identifier_plugin_name"] = alert.identifier_plugin.organization
-            identified["identified_plugin_id"] = alert.identified_plugin.id
-            identified["identifier_plugin_id"] = alert.identifier_plugin.id
-            identified["first_seen"] = alert.first_seen
-            identified["checksum"] = alert.checksum
-            identified["query_id"] = alert.query.id
-            identified["start_time"] = alert.start_time
-            identified["end_time"] = alert.end_time
-            identified["query_category"] = alert.query.category.category
-            identified["query_filter"] = self.getFilter(alert.query.id)
-            identified["statistic"] = self.getStatistics(alert.id)
-            alerts['identified'].append(identified)
-        print list(alerts)
+        # get critical alert         
+        critical_alerts = list(self.store.find(Alert, Alert.alert_type == 0, Alert.identified_plugin_id == plugin_id))
+        alerts['critical_alerts'] = []
+        for alert in critical_alerts:
+            critic_alerts = {}
+            critical_alerts['query_id'] = alert.query_id
+            critical_alerts['query_filter'] = self.getFilter(alert.query_id)
+            critical_alerts['query_category'] = alert.query.category.category
+            critical_alerts['checksum'] = alert.checksum
+            critical_alerts['source_name'] = alert.query.source.name
+            alerts['critical_alerts'].append(critical_alerts)
 
 
-        return alerts
+#        #Identifier
+#        alert_list = self.store.find( Alert, Alert.identifier_plugin_id == plugin_id )
+#        alerts['identifier'] = []
+#        for alert in alert_list:
+#            identifier = {}
+#            identifier['alert_id'] = alert.id
+#            identifier["identified_plugin_name"] = alert.identified_plugin.organization
+#            identifier["identifier_plugin_name"] = alert.identifier_plugin.organization
+#            identifier["identified_plugin_id"] = alert.identified_plugin.id
+#            identifier["identifier_plugin_id"] = alert.identifier_plugin.id
+#            identifier["first_seen"] = alert.first_seen
+#            identifier["checksum"] = alert.checksum
+#            identifier["query_id"] = alert.query.id
+#            identifier["start_time"] = alert.start_time
+#            identifier["end_time"] = alert.end_time
+#            identifier["query_category"] = alert.query.category.category
+#            identifier["query_filter"] = self.getFilter(alert.query.id)
+#            identifier["statistic"] = self.getStatistics(alert.id)
+#            
+#            alerts['identifier'].append(identifier)
+#        print list(alert_list)
+#
+#        #Identified
+#        alert_list = self.store.find( Alert, Alert.identified_plugin_id == plugin_id, Alert.identifier_plugin_id != Alert.identified_plugin_id )
+#        alerts['identified'] = []
+#        for alert in alert_list:
+#            identified = {}
+#            identified['alert_id'] = alert.id
+#            identified["identified_plugin_name"] = alert.identified_plugin.organization
+#            identified["identifier_plugin_name"] = alert.identifier_plugin.organization
+#            identified["identified_plugin_id"] = alert.identified_plugin.id
+#            identified["identifier_plugin_id"] = alert.identifier_plugin.id
+#            identified["first_seen"] = alert.first_seen
+#            identified["checksum"] = alert.checksum
+#            identified["query_id"] = alert.query.id
+#            identified["start_time"] = alert.start_time
+#            identified["end_time"] = alert.end_time
+#            identified["query_category"] = alert.query.category.category
+#            identified["query_filter"] = self.getFilter(alert.query.id)
+#            identified["statistic"] = self.getStatistics(alert.id)
+#            alerts['identified'].append(identified)
+#        print list(alerts)
+#
+#
+#        return alerts
 
 
     def insertAlert(self, alert_info):
