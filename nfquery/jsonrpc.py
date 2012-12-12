@@ -189,6 +189,12 @@ class jsonRPCServer(jsonrpc.JSONRPC):
             prefix_list[plugin.id] = plugin.prefix.prefix
         print prefix_list
         return prefix_list
+
+
+    def jsonrpc_get_plugin_id(self, ip_address):
+        self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.rpclogger.debug('getting plugin id of ip address')
+        return self.queryManager.getPluginId(ip_address)
  
     def jsonrpc_get_prefixes(self, ip_address):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
