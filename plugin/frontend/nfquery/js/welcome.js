@@ -133,7 +133,6 @@ $(document).ready(function() {
         $("#queryid").val($(this).attr('queryid'));
         $("#starttime").val($(this).attr('starttime'));
         $("#endtime").val($(this).attr('endtime'));
-        $("#identifier").val($(this).attr('identifier'));
         $("#navigationForm").submit();
 
     });

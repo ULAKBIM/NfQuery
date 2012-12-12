@@ -40,7 +40,7 @@
 	overflow: auto;
 }
 
-.identifier_alerts, .identified_alerts, .verification_output{
+.critical_alerts, .multi_domain_alerts, .single_domain_alerts, .verification_output{
 	max-height: 400px;
 	min-height: 400px;
 	overflow: auto;

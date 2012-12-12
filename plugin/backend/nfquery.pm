@@ -756,7 +756,6 @@ sub runVerificationQueries{
 	my $nfdump_args = $$opts{'args'};
 	my $query = $$opts{'query'};
 	my $query_id = $$opts{'query_id'};
-	my $identifier = $$opts{'identifier'};
 
 	my $strSource = join(':', @source);
 	$profile = substr $profile, 2;
@@ -764,36 +763,18 @@ sub runVerificationQueries{
 	#Find path to the nfdump and flow files.
 	my $nfdump = "$NfConf::PREFIX/nfdump";
 	my $flowFiles = "$NfConf::PROFILEDATADIR/$profile/$strSource";
-
-
-    #Run verification query with ip filter and without ip filter.
-    my $identifier_prefix = $prefixes{$identifier}; 
-    my $verification_query = "$query and src net $identifier_prefix";
-    
-    
-    my $verification_command_with_ip = "$nfdump -M $flowFiles $nfdump_args '$verification_query'";
     my $verification_command = "$nfdump -M $flowFiles $nfdump_args '$query'";
      
-    syslog('debug', "$verification_command_with_ip"); 
     my %output;
     
-    $output{'verification_command_with_ip'} = $verification_command_with_ip;
     $output{'verification_command'} = $verification_command;
-
-    open my $fh, "$verification_command_with_ip |";
-    my ($output_ref, $stat_ref) = &parseOutputFile($fh);
-    &pushOutputToQueryServer('', $query_id, $output_ref,  $stat_ref);
-    $output{'output1'} = $output_ref;
-    $output{'stats1'} = $stat_ref;
 
     open my $fh, "$verification_command |";
     my ($output_ref, $stat_ref) = &parseOutputFile($fh);
     &pushOutputToQueryServer('', $query_id, $output_ref, $stat_ref);
-    $output{'output2'} = $output_ref;
-    $output{'stats2'} = $stat_ref;
+    $output{'output'} = $output_ref;
+    $output{'stats'} = $stat_ref;
     
-     
-    syslog('debug', "$output{'output1'}"); 
 	my $json = encode_json \%output;
 	%args = &divideJsonToParts($json);	
      
