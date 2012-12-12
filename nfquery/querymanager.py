@@ -628,12 +628,14 @@ class QueryManager:
         alerts['critical_alerts'] = []
         for alert in critical_alerts:
             critic_alerts = {}
-            critical_alerts['query_id'] = alert.query_id
-            critical_alerts['query_filter'] = self.getFilter(alert.query_id)
-            critical_alerts['query_category'] = alert.query.category.category
-            critical_alerts['checksum'] = alert.checksum
-            critical_alerts['source_name'] = alert.query.source.name
-            alerts['critical_alerts'].append(critical_alerts)
+            critic_alerts['query_id'] = alert.query_id
+            critic_alerts['query_filter'] = self.getFilter(alert.query_id)
+            critic_alerts['query_category'] = alert.query.category.category
+            critic_alerts['checksum'] = alert.checksum
+            critic_alerts['source_name'] = alert.query.source.name
+            alerts['critical_alerts'].append(critic_alerts)
+
+
 
 
 #        #Identifier
