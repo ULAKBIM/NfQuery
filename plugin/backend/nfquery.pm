@@ -771,7 +771,7 @@ sub runVerificationQueries{
     $output{'verification_command'} = $verification_command;
 
     open my $fh, "$verification_command |";
-    my ($output_ref, $stat_ref) = &parseOutputFile($fh);
+    my ($output_ref, $stat_ref) = &parseOutputFile($fh, '', $query_id);
     &pushOutputToQueryServer('', $query_id, $output_ref, $stat_ref);
     $output{'output'} = $output_ref;
     $output{'stats'} = $stat_ref;
