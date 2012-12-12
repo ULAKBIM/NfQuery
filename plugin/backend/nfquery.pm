@@ -300,7 +300,7 @@ sub parseOutputFile{
     my $subscription_name = shift;
     my $query_id = shift;
   
-    my $current_plugin_id = &ipInPrefixes($plugin_ip);
+    my $current_plugin_id = &getPluginId($plugin_ip);
     my $filter = &getFilter($query_id);
 
     my @output;
@@ -908,6 +908,13 @@ sub getPrefixes{
 	syslog('debug', 'Response. - GETPREFIXES');
 	my $r = $result->result;
 	return %{$r};
+}
+
+sub getPluginId{
+    my $plugin_ip = shift;
+    my $result = $rpc->call($uri,'get_plugin_id',[$plugin_ip]);
+	my $r = $result->result;
+	return $r;
 }
 
 sub getSubscriptions{
