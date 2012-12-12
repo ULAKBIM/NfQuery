@@ -59,6 +59,11 @@ Requirements
     You can install python-txJSON-RPC module by running following command:
         $ sudo easy_install txJSON-RPC 
 
+    Python netaddr Module
+    ---------------------
+    Packages of netaddr are available in Ubuntu and Debian as 'python-netaddr'.
+
+
 Installation and Running
 ------------------------
      After required python modules are installed you edited nfquery configuration file. Configuration file located at cfg/nfquery.conf. Configuration file contains the source, plugin, database informations.

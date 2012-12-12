@@ -717,7 +717,7 @@ class QueryManager:
 #        print list(alerts)
 #
 #
-#        return alerts
+        return alerts
 
 
     def insertAlert(self, alert_info):
