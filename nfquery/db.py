@@ -392,7 +392,8 @@ def insert_threats(store):
 
     #import logger
     from models import Threat
-    threat_list = ['Generic', 'Other', 'Botnet', 'Malware', 'Spam', 'Phishing', 'DNSBL', 'Worm', 'Honeypot' ]
+    #threat_list = ['Generic', 'Other', 'Botnet', 'Malware', 'Spam', 'Phishing', 'DNSBL', 'Worm', 'Honeypot' ]
+    threat_list = ['Botnet', 'Spam']
 
     for name in threat_list:
         threat = Threat()
