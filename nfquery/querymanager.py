@@ -670,7 +670,11 @@ class QueryManager:
             multi_domain_alert['identified_plugin_name'] = alert.identified_plugin.organization
             multi_domain_alert['identifier_plugin_name'] = alert.identifier_plugin.organization
             multi_domain_alert["statistic"] = self.getStatistics(alert.id)
+<<<<<<< HEAD
             alerts['multi_domain_alerts'].append(multi_domain_alert)
+=======
+            alerts['multi_domain_alerts'].append(single_domain_alert)
+>>>>>>> f69f1f56ce3575b490ca2a4b493528302560e2dd
 
 
 #        #Identifier
