@@ -378,8 +378,10 @@ sub parseOutputFile{
                 $B = $dst_plugin_id;
             }elsif($filter =~ /src ip/){
                 $A = $src_plugin_id;
+                $B = $dst_plugin_id;
             }elsif($filter =~ /dst ip/){
                 $A = $dst_plugin_id;
+                $B = $src_plugin_id;
             }
 
 
