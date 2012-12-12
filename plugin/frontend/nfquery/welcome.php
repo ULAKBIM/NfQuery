@@ -97,7 +97,7 @@
                 echo "<tr><td colspan=8><span class='label label-important'>There is no single domain alert.</span></td></tr>";
             }else{
                 foreach($single_domain_alerts as $alert){
-                    echo "<tr class='error'>";
+                    echo "<tr>";
                     echo "<td>".$alert['query_id']."</td>";
                     echo "<td>".$alert['query_filter']."</td>";
                     echo "<td>".date("Y/m/d H:i:s", $alert['start_time'])." - ".date("Y/m/d H:i:s", $alert['end_time'])."</td>";
@@ -130,7 +130,7 @@
                 echo "<tr><td colspan=8><span class='label label-important'>There is no multi domain alert.</span></td></tr>";
             }else{
                 foreach($reported_alerts as $alert){
-                    echo "<tr class='error'>";
+                    echo "<tr>";
                     echo "<td>".$alert['query_id']."</td>";
                     echo "<td>".$alert['query_filter']."</td>";
                     echo "<td><span class='label label-warning'>".$alert['identifier_plugin_name']."</span></td>";
