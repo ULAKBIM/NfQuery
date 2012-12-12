@@ -300,7 +300,7 @@ sub parseOutputFile{
     my $subscription_name = shift;
     my $query_id = shift;
   
-    my $current_plugin_id = &ipInPrefixes($plugin_ip);
+    my $current_plugin_id = &getPluginId($plugin_ip);
     my $filter = &getFilter($query_id);
 
     my @output;
@@ -383,7 +383,6 @@ sub parseOutputFile{
                 $A = $dst_plugin_id;
                 $B = $src_plugin_id;
             }
-
 
             #Checks for determine alert type (multi/single)
             if ($A == $current_plugin_id){
@@ -662,7 +661,7 @@ sub getOutputOfQuery{
 	}	
 	
 
-	my ($outputOfQuery, $stats) = &parseOutputOfPid($pid, $subscriptionName);
+	my ($outputOfQuery, $stats) = &parseOutputOfPid($pid, $subscriptionName, $query_id);
 	my $json = encode_json $outputOfQuery;
 	%args = &divideJsonToParts($json);	
 	
@@ -898,9 +897,7 @@ sub runQueries{
 sub getFilter{
 	my $query_id = shift;
     my $result = $rpc->call($uri,'get_query_filter',[$query_id]);
-	syslog('debug', 'Response. - GETFILTER');
 	my $r = $result->result;
-	syslog('debug',$r);
 	return $r;
 
 }
@@ -910,6 +907,13 @@ sub getPrefixes{
 	syslog('debug', 'Response. - GETPREFIXES');
 	my $r = $result->result;
 	return %{$r};
+}
+
+sub getPluginId{
+    my $plugin_ip = shift;
+    my $result = $rpc->call($uri,'get_plugin_id',[$plugin_ip]);
+	my $r = $result->result;
+	return $r;
 }
 
 sub getSubscriptions{
