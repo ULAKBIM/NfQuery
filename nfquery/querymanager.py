@@ -763,6 +763,7 @@ class QueryManager:
                                               'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                               'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
                                               'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id), 'alert_type': row_data['alert_type']}
+                                print alert_info
                                 self.insertAlert(alert_info)        
                     
                     if row_data['alert_type'] == 1:
