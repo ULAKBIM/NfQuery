@@ -773,7 +773,7 @@ class QueryManager:
             if query_list.has_key("alerts"):
                 for hash_key, row_data in query_list["alerts"].items():
                     if row_data['alert_type'] == 2:
-                        plugin_id_list = [row_data['A'],row_data['B']]
+                        plugin_id_list = [row_data['A']]
                         for id in plugin_id_list:
                             alert = self.store.find( Alert,
                                 Alert.checksum == hash_key, Alert.identifier_plugin_id == int(plugin_id),
@@ -781,7 +781,7 @@ class QueryManager:
                                 Alert.query_id == int(query_id)).one()
                             
                             if alert is None:
-                                alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(id), 
+                                alert_info = {'identifier_plugin_id' : plugin_id, 'identified_plugin_id' : int(row_data['B']), 
                                               'timewindow_start' : int(start_time), 'timewindow_end' : int(end_time), 
                                               'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                               'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
@@ -789,7 +789,7 @@ class QueryManager:
                                 print alert_info
                                 self.insertAlert(alert_info)        
                     
-                    if row_data['alert_type'] == 1:
+                    elif row_data['alert_type'] == 1:
                         plugin_id_list = [row_data['A']]
                         for id in plugin_id_list:
                             alert = self.store.find( Alert,
