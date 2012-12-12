@@ -378,8 +378,10 @@ sub parseOutputFile{
                 $B = $dst_plugin_id;
             }elsif($filter =~ /src ip/){
                 $A = $src_plugin_id;
+                $B = $dst_plugin_id;
             }elsif($filter =~ /dst ip/){
                 $A = $dst_plugin_id;
+                $B = $src_plugin_id;
             }
 
 
@@ -390,7 +392,7 @@ sub parseOutputFile{
                     $table{'A'} = $A;
                     $table{'alert_type'} = 1;
                 }else{
-                    if ($B && ($B != $current_plugin_id)){
+                    if (($B !=0) && ($B != $current_plugin_id)){
                         #multi domain alert
                         $table{'A'} = $A;
                         $table{'B'} = $B;
@@ -399,7 +401,7 @@ sub parseOutputFile{
                 }
             }else{
                 if ($B == $current_plugin_id){
-                    if ($A && ($A != $current_plugin_id)){
+                    if (($A != 0) && ($A != $current_plugin_id)){
                         #multi domain alert
                         $table{'A'} = $A;
                         $table{'B'} = $B;
