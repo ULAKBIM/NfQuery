@@ -549,7 +549,7 @@ class QueryManager:
         self.qmlogger.debug('subscription_name = %s' % name)
         pp = pprint.PrettyPrinter(indent=4)
         self.qmlogger.debug('Getting subscription %s' % name)
-        subscription_id = self.store.find(Subscription.id, Subscription.name == unicode(name)).one()
+        subscription_type, subscription_id = self.store.find((Subscription.type, Subscription.id), Subscription.name == unicode(name)).one()
         self.qmlogger.debug('subscription_id = %d' % subscription_id)
         if subscription_id:
             self.qmlogger.debug('y1')
@@ -580,11 +580,13 @@ class QueryManager:
                                          'filter' : query_filter,
                                          'category_name' : category.category,
                                          'source_name' : source.name,
-                                         'link' : source.link
+                                         'link' : source.link,
+                                         'subscription_type' : subscription_type
                                         }
                         index += 1
                     query_packet[qp_query_id] = packet
                 result[subscription_id] = query_packet
+                print result
                 self.qmlogger.debug('Returning details for subscription %s ' % name)
                 return result
         self.qmlogger.warning('Couldn\'t get details for subscription %s ' % name)
