@@ -36,6 +36,7 @@ function getSubscriptionDetail3(name){
 					filter = json[i][j][k]["filter"];
 					source_name = json[i][j][k]["source_name"];
 					source_link = json[i][j][k]["link"];
+					subscription_type = json[i][j][k]["subscription_type"];
 					r = r+1;
 					if(r<3){
 					     //$("#queries").attr("class","alert alert-info2");
@@ -46,8 +47,17 @@ function getSubscriptionDetail3(name){
 					    	$("#mandatory_table").append("<thead><tr><th>Query Id</th><th>Filter"+
 										"</th></tr></thead><tbody>");
 					     }
+                                             if(subscription_type == 1){
+		                                 var description = "Details Of " + name;
+                      			     }
+                         	             else{
+                             	                 var description = "This subscription includes queries that are related to "+ name  + " activity.";
+
+                         		     }
+                                             
+
 					     $("#subscription_desc").attr("class","alert alert-info");
-					     $("#subscription_desc").append("<h3 style='color:black;'><u><b>Details Of " +name+"</b></u></h3></br><h4><b>Source Name :  "+
+					     $("#subscription_desc").append("<h4 style='color:black;'><u><b>" + description + "</b></u></h4></br><h4><b>Source Name :  "+
 										source_name+"</b></h4></br><h4><b>Source Link"+"   :  <a href="+
 										source_link+">"+source_link+"</a></b></h4></br>");
 						
