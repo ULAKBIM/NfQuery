@@ -465,19 +465,17 @@
 
     }
 
-	function runVerificationQueries($query, $starttime, $endtime, $identifier, $query_id){
+	function runVerificationQueries($query, $starttime, $endtime, $query_id){
 		$opts = array();
 		$json = json_encode($queries);
 		$cargs = compileVerificationArgs($starttime, $endtime);
 
 		$opts['query'] = $query;
 		$opts['query_id'] = $query_id;
-		$opts['identifier'] = $identifier;
 		
 		foreach($cargs  as $key=>$value){
 			$opts[$key] = $value;
         }
-
 		$out_list = nfsend_query('nfquery::runVerificationQueries', $opts);
         
         $output = "";
