@@ -1,10 +1,27 @@
 <?php
-    if ($_POST['query'] && $_POST['starttime'] && $_POST['endtime'] && $_POST['queryid']){
-        $output = runVerificationQueries($_POST['query'], $_POST['starttime'], $_POST['endtime'], $_POST['queryid']);
+    if ($_POST['query'] && $_POST['queryid']){
+        if ($_POST['starttime'] && $_POST['endtime']){
+            #set tleft and tright session variables so we can see that time range at graphs.
+            $_SESSION['tleft'] = $_POST['starttime'];
+            $_SESSION['tright'] = $_POST['endtime'];
+        }
+        $_SESSION['nfquery']['query'] = $_POST['query'];
+        $_SESSION['nfquery']['queryid'] = $_POST['queryid'];
+        $output = runVerificationQueries($_POST['query'], $_SESSION['tleft'], $_SESSION['tright'], $_POST['queryid']);
+    }elseif($_SESSION['nfquery']['query'] && $_SESSION['nfquery']['queryid']){
+        $output = runVerificationQueries($_SESSION['nfquery']['query'], $_SESSION['tleft'], $_SESSION['tright'], $_SESSION['nfquery']['queryid']);
     }else{
         exit('<div class="alert alert-error">Check parameters !</div>');
     }
 ?>
+
+<div class="row-fluid">
+    <div class="span12">
+        <?php
+            DisplayDetails();
+        ?>
+    </div>
+</div>
 
 <script src="/nfsen/plugins/nfquery/js/running.js"></script>
 <div class="row-fluid">
