@@ -127,7 +127,7 @@
         </tr>
         <?php
             if (count($reported_alerts) == 0){
-                echo "<tr><td colspan=8><span class='label label-important'>There is no multi domain alert.</span></td></tr>";
+                echo "<tr><td colspan=8><span class='label label-important'>There is no reported alert.</span></td></tr>";
             }else{
                 foreach($reported_alerts as $alert){
                     echo "<tr>";
