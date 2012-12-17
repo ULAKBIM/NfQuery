@@ -49,13 +49,5 @@
 		</div>
 		-->
 	
-		<div id="subscription_desc">
-		</div>
-		<div id="show_queries">
-			<div id="mydiv">
-			</div>
-			<div id="queries">
-			</div>
-		</div>
 	</div>
 </div>

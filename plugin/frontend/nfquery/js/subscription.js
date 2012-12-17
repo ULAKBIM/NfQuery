@@ -17,7 +17,6 @@ function subscription_toggle(button){
 
 function getSubscriptionDetail3(name){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
-		var json = $.parseJSON(data);
 		$(".collapse").collapse();
                 $("#subscription_details").html(data);
   

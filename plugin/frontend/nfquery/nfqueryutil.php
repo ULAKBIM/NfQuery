@@ -509,7 +509,7 @@
 
         $squeries = array();
         foreach($subscriptions as $subscription){
-            $json = getSubscriptionDetail($subscription);
+            $json = getSubscriptionDetail($subscription, "old");
             $details = json_decode($json, true);
 
             foreach($details as $k1=>$v1){
