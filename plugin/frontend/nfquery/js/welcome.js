@@ -133,8 +133,17 @@ $(document).ready(function() {
         $("#queryid").val($(this).attr('queryid'));
         $("#starttime").val($(this).attr('starttime'));
         $("#endtime").val($(this).attr('endtime'));
-        $("#navigationForm").submit();
+        
+        //TODO
+        var mode = "0"; 
+        if ($(this).attr('starttime') != $(this).attr('endtime'))
+            mode = "1";
+        $("#mode").val(mode);
+        $("#time_left").val($(this).attr('starttime'));
+        $("#time_right").val($(this).attr('endtime'));
 
+        $("#navigationForm").submit();
+        
     });
 
 });
