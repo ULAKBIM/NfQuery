@@ -18,72 +18,10 @@ function subscription_toggle(button){
 function getSubscriptionDetail3(name){
 	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
 		var json = $.parseJSON(data);
-		var counter = 0;
-		$("#subscription_desc").empty();
-		$("#mydiv").empty();
-		$("#subscription_desc").attr("class","");
-		$("#mydiv").attr("class","");
-		$("#queries").attr("class","");
-		if($("#mandatory_table")!=null)
- 			$("#mandatory_table").empty();
-		for(i in json){
-			var r = 1;
-			for (j in json[i]){
-				for(k in json[i][j]){
-					category_name = json[i][j][k]["category_name"];
-					query_id = json[i][j][k]["query_id"];
-					query_type = json[i][j][k]["query_type"];
-					filter = json[i][j][k]["filter"];
-					source_name = json[i][j][k]["source_name"];
-					source_link = json[i][j][k]["link"];
-					subscription_type = json[i][j][k]["subscription_type"];
-					r = r+1;
-					if(r<3){
-					     //$("#queries").attr("class","alert alert-info2");
-					     if(category_name == "mandatory"){	
-						$("#queries").append("<table id='mandatory_table' class='table table-striped table-condensed'></table>");
-					     	$("#mandatory_table").append("<thead><tr class='accordion-heading'><th><h3>Mandatory</h3></th></tr></thead>");
-					     	$("#mydiv").append("<b><center><h3><i class='icon-chevron-down'></i> Queries</h3></center></b>");
-					    	$("#mandatory_table").append("<thead><tr><th>Query Id</th><th>Filter"+
-										"</th></tr></thead><tbody>");
-					     }
-                                             if(subscription_type == 1){
-		                                 var description = "Details Of " + name;
-                      			     }
-                         	             else{
-                             	                 var description = "This subscription includes queries that are related to "+ name  + " activity.";
-
-                         		     }
-                                             
-
-					     $("#subscription_desc").attr("class","alert alert-info");
-					     $("#subscription_desc").append("<h4 style='color:black;'><u><b>" + description + "</b></u></h4></br><h4><b>Source Name :  "+
-										source_name+"</b></h4></br><h4><b>Source Link"+"   :  <a href="+
-										source_link+">"+source_link+"</a></b></h4></br>");
-						
-						
-
-					}
-					if(category_name == "mandatory"){	
-					     $("#mydiv").attr("data-target","#queries");
-					     $("#mydiv").attr("data-toggle","collapse");
-					     $("#mydiv").attr("class","upDown accordion-heading");
-					     $("#queries").attr("class","collapse");
-					    var mandatory_table_row = "<tr class='mandatory_query'><td >"+query_id+"<td data-toggle='collapse'"+
-									"data-target='#optional"+j+"'><b>&darr; "+filter+"</b><div id='optional"+j+
-									"'class='collapse' ></td><td><span class='mandatory_query_popover badge badge-warning'>M</span></td></tr>";
-					    $("#mandatory_table").append(mandatory_table_row);
-						
-					}
-					if(category_name == "optional"){
-						$("#optional"+j).append("<span class='optional_query' style='margin-left:10px;border-radius: 3px 3px 3px 3px;'>&#176; "+
-									filter+"</span><span class='optional_query_popover badge badge-success'>O</span></br>");
-					}
-					//$("#queries").append("<span class='table'>"+query_id+" "+query_type+" "+filter+"</span></br>");
-				}
-			}
-		}
-		  $('.mandatory_query_popover').popover({
+		$(".collapse").collapse();
+                $("#subscription_details").html(data);
+  
+                $('.mandatory_query_popover').popover({
                 	title: "Mandatory Query",
                 	content: "Click Here to See Optional Queries Of This Mandatory Query"
         	  });
