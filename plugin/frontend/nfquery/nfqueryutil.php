@@ -472,6 +472,8 @@
 
 		$opts['query'] = $query;
 		$opts['query_id'] = $query_id;
+		$opts['start_time'] = $starttime;
+		$opts['end_time'] = $endtime;
 		
 		foreach($cargs  as $key=>$value){
 			$opts[$key] = $value;

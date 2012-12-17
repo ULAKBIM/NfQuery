@@ -712,14 +712,17 @@ sub pushOutputToQueryServer{
     my $query_id = shift;
     my $output_ref = shift;
     my $stats_ref = shift;
+    my $start_time = shift;
+    my $end_time = shift;
 
     my $running_subscriptions = DBM::Deep->new( "/tmp/running_subscriptions");
     my $stats = DBM::Deep->new( "/tmp/stats" );
     my %alerts;
     
-    my $start_time = $running_subscriptions->{$subscriptionName}{'start_time'};
-    my $end_time = $running_subscriptions->{$subscriptionName}{'end_time'};
-
+    if (!$start_time && !$end_time){
+         $start_time = $running_subscriptions->{$subscriptionName}{'start_time'};
+         $end_time = $running_subscriptions->{$subscriptionName}{'end_time'};
+    }
     my $alerts = &findAlertsInOutputOfQuery($subscriptionName, $query_id, $output_ref, $stats_ref);
 
 
@@ -757,6 +760,8 @@ sub runVerificationQueries{
 	my $nfdump_args = $$opts{'args'};
 	my $query = $$opts{'query'};
 	my $query_id = $$opts{'query_id'};
+	my $start_time = $$opts{'start_time'};
+	my $end_time = $$opts{'end_time'};
 
 	my $strSource = join(':', @source);
 	$profile = substr $profile, 2;
@@ -772,7 +777,7 @@ sub runVerificationQueries{
 
     open my $fh, "$verification_command |";
     my ($output_ref, $stat_ref) = &parseOutputFile($fh, '', $query_id);
-    &pushOutputToQueryServer('', $query_id, $output_ref, $stat_ref);
+    &pushOutputToQueryServer('', $query_id, $output_ref, $stat_ref, $start_time, $end_time);
     $output{'output'} = $output_ref;
     $output{'stats'} = $stat_ref;
     
