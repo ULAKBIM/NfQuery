@@ -1,5 +1,5 @@
 <?php
-    if ($_POST['query'] && $_POST['queryid']){
+    if (array_key_exists('query', $_POST) && array_key_exists('queryid', $_POST)){
         if ($_POST['starttime'] && $_POST['endtime']){
             #set tleft and tright session variables so we can see that time range at graphs.
             $_SESSION['tleft'] = $_POST['starttime'];

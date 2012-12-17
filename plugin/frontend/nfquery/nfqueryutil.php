@@ -468,7 +468,6 @@
 
 	function runVerificationQueries($query, $starttime, $endtime, $query_id){
 		$opts = array();
-		$json = json_encode($queries);
 		$cargs = compileVerificationArgs($starttime, $endtime);
 
 		$opts['query'] = $query;
