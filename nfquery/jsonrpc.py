@@ -173,10 +173,10 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         return subs
 
     
-    def jsonrpc_get_subscription(self, name):
+    def jsonrpc_get_subscription(self, name, method_call):
         self.rpclogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.rpclogger.debug('getting subscription information')
-        return self.queryManager.getSubscription(name)
+        return self.queryManager.getSubscription(name, method_call)
 
 
 

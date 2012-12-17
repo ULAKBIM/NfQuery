@@ -984,7 +984,7 @@ sub getSubscriptionDetail{
 
     syslog('debug', "$uri");
     syslog('debug', $$opts{'name'});
-    my $result = $rpc->call($uri,'get_subscription',[$$opts{'name'}]);
+    my $result = $rpc->call($uri,'get_subscription',[$$opts{'name'}, $$opts{'method_call'}]);
 
     my $r = $result->result;
     my %args;

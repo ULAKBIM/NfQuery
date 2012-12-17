@@ -544,7 +544,7 @@ class QueryManager:
     ###########################################################
     ### Subscription Releasing and Plugin Request Handling  ###
     ###########################################################
-    def getSubscription(self, name):
+    def getSubscription(self, name, method_call):
         if method_call == "new":
             subscription_type, subscription_id = self.store.find((Subscription.type, Subscription.id), Subscription.name == unicode(name)).one()
             if subscription_type == 2:
