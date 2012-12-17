@@ -315,10 +315,11 @@
 		return $subscriptions;
 	}
 	
-	function getSubscriptionDetail($name){
+	function getSubscriptionDetail($name, $method_call){
 		$command = 'nfquery::getSubscriptionDetail';
 		$opts = array();
 		$opts['name'] = $name;
+		$opts['method_call'] = $method_call;
 		$out_list = nfsend_query($command, $opts);
 		$subscriptiondetail = "";
 		for($i=0;$i<sizeof($out_list);$i++){
