@@ -545,6 +545,130 @@ class QueryManager:
     ### Subscription Releasing and Plugin Request Handling  ###
     ###########################################################
     def getSubscription(self, name):
+        if method_call == "new":
+            subscription_type, subscription_id = self.store.find((Subscription.type, Subscription.id), Subscription.name == unicode(name)).one()
+            if subscription_type == 2:
+                threat_id =  self.store.find(Threat.id, Threat.type == name).one()
+                source_list = self.store.find(Source, Source.threat_id == threat_id)
+                source_list = list(source_list)
+            elif subscription_type == 1:
+                source = self.store.find(Source, Source.name == name).one()
+                source_list = [source]
+
+            result = {}
+            result[subscription_type] = {}
+
+            for source in source_list:
+                result[subscription_type][source.name] = {}
+                mandatory_id = self.store.find(Category.id,Category.category == u'mandatory').one()
+                optional_id = self.store.find(Category.id,Category.category == u'optional').one()
+                mandatory_queires_list = self.store.find(Query, (Query.source_id == source.id, Query.category_id == mandatory_id))
+                mandatory_queires_list = list(mandatory_queires_list)
+                optional_queires_list = self.store.find(Query, (Query.source_id == source.id, Query.category_id == optional_id))
+                optional_queires_list = list(optional_queires_list)
+                subs_id_of_current_source = self.store.find(Subscription.id, Subscription.name == source.name).one()
+                qpacket_list = self.store.find(SubscriptionPacket.query_packet_id, SubscriptionPacket.subscription_id == subs_id_of_current_source)
+                result[subscription_type][source.name]['queries'] = {}
+                result[subscription_type][source.name]['source_name'] = str(source.name)
+                result[subscription_type][source.name]['source_link'] = str(source.link)
+                if not qpacket_list.is_empty():
+                    self.qmlogger.debug('y2')
+                    qp_query_id_list = self.store.find(QueryPacket.query_id, In(QueryPacket.id, list(qpacket_list)))
+                    query_packet = {}
+                    for qp_query_id in qp_query_id_list:
+                        # I've validation id, now let's get other ids and try to create the whole query_packet
+                        query_packet_ids = self.store.find(QueryPacket.query_id, QueryPacket.validation_id == qp_query_id)
+                        packet = {}
+                        index = 0
+                        for query_id in query_packet_ids:
+                            query = self.store.find(Query, Query.id == query_id).one()
+                            query_filter = self.QGenerator.createQueryFilter([query])
+                            if query.category_id == 1:
+                                query_packet_id = query.id
+                            query_type = self.store.find(Type.type, query.type_id == Type.id).one()
+                            source = self.store.find(Source, Source.id == query.source_id).one()
+                            category = self.store.find(Category,Category.id == query.category_id).one()
+                             #print query_type
+                            packet[index] = {
+                                              'query_id' : query.id,
+                                              'query_type' : query_type,
+                                              'category_id' : query.category_id,
+                                              'filter' : query_filter,
+                                              'category_name' : category.category,
+                                            #  'source_name' : source.name,
+                                              #'link' : source.link,
+                                             # 'subscription_type' : subscription_type
+
+                                             }
+                            index += 1
+                            query_packet[qp_query_id] = packet
+                        result[subscription_type][source.name]['queries'] = query_packet
+                        self.qmlogger.debug('Returning details for subscription %s ' % name)
+            print result
+            return result
+
+        else:
+            self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
+            self.qmlogger.debug('subscription_name = %s' % name)
+            pp = pprint.PrettyPrinter(indent=4)
+            self.qmlogger.debug('Getting subscription %s' % name)
+            subscription_type, subscription_id = self.store.find((Subscription.type, Subscription.id), Subscription.name == unicode(name)).one()
+            self.qmlogger.debug('subscription_id = %d' % subscription_id)
+            if subscription_id:
+                self.qmlogger.debug('y1')
+                qpacket_list = self.store.find(SubscriptionPacket.query_packet_id, SubscriptionPacket.subscription_id == subscription_id)
+                if not qpacket_list.is_empty():
+                    result = {}
+                    self.qmlogger.debug('y2')
+                    qp_query_id_list = self.store.find(QueryPacket.query_id, In(QueryPacket.id, list(qpacket_list)))
+                    query_packet = {}
+                    for qp_query_id in qp_query_id_list:
+                        # I've validation id, now let's get other ids and try to create the whole query_packet
+                        query_packet_ids = self.store.find(QueryPacket.query_id, QueryPacket.validation_id == qp_query_id)
+                        packet = {}
+                        index = 0
+                        for query_id in query_packet_ids:
+                            query = self.store.find(Query, Query.id == query_id).one()
+                            query_filter = self.QGenerator.createQueryFilter([query])
+                            if query.category_id == 1:
+                                query_packet_id = query.id
+                            query_type = self.store.find(Type.type, query.type_id == Type.id).one()
+                            source = self.store.find(Source, Source.id == query.source_id).one()
+                            category = self.store.find(Category,Category.id == query.category_id).one()
+                            #print query_type
+                            packet[index] = {
+                                             'query_id' : query.id,
+                                             'query_type' : query_type,
+                                             'category_id' : query.category_id,
+                                             'filter' : query_filter,
+                                             'category_name' : category.category,
+                                             'source_name' : source.name,
+                                             'link' : source.link,
+                                             'subscription_type' : subscription_type
+
+                                            }
+                            index += 1
+                        query_packet[qp_query_id] = packet
+                    result[subscription_id] = query_packet
+                    self.qmlogger.debug('Returning details for subscription %s ' % name)
+                    print result
+                    return result
+            self.qmlogger.warning('Couldn\'t get details for subscription %s ' % name)
+            return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qmlogger.debug('subscription_name = %s' % name)
         pp = pprint.PrettyPrinter(indent=4)
