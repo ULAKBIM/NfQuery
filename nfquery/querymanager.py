@@ -803,6 +803,29 @@ class QueryManager:
             multi_domain_alert["statistic"] = self.getStatistics(alert.id)
             alerts['multi_domain_alerts'].append(multi_domain_alert)
 
+
+#        reported_group_queries = list(self.store.find(Alert.query_id, (Alert.alert_type == 2, Alert.identifier_plugin_id == plugin_id)).group_by(Alert.query_id))
+#        alerts['reported_alerts'] = []
+#        for q_id in reported_group_queries:
+#            identified_plugin_list = []
+#            identified_plugin_id_list = list(self.store.find(Alert.identified_plugin_id, Alert.query_id == q_id))
+#            for p_id in identified_plugin_id_list:
+#                identified_plugin_list.append(self.store.find(Plugin.organization, Plugin.id == p_id).one())
+#            
+#            alert = self.store.find(Alert, (Alert.alert_type == 2, Alert.identifier_plugin_id == p_id)).group_by(Alert.identifier_plugin_id).one()
+#            reported_alert = {}
+#            reported_alert['query_id'] = alert.query_id
+#            reported_alert['query_filter'] = self.getFilter(alert.query_id)
+#            reported_alert['query_category'] = alert.query.category.category
+#            reported_alert['checksum'] = alert.checksum
+#            reported_alert['start_time'] = alert.start_time
+#            reported_alert['end_time'] = alert.end_time
+#            reported_alert['source_name'] = alert.query.source.name
+#            reported_alert['identified_plugin_name'] = alert.identified_plugin.organization 
+#            reported_alert['identifier_plugin_name'] = ",".join(identified_plugin_list) 
+#            reported_alert["statistic"] = self.getStatistics(alert.id)
+#            alerts['reported_alerts'].append(reported_alert)
+
         reported_alerts = list(self.store.find(Alert, Alert.alert_type == 2, Alert.identifier_plugin_id == plugin_id))
         alerts['reported_alerts'] = []
         for alert in reported_alerts:
@@ -818,7 +841,7 @@ class QueryManager:
             reported_alert['identifier_plugin_name'] = alert.identifier_plugin.organization 
             reported_alert["statistic"] = self.getStatistics(alert.id)
             alerts['reported_alerts'].append(reported_alert)
-
+        print alerts
         return alerts
 
 
