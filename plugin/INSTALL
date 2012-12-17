@@ -13,6 +13,10 @@
     -NfConf
     -DBM::Deep
 
+    You can run the Perl CPAN module via command line perl 
+    and get it installed in a single line:
+
+    perl -MCPAN -e 'install Module::Name'  
 
 ====================
 == Install Plugin ==
