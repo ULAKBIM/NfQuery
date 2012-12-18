@@ -55,7 +55,7 @@
             <th>Query Id</th>
             <th>Filter</th>
             <th>Identifier</th>
-            <th>Correspondant</th>
+            <th>Correspondants</th>
             <th>Time Interval</th>
             <th></th>
         </tr>
@@ -121,7 +121,7 @@
             <th>Query Id</th>
             <th>Filter</th>
             <th>Identifier</th>
-            <th>Correspondant</th>
+            <th>Correspondants</th>
             <th>Time Interval</th>
             <th></th>
         </tr>
