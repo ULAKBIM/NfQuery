@@ -803,7 +803,7 @@ class QueryManager:
 #            multi_domain_alert["statistic"] = self.getStatistics(alert.id)
 #            alerts['multi_domain_alerts'].append(multi_domain_alert)
 
-        multi_domain_alerts_checksum = list(self.store.find(Alert.checksum, Alert.alert_type == 2, Alert.identified_plugin_id == 70))
+        multi_domain_alerts_checksum = list(self.store.find(Alert.checksum, Alert.alert_type == 2, Alert.identified_plugin_id == plugin_id))
         alerts['multi_domain_alerts'] = []
         for checksum in multi_domain_alerts_checksum:
             multi_alerts_list = list(self.store.find(Alert, Alert.checksum == checksum))
@@ -845,9 +845,16 @@ class QueryManager:
 #            reported_alert["statistic"] = self.getStatistics(alert.id)
 #            alerts['reported_alerts'].append(reported_alert)
 
-        reported_alerts = list(self.store.find(Alert, Alert.alert_type == 2, Alert.identifier_plugin_id == plugin_id))
+
+
+
+        reported_alerts_checksum = list(self.store.find(Alert.checksum, Alert.alert_type == 2, Alert.identifier_plugin_id == plugin_id))
         alerts['reported_alerts'] = []
-        for alert in reported_alerts:
+        for checksum in reported_alerts_checksum:
+            reported_alerts_list = list(self.store.find(Alert, Alert.checksum == checksum))
+            plugins = []
+            for alert in reported_alerts_list:
+                plugins.append(alert.identified_plugin.organization)
             reported_alert = {}
             reported_alert['query_id'] = alert.query_id
             reported_alert['query_filter'] = self.getFilter(alert.query_id)
@@ -856,10 +863,32 @@ class QueryManager:
             reported_alert['start_time'] = alert.start_time
             reported_alert['end_time'] = alert.end_time
             reported_alert['source_name'] = alert.query.source.name
-            reported_alert['identified_plugin_name'] = alert.identified_plugin.organization 
-            reported_alert['identifier_plugin_name'] = alert.identifier_plugin.organization 
+            reported_alert['identified_plugin_name'] = " - ".join(plugins) 
+            reported_alert['identifier_plugin_name'] = alert.identifier_plugin.organization
             reported_alert["statistic"] = self.getStatistics(alert.id)
             alerts['reported_alerts'].append(reported_alert)
+
+
+
+
+
+
+
+#        reported_alerts = list(self.store.find(Alert, Alert.alert_type == 2, Alert.identifier_plugin_id == plugin_id))
+#        alerts['reported_alerts'] = []
+#        for alert in reported_alerts:
+#            reported_alert = {}
+#            reported_alert['query_id'] = alert.query_id
+#            reported_alert['query_filter'] = self.getFilter(alert.query_id)
+#            reported_alert['query_category'] = alert.query.category.category
+#            reported_alert['checksum'] = alert.checksum
+#            reported_alert['start_time'] = alert.start_time
+#            reported_alert['end_time'] = alert.end_time
+#            reported_alert['source_name'] = alert.query.source.name
+#            reported_alert['identified_plugin_name'] = alert.identified_plugin.organization 
+#            reported_alert['identifier_plugin_name'] = alert.identifier_plugin.organization 
+#            reported_alert["statistic"] = self.getStatistics(alert.id)
+#            alerts['reported_alerts'].append(reported_alert)
         print alerts
         return alerts
 
