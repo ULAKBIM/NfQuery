@@ -787,9 +787,29 @@ class QueryManager:
 
 
         # get multi-domain alert         
-        multi_domain_alerts = list(self.store.find(Alert, Alert.alert_type == 2, Alert.identified_plugin_id == plugin_id))
+#        multi_domain_alerts = list(self.store.find(Alert, Alert.alert_type == 2, Alert.identified_plugin_id == plugin_id))
+#        alerts['multi_domain_alerts'] = []
+#        for alert in multi_domain_alerts:
+#            multi_domain_alert = {}
+#            multi_domain_alert['query_id'] = alert.query_id
+#            multi_domain_alert['query_filter'] = self.getFilter(alert.query_id)
+#            multi_domain_alert['query_category'] = alert.query.category.category
+#            multi_domain_alert['checksum'] = alert.checksum
+#            multi_domain_alert['start_time'] = alert.start_time
+#            multi_domain_alert['end_time'] = alert.end_time
+#            multi_domain_alert['source_name'] = alert.query.source.name
+#            multi_domain_alert['identified_plugin_name'] = alert.identified_plugin.organization 
+#            multi_domain_alert['identifier_plugin_name'] = alert.identifier_plugin.organization 
+#            multi_domain_alert["statistic"] = self.getStatistics(alert.id)
+#            alerts['multi_domain_alerts'].append(multi_domain_alert)
+
+        multi_domain_alerts_checksum = list(self.store.find(Alert.checksum, Alert.alert_type == 2, Alert.identified_plugin_id == 70))
         alerts['multi_domain_alerts'] = []
-        for alert in multi_domain_alerts:
+        for checksum in multi_domain_alerts_checksum:
+            multi_alerts_list = list(self.store.find(Alert, Alert.checksum == checksum))
+            plugins = []
+            for alert in multi_alerts_list:
+                plugins.append(alert.identified_plugin.organization)
             multi_domain_alert = {}
             multi_domain_alert['query_id'] = alert.query_id
             multi_domain_alert['query_filter'] = self.getFilter(alert.query_id)
@@ -798,11 +818,10 @@ class QueryManager:
             multi_domain_alert['start_time'] = alert.start_time
             multi_domain_alert['end_time'] = alert.end_time
             multi_domain_alert['source_name'] = alert.query.source.name
-            multi_domain_alert['identified_plugin_name'] = alert.identified_plugin.organization 
-            multi_domain_alert['identifier_plugin_name'] = alert.identifier_plugin.organization 
+            multi_domain_alert['identified_plugin_name'] = " - ".join(plugins) 
+            multi_domain_alert['identifier_plugin_name'] = alert.identifier_plugin.organization
             multi_domain_alert["statistic"] = self.getStatistics(alert.id)
             alerts['multi_domain_alerts'].append(multi_domain_alert)
-
 
 #        reported_group_queries = list(self.store.find(Alert.query_id, (Alert.alert_type == 2, Alert.identifier_plugin_id == plugin_id)).group_by(Alert.query_id))
 #        alerts['reported_alerts'] = []
