@@ -138,9 +138,9 @@ $(document).ready(function() {
         var mode = "0"; 
         if ($(this).attr('starttime') != $(this).attr('endtime'))
             mode = "1";
-        $("#mode").val(mode);
-        $("#time_left").val($(this).attr('starttime'));
-        $("#time_right").val($(this).attr('endtime'));
+       // $("#mode").val(mode);
+       // $("#time_left").val($(this).attr('starttime'));
+       // $("#time_right").val($(this).attr('endtime'));
 
         $("#navigationForm").submit();
         
