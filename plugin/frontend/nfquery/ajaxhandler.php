@@ -117,7 +117,7 @@ EOF;
 	}	
 	if(isset($_POST['runQueries'])){
 		session_start();
-		runQueries($_POST['runQueries']);
+		runQueries($_POST['runQueries'], $_POST['source']);
 	}
 	if(isset($_GET['getStatisticsOfSubscription'])){
 		getStatisticsOfSubscription($_GET['subscriptionName']);

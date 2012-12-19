@@ -796,7 +796,7 @@ sub runQueries{
 	my %queries = %{$queries};
 	#Get parameters to the run queries.
 	my $profile = $$opts{'profile'};
-	my @source = @{$queries{'source'}};
+	my @source = @{$$opts{'source'}};
 
     #Timestamps 
     my $start_time = $$opts{'start_time'};
