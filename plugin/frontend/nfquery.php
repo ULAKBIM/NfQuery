@@ -21,11 +21,12 @@
 include('/var/www/nfsen/details.php');
 
 function nfquery_ParseInput( $plugin_id ) {
+    if ($_POST['starttime'] && $_POST['endtime']){
+        #set tleft and tright session variables so we can see that time range at graphs.
+        $_SESSION['tleft'] = $_POST['starttime'];
+        $_SESSION['tright'] = $_POST['endtime'];
+    }
 	Process_Details_tab(0, 0);
-	#SetMessage('error', "Error set by demo plugin!");
-	#SetMessage('warning', "Warning set by demo plugin!");
-	#SetMessage('alert', "Alert set by demo plugin!");
-    #SetMessage('info', "Info set by demo plugin!");
 
 } // End of demoplugin_ParseInput
 

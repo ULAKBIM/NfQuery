@@ -12,7 +12,7 @@
     -Parallel::ForkManager
     -NfConf
     -DBM::Deep
-
+    
     You can run the Perl CPAN module via command line perl 
     and get it installed in a single line:
 
@@ -21,6 +21,9 @@
 ====================
 == Install Plugin ==
 ====================
+    NfQuery Plug-in is an NfSen plugin. You need a working 
+    NfSen instance. NfQuery plug-in has been tested on 
+    Nfsen 1.3.6p1, Perl v5.14.2 and Php 5.3.10.
 
     After required perl modules are installed run:
 
@@ -43,9 +46,6 @@
         https_ca_dir => 'root certificate directory'
         https_pkcs12_file => 'plugins pkcs12 file'
         https_pkcs12_password => 'password',
-
-        # Prefix List
-        prefix_list => 'a.b.c.d',
 
         # Ip Address Of This Plugin             
         plugin_ip => 'a.b.c.d',

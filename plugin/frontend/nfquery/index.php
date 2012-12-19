@@ -24,9 +24,6 @@
 					<input type="hidden" name="identifier" id="identifier"/>
 
                     <!-- This fields need to update details graph -->
-                    <input type="hidden" name="tleft" id="time_left"/>
-					<input type="hidden" name="tright" id="time_right"/>
-					<input type="hidden" name="cursor_mode" id="mode" value="0"/>
 						<?php
 							$register = isRegistered();
 							/*

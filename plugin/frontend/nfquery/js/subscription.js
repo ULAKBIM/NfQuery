@@ -81,11 +81,11 @@ function getFilters(){
 	});
 
 	//send them to the server.
-	queryMap['source'] = $('#flowSource').val();
+	source = $('#flowSource').val();
     if (isNull){
        alert("Select a Query First !");
     }else{
-	    $.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap}, function(data){});
+	    $.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap, source:source}, function(data){});
 	    	
 	    $('#nfqueryTab').val('Running');
 	    $('#navigationForm').submit();

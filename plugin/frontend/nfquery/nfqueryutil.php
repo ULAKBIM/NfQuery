@@ -491,12 +491,13 @@
 		return $output;
 	}
 
-	function runQueries($queries){
+	function runQueries($queries, $source){
 		$opts = array();
 		$json = json_encode($queries);
 		$cargs = compileArgs();
 
 		$opts['queries'] = $json;
+		$opts['source'] = $source;
 		
 		foreach($cargs  as $key=>$value){
 			$opts[$key] = $value;

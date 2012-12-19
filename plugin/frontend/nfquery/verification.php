@@ -1,14 +1,12 @@
 <?php
-    var_dump($_POST);
     if (array_key_exists('query', $_POST) && array_key_exists('queryid', $_POST)){
-        if ($_POST['starttime'] && $_POST['endtime']){
-            #set tleft and tright session variables so we can see that time range at graphs.
-            $_SESSION['tleft'] = $_POST['starttime'];
-            $_SESSION['tright'] = $_POST['endtime'];
-        }
+       # if ($_POST['starttime'] && $_POST['endtime']){
+       #     $_SESSION['tleft'] = $_POST['starttime'];
+       #     $_SESSION['tright'] = $_POST['endtime'];
+       # }
         $_SESSION['nfquery']['query'] = $_POST['query'];
         $_SESSION['nfquery']['queryid'] = $_POST['queryid'];
-        $output = runVerificationQueries($_POST['query'], $_SESSION['tleft'], $_SESSION['tright'], $_POST['queryid']);
+        $output = runVerificationQueries($_POST['query'], $_POST['starttime'], $_POST['endtime'], $_POST['queryid']);
     }elseif($_SESSION['nfquery']['query'] && $_SESSION['nfquery']['queryid']){
         $output = runVerificationQueries($_SESSION['nfquery']['query'], $_SESSION['tleft'], $_SESSION['tright'], $_SESSION['nfquery']['queryid']);
     }else{
