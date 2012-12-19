@@ -34,7 +34,7 @@ Dependencies
 ============
 Platform : Ubuntu
 Python Version : Python 2.7.3, Python 2.7-dev
-Python Modules : config, MySQLdb, storm, termcolor, txJSON-RPC
+Python Modules : config, MySQLdb, storm, termcolor, txJSON-RPC, netaddr
     
 
 
@@ -56,14 +56,6 @@ http://nfquery.ulakbim.gov.tr/docs/
 
 
 
-Development
------------
-
-
-
-System-specific Notes
----------------------
-
 
 Installation
 ------------
@@ -81,3 +73,5 @@ Please see the file called LICENSE.
 Author
 ======
 Serdar Yigit <serdar.yigit@tubitak.gov.tr>
+Ahmet Can Kepenek <ahmetcan.kepenek@gmail.com>
+Serhat Rifat Demircan <demircan.serhat@gmail.com>
