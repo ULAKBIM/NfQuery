@@ -1,0 +1,33 @@
+#filter_save{
+	width:16px;
+}
+
+#TopN, #StatTypeSelector, #statorder{
+	width:120px;
+}
+
+#limitwhat{
+	width:80px;
+}
+
+#limithow, #limitsize, #limitscale{
+	width:50px; 
+	height:29px;
+}
+
+#filter{
+	width:280px;
+	height:150px;
+}
+
+#SourceSelector{
+	height:150px;
+}
+
+#ModeSelector{
+	width:150px;
+}
+
+select[name="wsize"]{
+	width:150px;
+}

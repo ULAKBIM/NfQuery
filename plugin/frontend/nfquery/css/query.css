@@ -1,0 +1,89 @@
+.mandatory_query{
+	background-color: #FCF8E3;
+    border: 1px solid #FBEED5;
+    border-radius: 4px 4px 4px 4px;
+    color: #C09853;
+    margin-bottom: 18px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);	
+    height: 15px;
+	font-size: 13px;
+}
+
+.optional_query{
+	background-color: #C6F6C3;
+    border: 1px solid #C6F6C3;
+    border-radius: 4px 4px 4px 4px;
+    color: #468847;
+    margin-bottom: 18px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);	
+	font-size: 13px;
+}
+
+.accordion-heading {
+    background-color: #F4FAFE;
+    border-color: #82CFFA #E7F2FB #96C4EA;
+    border-style: solid;
+    border-width: 1px;
+    height: 10px;
+	padding-bottom: 30px;
+}
+
+.accordion-heading-table {
+}
+
+.navItem {
+	padding-bottom: 5px;
+}
+
+.filters{
+	max-height: 200px;
+	overflow: auto;
+}
+
+.critical_alerts, .multi_domain_alerts, .single_domain_alerts, .verification_output{
+	max-height: 400px;
+	min-height: 400px;
+	overflow: auto;
+}
+
+
+/*.run{
+    height: 40px;
+    width: 40px;
+	cursor:pointer;
+}
+*/
+.outputAll{
+	max-height: 350px;
+	overflow: auto;
+}
+
+#runQueries{
+	width: 100px;
+}
+
+.outputs{
+	padding-left: 0px;
+}
+
+.loading{
+	width : 60px;
+	height: 60px;
+}
+
+.outputInfoLabel{
+	color: #003333;
+}
+
+.ip{
+	cursor:pointer;
+}
+
+#lookupBox{
+		
+}
+
+.query_id:hover{
+	cursor: pointer;
+	background-color: #5BB75B;
+}

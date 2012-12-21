@@ -1,0 +1,72 @@
+====================================================================
+NfQuery v1.0 : Coklu Alan Ortamlarinda Saldiri Analizi icin Cerceve
+====================================================================
+
+    içerikler
+
+    1 NfQuery Cercevesi Nedir?
+        1.1 Bilesenler
+    2 Bagımliliklar
+    3 Belgeler
+    4 Indirme
+    5 Telif Hakki ve Lisansi
+    6 Yazarlar
+
+
+
+NfQuery Nedir?
+================
+NfQuery'nin temel islevi, sorgu sunucusuna kayitli organizasyonlar ve alanlar icin kullanilmak uzere yararli sorgular uretmek. Sorgu sunucusundan alinan sorgular, organizasyonların topladiklari netflow verisi uzerinde calistirilir. Sorgularin calismasi sonucu NfSen Plug-in'indeki akis verisinde bulunan iliskili tehtit ve saldiri bilgilerini icerir. Tehdit veya saldiri algilandiginda uygulanan sorgulara iliskin Plug-in uyari uretir. Herbir Plug-in'deki saldiri istatistikleri toplama ve yorumlama tarafindan coklu-alan agi tehdit egilimleri icin genel bir bakis olusturulur. Sonuc olarak NfSen'in uyari sistemi kullanilarak, NfQuery coklu alan aglari icin bir tehdit algilamasi ve guvenlik uyari sistemi olmus olur.
+
+Bilesenler
+-------------
+a. Sorgu Sunucusu
+Sorgu sunucusu sistemin merkezinde yer alir ve tum bilesenler arasindaki baglantilari kurar. Sorgu sunucusu; sorgu uretici, sorgu yonetici ve sorgu deposu olarak 3 alt elemandan olusur.
+
+b. NfQuery Plug-in
+NfQuery Plug-in her bir alan tarafinda NfSen uzerinde kuruludur. Yoneticinin isteklerini gerceklestirmek icin sorgu sunucusu ile iletisime gecer. Yeni sorgulari almak, sorgu listesini guncellemek, istatistik raporlari alma gibi islemler gerceklestirir.
+
+c. Kaynaklar
+NfQuery kaynaklari tehdit bilgilerini saglayan ana bilesenlerdir. Bu bilesen kamuya acik, kullanimda olan kaynaklardir. Botnet, sunucu listeleri (Amada, SpyEye), DNS kara listesi (DShield), kotu niyetli alanlar ve dolandirici sitelerinin listesi, Balkupleri, Saldiri Onleme Sistemleri, Saldiri Tespit Sistemleri gibi sistemler gunluk verilerle NfQuery cercevesine veri saglayabilir.
+
+
+
+Bagimliliklar
+===============
+Platform : Ubuntu
+Python Versiyon : Python 2.7.3, Python 2.7-dev
+Python Modulleri : config, MySQLdb, storm, termcolor, txJSON-RPC, netaddr
+
+
+
+Son Versiyon
+-------------
+Son versiyonun detayli bilgileri NfQuery'nin resmi web sayfasinda bulabilirsiniz.
+http://nfquery.ulakbim.gov.tr
+
+
+Belgeler
+=========
+Bu surumun cikis tarihi itibariyle mevcut belgeler docs/manual/ dizininde HTML olarak bulabilirsiniz. 
+http://nfquery.ulakbim.gov.tr/docs/
+
+
+
+Kurulum
+==========-
+INSTALL dosyasına bakabilirsiniz.
+
+
+
+Lisans
+===========
+LICENCE dosyasina bakabilirsiniz.
+
+
+
+
+Yazarlar
+==========
+Serdar Yigit <serdar.yigit@tubitak.gov.tr>
+Ahmet Can Kepenek <ahmetcan.kepenek@gmail.com>
+Serhat Rifat Demircan <demircan.serhat@gmail.com>

@@ -1,0 +1,45 @@
+===========================
+NfQuery Nfsen Plugin v0.1 :
+===========================
+
+.. contents::
+..
+    1  What is NfQuery Plugin
+    2  Dependencies
+    3  Documentation
+    4  Download
+    5  Copyright and License
+    6  Author
+
+
+What is it?
+===============
+The Plug-in will communicate with Query Server (QS) to fetch new queries or to inform QS about a detected threat. Domains will get the new queries representing the new threats from Query Manager via the Plug-in. These new queries will easily be applied over the aggregated flows of domain with the Plug-in itself.
+The second purpose of the communication between the Plug-in and QS is to enable domain to post the data that carries information about a threat occurred in the domain. 
+
+Dependencies
+============
+Please see the file called INSTALL.
+    
+The Latest Version
+------------------
+Details of the latest version can be found on the Official NfQuery Web Page.
+http://nfquery.ulakbim.gov.tr
+
+Documentation
+-------------
+Please see http://nfquery.ulakbim.gov.tr/
+
+Installation
+------------
+Please see the file called INSTALL.
+
+Licensing
+---------
+Please see the file called LICENSE.
+
+Author
+======
+Serdar Yigit <serdar.yigit@tubitak.gov.tr>
+Ahmet Can Kepenek <ahmetcan.kepenek@gmail.com>
+Serhat Rifat Demircan <demircan.serhat@gmail.com>

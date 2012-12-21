@@ -1,0 +1,58 @@
+#!/usr/local/bin/python
+
+import argparse
+import os, sys
+import logging 
+
+# We may create a directory lib under nfquery and 
+# this kind of utils could be moved to nfquery/lib 
+#from nfquery.lib.daemon import Daemon
+from nfquery.daemon import Daemon
+from nfquery.queryserver import QueryServer
+
+
+# 1) Check if paths are correct
+# 2) Test for database connection
+parser = argparse.ArgumentParser(description="Process command line arguments")
+parser.add_argument('--conf', default='/etc/nfquery.conf', type=str, help='nfquery configuration file')
+parser.add_argument('--console', action='store_true', help='don\'t detach and display all output to stdout/stderr')
+parser.add_argument('--verbose', action='store_true', help='verbose mode')
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('--start', action='store_true', help='start the daemon')
+group.add_argument('--stop', action='store_true', help='stop the daemon')
+group.add_argument('--restart', action='store_true', help='restart the daemon')
+group.add_argument('--reconfig', nargs=1, choices=('sources','plugins'), help='reconfigure sources or plugins and exit')
+
+# Parse command line arguments
+args = parser.parse_args()
+
+if not os.path.isfile(args.conf):
+    print ('Configuration file not fund: {}'.format( args.conf))
+    parser.print_help()
+    sys.exit(1)
+
+# Set logging Flag
+log_level=logging.INFO
+if args.verbose:
+    log_level = logging.DEBUG
+
+if args.reconfig:
+    # Do not daemonize, reconfigure and exit
+    app = QueryServer(loglevel=log_level, configfile=args.conf)
+    app.reconfigure(args.reconfig[0])
+
+if args.console:
+    # Do not daemonize, print all output to console
+    app = QueryServer(configfile=args.conf, loglevel=log_level)
+    app.run()
+else:
+    #daemon = Daemon(configfile=args.conf, loglevel=log_level)
+    daemon = Daemon(configfile=args.conf, loglevel=log_level, stdin='/tmp/nfqueryd.log', stdout='/tmp/nfqueryd.log', stderr='/tmp/nfqueryd.log')
+    if args.start:
+        daemon.start()
+    elif args.restart:
+        daemon.restart()
+    elif args.stop:
+        daemon.stop()
+        
+

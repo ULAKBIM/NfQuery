@@ -1,0 +1,23 @@
+
+    * To provide output compatibility for the whole system, `parser output format` is defined by NfQueryServer.
+    * It is a json packet consists of source_name, date, mandatory_keys and expr_list keywords and their values as shown below.
+
+        {
+            'source_name' : 'SOURCENAME',
+            'date' : 'DATE',
+            'mandatory_keys' : ['field1', 'field2'],
+            'expr_list' : [{'data1'}, {'data2'}, ...'],
+        }
+
+    * Explanation of Fields
+    
+        SOURCENAME = a string value of sourcename which must be same with the source name sent to NfQueryServer during plugin registeration.
+
+        DATE = a date string whose format = 'YYYY-MM-DD Ho:Mi' -> example ; '2012-03-28 15:14'
+
+        mandatory_keys = is a list of nfsen filters which must 'exists/be used' in each query. examples : 
+                           -
+
+        expr_list = a list of dictionaries consists of nfsen filter key:value pairs, examples : 
+                           -
+

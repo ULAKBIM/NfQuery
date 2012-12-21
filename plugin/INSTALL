@@ -1,0 +1,56 @@
+=======================================
+== Required Perl Modules For Backend ==
+=======================================
+
+    -LWP::UserAgent
+    -JSON::RPC::LWP
+    -Term::ANSIColor
+    -JSON
+    -JSON::Parse 'json_to_perl'
+    -NetAddr::IP
+    -Net::SSL ()
+    -Parallel::ForkManager
+    -NfConf
+    -DBM::Deep
+    
+    You can run the Perl CPAN module via command line perl 
+    and get it installed in a single line:
+
+    perl -MCPAN -e 'install Module::Name'  
+
+====================
+== Install Plugin ==
+====================
+    NfQuery Plug-in is an NfSen plugin. You need a working 
+    NfSen instance. NfQuery plug-in has been tested on 
+    Nfsen 1.3.6p1, Perl v5.14.2 and Php 5.3.10.
+
+    After required perl modules are installed run:
+
+    ./install.sh 
+    
+    This script copy backend and frontend files to their
+    locations(according to your nfsen directory layout).
+    
+    After files installed, you need to enable and set backend 
+    configuration parameters in Nfsen configuration file.
+
+    Configuration parameters are:
+
+    nfquery => {
+        #Make sure nfsen have write permission to this directory.
+        output_dir => '/tmp', 
+
+        # Certificates
+        https_ca_file => 'root certificate file'
+        https_ca_dir => 'root certificate directory'
+        https_pkcs12_file => 'plugins pkcs12 file'
+        https_pkcs12_password => 'password',
+
+        # Ip Address Of This Plugin             
+        plugin_ip => 'a.b.c.d',
+
+        # Query Server Information
+        queryserver_ip => 'a.b.c.d/e',
+        queryserver_port => 'a',
+    }
