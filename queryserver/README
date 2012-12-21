@@ -1,5 +1,5 @@
 =====================================================================================
-NfQuery v1.0 : NfQuery: A Privacy Friendly Framework for Multi-Domain Threat Analysis  
+NfQuery v0.1 : NfQuery: A Privacy Friendly Framework for Multi-Domain Threat Analysis  
 =====================================================================================
 
 .. contents::
@@ -32,41 +32,26 @@ NfQuery sources are the main components that provide threat information. This in
 
 Dependencies
 ============
-Platform : Ubuntu
-Python Version : Python 2.7.3, Python 2.7-dev
-Python Modules : config, MySQLdb, storm, termcolor, txJSON-RPC, netaddr
-    
-
-
+Please see the file called plugin/INSTALL for plugin dependecies.
+Please see the file called queryserver/INSTALL for queryserver dependecies.
 
 The Latest Version
 ------------------
 Details of the latest version can be found on the Official NfQuery Web Page.
 http://nfquery.ulakbim.gov.tr
 
-
-
 Documentation
 -------------
-The documentation available as of the date of this release is
-included in HTML format in the docs/manual/ directory.  The most
-up-to-date documentation can be found at
-http://nfquery.ulakbim.gov.tr/docs/
-
-
-
-
+Please see http://nfquery.ulakbim.gov.tr/
 
 Installation
 ------------
-Please see the file called INSTALL.
-
-
+Please see the file called plugin/INSTALL to install plugin.
+Please see the file called queryserver/INSTALL to install queryserver.
 
 Licensing
 ---------
 Please see the file called LICENSE.
-
 
 Author
 ======
