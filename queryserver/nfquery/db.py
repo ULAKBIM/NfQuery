@@ -49,7 +49,7 @@ def initialize_db(store):
     store.execute(
                   "CREATE TABLE prefix("                                             + 
                   "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"                         +
-                  "prefix VARCHAR(100) COLLATE utf8_unicode_ci NOT NULL,"            +
+                  "prefix TEXT  COLLATE utf8_unicode_ci NOT NULL,"            +
                   "PRIMARY KEY (id)"                                                 +
                   ")ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci"      
                  )
