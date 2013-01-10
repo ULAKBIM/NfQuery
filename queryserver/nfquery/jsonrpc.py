@@ -186,7 +186,7 @@ class jsonRPCServer(jsonrpc.JSONRPC):
         plugin_list = self.store.find(Plugin)
         prefix_list = {}
         for plugin in plugin_list:
-            prefix_list[plugin.id] = plugin.prefix.prefix
+            prefix_list[plugin.id] = plugin.prefix.prefix.replace(" ","").split(',')
         print prefix_list
         return prefix_list
 
@@ -208,7 +208,7 @@ class jsonRPCServer(jsonrpc.JSONRPC):
             return
         else:
              p_list = {}
-             p_list[plugin.id] = plugin.prefix.prefix
+             p_list[plugin.id] = plugin.prefix.prefix.replace(" ","").split(',')
              return p_list
 
 
