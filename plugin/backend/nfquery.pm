@@ -264,12 +264,14 @@ sub ipInPrefixes{
 	my $ip = shift;
 	
 	foreach my $plugin_id (keys %prefixes){
-        my $prefix = $prefixes{$plugin_id};
-		my $block = NetAddr::IP->new($prefix);
-		my $ip_address = NetAddr::IP->new($ip);
-		if($ip_address->within($block)){
-			return $plugin_id;
-		}
+        my @prefixes = @{$prefixes{$plugin_id}};
+        foreach my $prefix (@prefixes){
+	    	my $block = NetAddr::IP->new($prefix);
+	    	my $ip_address = NetAddr::IP->new($ip);
+	    	if($ip_address->within($block)){
+	    		return $plugin_id;
+	    	}
+        }
 	}
 
 	return 0;	
