@@ -12,11 +12,11 @@ use Net::SSL (); # From Crypt-SSLeay
 #$Net::HTTPS::SSL_SOCKET_CLASS = "Net::SSL"; # Force use of Net::SSL
 $ENV{HTTPS_DEBUG} = 1;
 # CA cert peer verification
-$ENV{HTTPS_CA_FILE}   = '/home/serhat/NfQuery/cfg/certs/cacert.pem';
-$ENV{HTTPS_CA_DIR}    = '/home/serhat/NfQuery/cfg/certs/';
+$ENV{HTTPS_CA_FILE}   = '/home/serhat/NfQuery/queryserver/cfg/certs/cacert.pem';
+$ENV{HTTPS_CA_DIR}    = '/home/serhat/NfQuery/queryserver/cfg/certs/';
 
 # Client PKCS12 cert support
-$ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/NfQuery/cfg/certs/plugin-cert.p12';
+$ENV{HTTPS_PKCS12_FILE}     = '/home/serhat/NfQuery/queryserver/cfg/certs/plugin-cert.p12';
 $ENV{HTTPS_PKCS12_PASSWORD} = 'serhat1991';
 
 # client certificate support
@@ -34,6 +34,6 @@ my $rpc = JSON::RPC::LWP->new(
   ua => $ua,
   version => '2.0'
 );
-my $result = $rpc->call(  'https://193.140.100.96:7777', 'echo', '127.0.0.1');
+my $result = $rpc->call(  'https://208.113.144.131:7777', 'register', '127.0.0.1');
 #my $result = $rpc->call( 'https://193.140.100.96:7777', {method=>'echo', params=>['127.0.0.1']});
 print $result->result, "\n";
