@@ -86,10 +86,11 @@ if __name__ == "__main__":
     #parse_source_and_create_output(source_name, source_file, output_type, output_file)
     
     source_name = 'TestIPPort'
-    source_dir  = os.path.dirname(__file__)
-    source_file = source_dir + '/IPPortSource.txt'
+    source_file = './IPPortSource.txt'
     output_type  = 3
-    output_file = source_dir + '/IPPortOutput.txt' 
+    output_file = './IPPortOutput.txt'
+    
+    #fetch_source(source_link, source_file)
     parse_source_and_create_output(source_name, source_file, output_type, output_file)
 
 
