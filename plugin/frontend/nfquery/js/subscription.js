@@ -85,18 +85,10 @@ function getFilters(){
     if (isNull){
        alert("Select a Query First !");
     }else{
-	    //$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap, source:source}, function(data){});
-        //Sync post solves the problem
-	    $.ajax({
-           type: "POST", 
-           url: "/nfsen/plugins/nfquery/ajaxhandler.php",
-           data: {runQueries:queryMap, source:source},
-           async: false
-           }).done(function() {
-           }
-        );
+	    $.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap, source:source}, function(data){});
+	    	
 	    $('#nfqueryTab').val('Running');
-        $('#navigationForm').submit();
+	    $('#navigationForm').submit();
     }
 
 }
