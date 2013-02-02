@@ -101,6 +101,12 @@ function getFilters(){
 
 }
 
+function go(){
+            $('#nfqueryTab').val('Running');
+	    $('#navigationForm').submit();
+
+
+}
 function changeCollapseIcon(column){
 	var icon = column.find('i');
 	if (icon.hasClass('icon-chevron-down')){
