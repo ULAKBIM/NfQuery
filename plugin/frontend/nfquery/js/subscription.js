@@ -63,8 +63,8 @@ function getFilters(){
 	$('#queryDiv .accordion-body').each(function(){
 		subscriptionName = $(this).attr('id');
 		queryMap['queries'][subscriptionName] = {};
-		queryMap['queries'][subscriptionName]['mandatory'] = []
-		queryMap['queries'][subscriptionName]['optional'] = []
+		queryMap['queries'][subscriptionName]['mandatory'] = [];
+		queryMap['queries'][subscriptionName]['optional'] = [];
 		$(this).find('.mandatory_filter').each(function(){
 			if($(this).attr('checked')){
                 isNull = false;
