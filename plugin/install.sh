@@ -50,6 +50,7 @@ cp -r ./frontend/* ${FRONTEND_PLUGINDIR}
 echo "Setting plugin files permissions - user \"${USER}\" and group \"${WWWGROUP}\""
 chown -R ${USER}:${WWWGROUP} ${FRONTEND_PLUGINDIR}/nfquery*
 chown -R ${USER}:${WWWGROUP} ${BACKEND_PLUGINDIR}/nfquery*
+chmod g+w ${FRONTEND_PLUGINDIR}/nfquery/remember.conf
 
 
 echo ""
