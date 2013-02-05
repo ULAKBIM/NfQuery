@@ -75,7 +75,7 @@
 		echo '<thead>';
 		echo '<tr><th class="header">Query Id</th><td style="background-color:#E6EEEE"><strong>Filter</strong></td><th class="header">Total Flows</th><th class="header">Total Bytes</th><th class="header">Total Packets</th></tr>';
 		echo '</thead>';
-		$query_ids = $out_list['query_id'];
+        $query_ids = $out_list['query_id'];
 		echo '<tbody>';
 		for($i = 0; $i<sizeof($query_ids); $i++){
 			echo '<tr>';

@@ -55,9 +55,12 @@ function markMandatoryQueries(button, category){
 	}
 }
 
-function getFilters(){
+function getFilters(button){
     var isNull = true;
 	var queryMap = {};
+    
+    button.html("Running <img style='width:20px;height:20px' src='/nfsen/plugins/nfquery/img/loading.gif'>");
+    alert("Here");
 	queryMap['queries'] = {};
     
 	$('#queryDiv .accordion-body').each(function(){
@@ -84,6 +87,7 @@ function getFilters(){
 	source = $('#flowSource').val();
     if (isNull){
        alert("Select a Query First !");
+       button.html("Run !");
     }else{
 	  //$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap, source:source}, function(data){});
 	  //Sync post solves the problem
@@ -142,7 +146,9 @@ $(document).ready(function() {
 	$("#flowSource option:first").attr('selected','selected');
 
 	$(".collapse").collapse();
-	$('#runQueries').click(getFilters);
+	$('#runQueries').click(function(){
+            getFilters($(this));
+    });
 	
 	$('.mandatory_query_popover').popover({
 		title: "Mandatory Query",
