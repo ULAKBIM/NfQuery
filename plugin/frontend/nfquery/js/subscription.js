@@ -60,7 +60,6 @@ function getFilters(button){
 	var queryMap = {};
     
     button.html("Running <img style='width:20px;height:20px' src='/nfsen/plugins/nfquery/img/loading.gif'>");
-    alert("Here");
 	queryMap['queries'] = {};
     
 	$('#queryDiv .accordion-body').each(function(){
