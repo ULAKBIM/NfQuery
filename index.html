@@ -33,7 +33,48 @@
       <section id="main_content" class="inner">
         <h3>Welcome to NfQuery website.</h3>
 
-<p>NfQuery is a project being developed in GÉANT3 Project under JRA2 T4 workpackage.</p>
+<h4>What is NfQuery?</h4>
+
+<p>NfQuery is NfSen based framework for multi-domain environments which uses the NetFlow data for analysis of threats and burst the usage of already available data from various sources such as on-line repositories and local security tools of each domain (Honeypots, IDS and etc.) The framework has been developed to enable integration of various threat detection methods and transmission of information over a multi-domain environment automatically. A central server in this framework coordinates the information sharing and integration of various detection methods, where the plug-in running in each domain represents the interface of the system to the administrators for their analysis and information exchange. The main design criterion lying behind NfQuery is to develop a tool for multi-domain threat analysis which eases the privacy concerns of each domain included in the framework. This is achieved by keeping the NetFlow data belonging to a domain locally and sharing only the queries to be applied over the flow data via the server and the statistics on the results of these queries (which is even optional but quite crucial for the system).<p>
+
+<h4>Background</h4>
+
+<p>NfQuery has been developed under JRA2.T4 of GN3 project. The NfQuery release to be delivered at the end of GN3 project (March 2013) will consist of a Query Server (QS) application and the NfQuery Plug-In.</p>
+
+<h4>Main Components</h4>
+
+<p>The Query Server (QS) operates at the center of NfQuery framework in order to generate Nfdump queries by using the threat data published by various sources and to distribute these queries to the registered domains. This distribution is achieved by the NfQuery Plug-ins which operates on the NfSen installations in each registered domain. NfQuery Plug-in enables the registered domains to apply these queries over their flow data. Plug-in sends the statistics of results of queries to QS which is used to rate the queries in QS pool. This improves the overall efficiency of the system. On the other hand, Plug-in preserves the user data privacy at registered domain side by keeping the actual flow data and the results on local NfSen server. The only exception of such behaviour occurs when Plug-in detects a Multi-domain threat which means the applied queries result in a match to an IP address belonging to another domain registered to the same QS. In such a case, the Plug-in sends an alert to the QS which includes information on the query and the included domain.</p>
+
+<p>In an NfQuery instance there exists a central QS and various NfQuery Plug-Ins installed at the participating domains.</p>
+
+<p>QS collects and parses data from sources. QS installation comes with 4 pre-defined sources namely DFN Honeypot, Malcode, Spyeyetracker and SES. QS generates new queries using the data collected from these sources. QS sends the generated queries to Plug-in instances and collects feedback for the queries sent. The main components of the NfQuery Framework are represented in Figure 2. </p>
+
+<p align="center"><img src="http://www.ulakbim.gov.tr/eng/ulaknet/eup/nfquery/img/MultiDomainSecurityFrameworkv5.png" title="Main components of NfQuery Framework" width="640px" /></p><p align="center"><b>Figure 1: Components of the NfQuery Framework</b></p>
+
+<h2>Documentation</h2>
+
+<p>
+  <b>Guides & Manuals</b>
+	</p><ul>
+		<li><a href="https://www.ulakbim.gov.tr/eng/ulaknet/eup/nfquery/docs/NfQuery-Plugin-How-to.pdf" title="NfQuery Plugin How-to">NfQuery Plugin How-to</a></li>
+	</ul>
+
+
+<p>
+	<b>Presentations</b>
+	</p><ul>
+		<li><a href="docs/NfQuery_GEANT_Symposium_2012.pdf">[ pdf ]</a> NfQuery: A Privacy Friendly Framework for Multi-Domain Threat Analysis @ GEANT Symposium 2012, Vienna, Austria 15-19 October 2012</li>
+		<li><a href="docs/yuce-nfquery.pdf">[ pdf ]</a> NfQuery: A Privacy Friendly Framework for Multi-Domain Threat Analysis @ Campus Network Monitoring Workshop, Brno, Czech Republic 24-25 April 2012</li>
+	</ul>
+<p>&nbsp;</p>
+
+<p>
+	<b>Media</b>
+	</p><ul>
+		<li>GEANT NfQuery Demo June 2012</li></ul><ul>
+		<iframe src="http://www.youtube.com/embed/ZgZNr2MUL5E" frameborder="0" height="360" width="640"></iframe>
+	</ul>
+<p>&nbsp;</p>
 
 <h3>Authors and Contributors</h3>
 
@@ -45,9 +86,23 @@
   <li>Ahmet Can Kepenek [<a href="https://github.com/ackepenek" class="user-mention">@ackepenek</a>]</li>
 </ul>
 
-<h3>Support or Contact</h3>
+<h2>How you can contribute?</h2>
 
-<p>Have questions about NfQuery? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:nfquery@ulakbim.gov.tr">nfquery@ulakbim.gov.tr</a> and we’ll help you sort it out.</p>
+<p><b>Be a developer:</b> Help development of NfQuery.</p>
+
+<p><b>Be a source:</b> Feed QS with incident data.</p>
+
+<h2>Contact</h2>
+
+<p>nfquery@ulakbim.gov.tr</p>
+
+<hr width="100%" />
+
+<p>
+	<a href="http://www.ulakbim.gov.tr/" target="_blank"><img src="http://www.ulakbim.gov.tr/eng/ulaknet/eup/nfquery/img/ULAKBIM.jpg" height="100px" /></a>
+	<a href="http://www.geant.net/" target="_blank"><img src="http://www.ulakbim.gov.tr/eng/ulaknet/eup/nfquery/img/GEANT.jpg" height="100px" /></a>
+</p>
+
       </section>
     </div>
 
