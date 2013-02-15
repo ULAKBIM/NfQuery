@@ -16,24 +16,42 @@ NfQuery v1.0 : Coklu Alan Ortamlarinda Saldiri Analizi icin Cerceve
 
 NfQuery Nedir?
 ================
-NfQuery'nin temel islevi, sorgu sunucusuna kayitli organizasyonlar ve alanlar icin kullanilmak uzere yararli sorgular uretmek. Sorgu sunucusundan alinan sorgular, organizasyonların topladiklari netflow verisi uzerinde calistirilir. Sorgularin calismasi sonucu NfSen Plug-in'indeki akis verisinde bulunan iliskili tehtit ve saldiri bilgilerini icerir. Tehdit veya saldiri algilandiginda uygulanan sorgulara iliskin Plug-in uyari uretir. Herbir Plug-in'deki saldiri istatistikleri toplama ve yorumlama tarafindan coklu-alan agi tehdit egilimleri icin genel bir bakis olusturulur. Sonuc olarak NfSen'in uyari sistemi kullanilarak, NfQuery coklu alan aglari icin bir tehdit algilamasi ve guvenlik uyari sistemi olmus olur.
+NfQuery, netflow analiz araci NfSen uzerine kurulu bir eklenti (Plug-in) ve bu eklentiyi besleyen bir sorgu sunucusu 
+(QueryServer) olmak uzere iki bilesenden olusan, sunucu-istemci mimarisine sahip bir guvenlik yaklasimidir. NfQuery, 
+internet uzerinde erisilebilir durumda olan guvenlik verilerini/gunluklerini biraraya getirerek isler ve bu verilerden
+netflow datasi uzerinde calistirilabilecek sorgular uretir. Bu sorgularin farkli alan aglarinda kurulu NfSen eklentileri
+uzerinde calistirilmasi sonucu elde edilen sonuclari iliskilendirerek, coklu alan aglari arasinda gerceklesen sakincali/
+supheli guvenlik aktivitelerini tespit eder. Son olarak aktivitelerin yogunluguna ve kritikligine bagli olarak coklu alan
+agindaki tum istemcileri uyarir ve gerekli aksiyonlarin alinmasini saglar. 
+
 
 Bilesenler
 -------------
-a. Sorgu Sunucusu
-Sorgu sunucusu sistemin merkezinde yer alir ve tum bilesenler arasindaki baglantilari kurar. Sorgu sunucusu; sorgu uretici, sorgu yonetici ve sorgu deposu olarak 3 alt elemandan olusur.
+a. Sorgu Sunucusu (QueryServer)
+Sorgu sunucusu sistemin merkezinde bulunur ve sorgu yoneticisi, sorgu ureteci, sorgu deposu olmak uzere 3 alt bilesenden
+olusmaktadir. Sorgu ureteci kaynaklardan toplanan veriyi ayiklar ve farkli kategorilerde sorgular uretir. Uretilen sorgular
+analiz ve anlamlandirma sureclerinde kullanilmak uzere sorgu deposunda saklanir. Pluginden gelen sorgu istekleri ve sonuclari
+ise sorgu yoneticisi tarafindan karsilanir.
+
 
 b. NfQuery Plug-in
-NfQuery Plug-in her bir alan tarafinda NfSen uzerinde kuruludur. Yoneticinin isteklerini gerceklestirmek icin sorgu sunucusu ile iletisime gecer. Yeni sorgulari almak, sorgu listesini guncellemek, istatistik raporlari alma gibi islemler gerceklestirir.
+NfQuery Plug-in, kullanicinin sorgu sunucusuyla iletisime gecmesini saglayan bir NfSen eklentisidir. Kullanicinin sorgu sunucu
+su tarafindan sunulan sorgulari gorebilecegi, bu sorgulari kendi netflow datasi uzerinde calistirabilecegi ve sonuclarini ince
+leyebilecegi bir arayuz sunar. Plugin arayuzu uzerinden NfQuery agina dahil olan aglar arasindaki guvenlik tehditleri ve aktivi
+teleri de takip edebilmektedir.
+
 
 c. Kaynaklar
-NfQuery kaynaklari tehdit bilgilerini saglayan ana bilesenlerdir. Bu bilesen kamuya acik, kullanimda olan kaynaklardir. Botnet, sunucu listeleri (Amada, SpyEye), DNS kara listesi (DShield), kotu niyetli alanlar ve dolandirici sitelerinin listesi, Balkupleri, Saldiri Onleme Sistemleri, Saldiri Tespit Sistemleri gibi sistemler gunluk verilerle NfQuery cercevesine veri saglayabilir.
+Kaynaklar, tehdit ve guvenlik bilgilerini/gunluklarini saglayan ana bilesenlerdir. Bir kaynagin kullanilabilmesi icin gerekli
+kriter sagladigi bilgiler uzerinden netflow sorgulari uretilebilmesidir. Botnet, sunucu listeleri (Amada, SpyEye), DNS kara listesi 
+(DShield), kotu niyetli alanlar ve dolandirici sitelerinin listesi, Balkupleri, Saldiri Onleme Sistemleri, Saldiri Tespit 
+Sistemleri gibi sistemler gunluk verilerle NfQuery cercevesine veri saglayabilir.
 
 
 
 Bagimliliklar
 ===============
-Platform : Ubuntu
+Platform : Linux
 Python Versiyon : Python 2.7.3, Python 2.7-dev
 Python Modulleri : config, MySQLdb, storm, termcolor, txJSON-RPC, netaddr
 
@@ -41,7 +59,7 @@ Python Modulleri : config, MySQLdb, storm, termcolor, txJSON-RPC, netaddr
 
 Son Versiyon
 -------------
-Son versiyonun detayli bilgileri NfQuery'nin resmi web sayfasinda bulabilirsiniz.
+Son versiyonun detayli bilgilerini NfQuery'nin resmi web sayfasinda bulabilirsiniz.
 http://nfquery.ulakbim.gov.tr
 
 
@@ -64,9 +82,8 @@ LICENCE dosyasina bakabilirsiniz.
 
 
 
-
 Yazarlar
 ==========
-Serdar Yigit <serdar.yigit@tubitak.gov.tr>
+Serdar Yigit <syigitisk@gmail.com>
 Ahmet Can Kepenek <ahmetcan.kepenek@gmail.com>
 Serhat Rifat Demircan <demircan.serhat@gmail.com>
