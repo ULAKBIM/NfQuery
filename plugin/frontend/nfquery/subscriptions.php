@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/style.css" type="text/css"/>
-<script src="/nfsen/plugins/nfquery/js/iphone-style-checkboxes.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="plugins/nfquery/css/style.css" type="text/css"/>
+<script src="plugins/nfquery/js/iphone-style-checkboxes.js" type="text/javascript" charset="utf-8"></script>
 
 <div class="row-fluid">
 	<div class="span6">

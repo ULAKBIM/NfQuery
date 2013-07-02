@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/bootstrap.css" />
+<link rel="stylesheet" href="plugins/nfquery/css/bootstrap.css" />
 
 <?php
 
@@ -18,10 +18,12 @@
  * The return value is ignored.
  */
 
-include('/var/www/nfsen/details.php');
+$GLOBALS["nfsen_frontend_dir"] = dirname($_SERVER["SCRIPT_FILENAME"]);
+$GLOBALS["nfsen_frontend_plugin_dir"] = $GLOBALS["nfsen_frontend_dir"] . "/plugins";
+include($GLOBALS["nfsen_frontend_dir"].'/details.php');
 
 function nfquery_ParseInput( $plugin_id ) {
-    if ($_POST['starttime'] && $_POST['endtime']){
+    if (isset($_POST['starttime']) && isset($_POST['endtime']) && $_POST['starttime'] && $_POST['endtime']){
         #set tleft and tright session variables so we can see that time range at graphs.
         $_SESSION['tleft'] = $_POST['starttime'];
         $_SESSION['tright'] = $_POST['endtime'];

@@ -1,14 +1,14 @@
 <?php
 	#include('loghandler.php');
 	$SUBDIRLAYOUT = 1;
-    require_once('/var/www/nfsen/conf.php');
-	require_once('/var/www/nfsen/nfsenutil.php');
+	require_once($GLOBALS["nfsen_frontend_dir"] . '/conf.php');
+	require_once($GLOBALS["nfsen_frontend_dir"]. '/nfsenutil.php');
+	$GLOBALS["__REMEMBER_FILENAME"] = $GLOBALS["nfsen_frontend_plugin_dir"] . "/nfquery/remember.conf";
 	function isRegistered(){
 		$command = 'nfquery::isRegistered';
 		$opts = array();
-		$outlist = nfsend_query($command, $opts);
-		return $outlist['register'];
-	
+		$out_list = nfsend_query($command, $opts);
+		return $out_list['register'];
 	}
 	
         function generateQuery($query_info_list, $mandatory){
@@ -57,9 +57,9 @@
 		echo '<td>% '.intval($percent).'</td></tr>';
 
 		echo '<tr><td class="outputInfoLabel"><strong>Queries</strong></td>';
-		echo '<td>'.sizeof($out_list['matched_queries']).'</td>';
+		echo '<td>'.((isset($out_list['matched_queries'])) ? sizeof($out_list['matched_queries']) : 0).'</td>';
 		echo '<td>'.sizeof($out_list['query_id']).'</td>';
-		$percent = sizeof($out_list['matched_queries'])*100;
+		$percent = ((isset($out_list['matched_queries'])) ? sizeof($out_list['matched_queries']) : 0) * 100;
 		$percent = $percent / sizeof($out_list['query_id']);
 		echo '<td>% '.intval($percent).'</td></tr>';
 
@@ -243,12 +243,16 @@
 		$subscriptions = $out_list['subscriptions'];
 		foreach($subscriptions as $subs){
 			$running_count=0;
-			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
-			$counter = array_count_values($out_list[$subs."-mandatory-status"]);
-			$running_count = $running_count+$counter['0'];
-			$counter = array_count_values($out_list[$subs."-optional-status"]);
-			$running_count = $running_count+$counter['0'];
-			$totalQuery = sizeof($out_list[$subs."-optional"])+sizeof($out_list[$subs."-mandatory"]);
+#SILINEBILIR-ugur ?!?#			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
+			if (isset($out_list[$subs."-mandatory-status"])) {
+				$counter = array_count_values($out_list[$subs."-mandatory-status"]);
+				$running_count = $running_count+$counter['0'];
+			}
+			if (isset($out_list[$subs."-optional-status"])) {
+				$counter = array_count_values($out_list[$subs."-optional-status"]);
+				$running_count = $running_count+$counter['0'];
+			}
+			$totalQuery = ((isset($out_list[$subs."-optional"])) ? sizeof($out_list[$subs."-optional"]) : 0) + ((isset($out_list[$subs."-mandatory"])) ? sizeof($out_list[$subs."-mandatory"]) : 0);
 			$p = $running_count*100/$totalQuery;
 			$output[$subs] = $p;
 		}
@@ -271,12 +275,16 @@
 			$result = $result.'<div class="accordion-heading">';
 			$result = $result."<table class='table' id='checkQueryTable'>";
 			$running_count=0;
-			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
-			$counter = array_count_values($out_list[$subs."-mandatory-status"]);
-			$running_count = $running_count+$counter['0'];
-			$counter = array_count_values($out_list[$subs."-optional-status"]);
-			$running_count = $running_count+$counter['0'];
-			$totalQuery = sizeof($out_list[$subs."-optional"])+sizeof($out_list[$subs."-mandatory"]);
+#SILINEBILIR-ugur ?!?#			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
+			if (isset($out_list[$subs."-mandatory-status"])) {
+				$counter = array_count_values($out_list[$subs."-mandatory-status"]);
+				$running_count = $running_count+$counter['0'];
+			}
+			if (isset($out_list[$subs."-optional-status"])) {
+				$counter = array_count_values($out_list[$subs."-optional-status"]);
+				$running_count = $running_count+$counter['0'];
+			}
+			$totalQuery = ((isset($out_list[$subs."-optional"])) ? sizeof($out_list[$subs."-optional"]) : 0) + ((isset($out_list[$subs."-mandatory"])) ? sizeof($out_list[$subs."-mandatory"]) : 0);
 			$p = $running_count*100/$totalQuery;
 
 			$result = $result."<tr><td style='width:300px'>".$subs."</td><td><div class='progress progress-striped active'> <div class='bar'".
@@ -296,7 +304,6 @@
 
 			$result = $result.'<div id="'.$subs.'Collapse" class="accordion-body collapse in outputAll">';
 			$result = $result.'<div id="'.$subs.'CollapseInner" class="accordion-inner outputs">';
-			$result = $result."Serhat";
 			$result = $result.'</div>';
 			$result = $result.'</div>';
 		}
@@ -338,16 +345,15 @@
 	}
 
 	function parseRememberFile(){
-		$conf = parse_ini_file('/var/www/nfsen/plugins/nfquery/remember.conf',1);
+		$conf = parse_ini_file($GLOBALS["__REMEMBER_FILENAME"], 1);
 		return $conf["remember"];
 	}
 
 
 	function editRememberFile(){	
-		$conf = parse_ini_file('/var/www/nfsen/plugins/nfquery/remember.conf',1);
-        $remember = $conf["remember"];	
+		$remember = parseRememberFile();
 
-		$file = fopen("/var/www/nfsen/plugins/nfquery/remember.conf","w");
+		$file = fopen($GLOBALS["__REMEMBER_FILENAME"], "w");
 		$button_id = $_POST['button_id'];
 		$button_status = $_POST['button_status'];
 		$remember["$button_id"] = (strcmp($button_status, "On") == 0) ? 1 : 0;

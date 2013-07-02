@@ -1,4 +1,12 @@
 <?php 
+if (!isset($GLOBALS["nfsen_frontend_dir"])) {
+	# actually the following dir can be obtained as: realpath(__DIR__ . "/../../"), but symbolic links break the code, so the following solution is coded.
+	$GLOBALS["nfsen_frontend_dir"] = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, $_SERVER["SCRIPT_FILENAME"]),1,-3));
+}
+if (!isset($GLOBALS["nfsen_frontend_plugin_dir"])) {
+	$GLOBALS["nfsen_frontend_plugin_dir"] = $GLOBALS["nfsen_frontend_dir"] . "/plugins";
+}
+
     require_once('loghandler.php');
     require_once('nfqueryutil.php');
 

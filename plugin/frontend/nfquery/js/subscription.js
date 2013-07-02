@@ -6,7 +6,7 @@ function subscription_toggle(button){
 		button_status = 'On';
 	}
 	//Send button status to be persistence
-	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",
+	$.post("plugins/nfquery/ajaxhandler.php",
 		{
 			button_status: button_status,
 			button_id: button.attr('id')
@@ -16,7 +16,7 @@ function subscription_toggle(button){
 }
 
 function getSubscriptionDetail3(name){
-	$.post("/nfsen/plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
+	$.post("plugins/nfquery/ajaxhandler.php",{ name: name},function(data){
 		$(".collapse").collapse();
                 $("#subscription_details").html(data);
   
@@ -41,7 +41,7 @@ function getSubscriptionDetail3(name){
 function runQueries(){
 	var subscriptions = $('#subscripted').val() || [];
 	subscriptions = subscriptions.join(',');
-	$.post("/nfsen/plugins/nfquery/ajaxhandler.php", {run:1, subscriptions: subscriptions}, function(data){ 
+	$.post("plugins/nfquery/ajaxhandler.php", {run:1, subscriptions: subscriptions}, function(data){ 
 		//alert(data);
 	 });
 }
@@ -59,7 +59,7 @@ function getFilters(button){
     var isNull = true;
 	var queryMap = {};
     
-    button.html("Running <img style='width:20px;height:20px' src='/nfsen/plugins/nfquery/img/loading.gif'>");
+    button.html("Running <img style='width:20px;height:20px' src='plugins/nfquery/img/loading.gif'>");
 	queryMap['queries'] = {};
     
 	$('#queryDiv .accordion-body').each(function(){
@@ -88,11 +88,11 @@ function getFilters(button){
        alert("Select a Query First !");
        button.html("Run !");
     }else{
-	  //$.post('/nfsen/plugins/nfquery/ajaxhandler.php', {runQueries:queryMap, source:source}, function(data){});
+	  //$.post('plugins/nfquery/ajaxhandler.php', {runQueries:queryMap, source:source}, function(data){});
 	  //Sync post solves the problem
         $.ajax({
            type: "POST",
-           url: "/nfsen/plugins/nfquery/ajaxhandler.php",
+           url: "plugins/nfquery/ajaxhandler.php",
            data: {runQueries:queryMap, source:source},
            async: false
            }).done(function() {

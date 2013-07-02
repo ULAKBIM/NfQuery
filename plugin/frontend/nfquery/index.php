@@ -1,19 +1,19 @@
-<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/bootstrap.css" />
-<link rel="stylesheet" href="/nfsen/css/detail.css" />
-<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/query.css" />
-<link rel="stylesheet" href="/nfsen/plugins/nfquery/css/process.css" /> <!-- Override bootstrap's form elements width and height-->
+<link rel="stylesheet" href="plugins/nfquery/css/bootstrap.css" />
+<link rel="stylesheet" href="css/detail.css" />
+<link rel="stylesheet" href="plugins/nfquery/css/query.css" />
+<link rel="stylesheet" href="plugins/nfquery/css/process.css" /> <!-- Override bootstrap's form elements width and height-->
 <script src="http://code.jquery.com/jquery-1.7.2.js"></script>
-<script src="/nfsen/plugins/nfquery/js/bootstrap.js"></script>
-<script src="/nfsen/plugins/nfquery/js/welcome.js"></script>
-<script src="/nfsen/plugins/nfquery/js/newquery.js"></script>
-<script src="/nfsen/plugins/nfquery/js/subscription.js"></script>
-<script src="/nfsen/plugins/nfquery/js/iphone-style-checkboxes.js"></script>
+<script src="plugins/nfquery/js/bootstrap.js"></script>
+<script src="plugins/nfquery/js/welcome.js"></script>
+<script src="plugins/nfquery/js/newquery.js"></script>
+<script src="plugins/nfquery/js/subscription.js"></script>
+<script src="plugins/nfquery/js/iphone-style-checkboxes.js"></script>
 <div id="index_container"  class="container-fluid">
 	<div class="row-fluid">
 	  <div class="span2">
-			<img src="/nfsen/plugins/nfquery/img/logo2.png">
+			<img src="plugins/nfquery/img/logo2.png">
 			<ul class="nav nav-list">
-				<form method="post" action="/nfsen/nfsen.php" id="navigationForm"> 
+				<form method="post" action="nfsen.php" id="navigationForm"> 
                     <input type="hidden" name="nfqueryTabName" id="nfqueryTab"/>
 
                     <!-- This fields need to run verification queries.-->
