@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 # This file is part of NfQuery.  NfQuery is free software: you can
 # redistribute it and/or modify it under the terms of the GNU General Public
 # License as published by the Free Software Foundation, version 3.
@@ -13,7 +14,6 @@
 #
 # Copyright NfQuery Team Members
 
-#!/usr/bin/perl
 
 package nfquery;
 use NfProfile;
@@ -280,7 +280,7 @@ sub ipInPrefixes{
 sub dateToTimestamp{
     my $date = shift;
     syslog('debug', "$date");
-    my ($year,$mon,$mday,$hour,$min,$sec, $msec) = split(/[\s-:\.]+/, $date);
+    my ($year,$mon,$mday,$hour,$min,$sec, $msec) = split(/[-\s:\.]+/, $date);
     my $time = timelocal($sec,$min,$hour,$mday,$mon-1,$year);
     return $time
 
@@ -685,7 +685,7 @@ sub findAlertsInOutputOfQuery{
     my @outputOfQuery = @{$output_ref};
     
     if ($subscriptionName){
-        %stats = %$stats->{$subscriptionName}{$query_id};
+        %stats = %{$stats->{$subscriptionName}{$query_id}};
     }else{
         %stats = %{$stats_ref};
     }
