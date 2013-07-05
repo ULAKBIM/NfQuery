@@ -1,3 +1,10 @@
+<?php
+	# there's some extra work here!
+	if (($register = isRegistered()) != 3) {
+		print("Please Register !!!");
+		exit;
+	}
+?>
 <link rel="stylesheet" href="plugins/nfquery/css/bootstrap.css" />
 <link rel="stylesheet" href="css/detail.css" />
 <link rel="stylesheet" href="plugins/nfquery/css/query.css" />
@@ -35,87 +42,33 @@
 							}
 						?>
 				</form>
-					<li class="navItem <?php if (strcmp($tabName, "Home") == 0) echo "active"?>">
-						<a data-toggle="tab" href="#" class="nfqueryNav "><i class="icon-home"></i>Home</a>
-					</li>
-					<li class="navItem <?php if (strcmp($tabName, "Subscription") == 0) echo "active"?>">
-						<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-book"></i>Subscription</a>
-					</li>
-					<li class="navItem <?php if (strcmp($tabName, "Workspace") == 0) echo "active"?>">
-						<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-pencil"></i>Workspace</a>
-					</li>
-					<li class="navItem <?php if (strcmp($tabName, "Running") == 0) echo "active"?>">
-						<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-info-sign"></i>Running</a>
-					</li>
-					<li class="navItem <?php if (strcmp($tabName, "Report") == 0) echo "active"?>">
-						<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-bullhorn"></i>Report</a>
-					</li>
-					<li class="navItem <?php if (strcmp($tabName, "AddQuery") == 0) echo "active"?>">
-						<a data-toggle="tab" href="#" class="nfqueryNav"><i class=" icon-certificate"></i>AddQuery</a>
-					</li>
-					<li class="navItem <?php if (strcmp($tabName, "Settings") == 0) echo "active"?>">
-						<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-wrench"></i>Settings</a>
-					</li>
-					<li class="navItem <?php if (strcmp($tabName, "About") == 0) echo "active"?>">
-						<a data-toggle="tab" href="#" class="nfqueryNav"><i class="icon-align-justify"></i>About</a>
-					</li>
+<?php
+	$tab_meta = array (
+				"Home" => array("id" => "home", "extra_check" => ($register==3), "include" => "welcome.php", "icon" => "icon-home"),
+				"Subscription" => array("id" => "subscription", "extra_check" => ($register==3), "include" => "subscriptions.php", "icon" => "icon-book"),
+				"Workspace" => array("id" => "workspace", "extra_check" => ($register==3), "include" => "workspace.php", "icon" => "icon-pencil"),
+				"Running" => array("id" => "running", "extra_check" => ($register==3), "include" => "running.php", "icon" => "icon-info-sign"),
+				"Report" => array("id" => "report", "extra_check" => ($register==3), "include" => "report.php", "icon" => "icon-bullhorn"),
+				"AddQuery" => array("id" => "addquery", "extra_check" => ($register==3), "include" => "newquery.php", "icon" => "icon-certificate"),
+				"Settings" => array("id" => "settings", "extra_check" => true, "include" => "settings.php", "icon" => "icon-wrench"),
+				"About" => array("id" => "about", "extra_check" => true, "include" => "about.php", "icon" => "icon-align-justify"),
+			);
+	foreach ($tab_meta AS $subpage => $attr) {
+		print ("<li class=\"navItem". (($tabName == $subpage) ? " active" : "") ."\"><a data-toggle=\"tab\" href=\"#\" class=\"nfqueryNav\"><i class=\"". $attr["icon"] ."\"></i>$subpage</a></li>\n");
+	}
+?>
 			</ul>
 		</div>
 			<div class="tab-content span10">
+<?php
+	if (isset ($tab_meta[$tabName]) && $tab_meta[$tabName]["extra_check"]) {
+		print "<div class=\"tab-pane active\" id=\"". $tab_meta[$tabName]["id"]. "\">\n"
+                      	. "<div class=\"container-fluid\">\n";
+		include($tab_meta[$tabName]["include"]);
+		print "</div>\n</div>\n";
+	}
+?>
 
-				<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Home") == 0) echo "active" ?>" id="home">
-					<div class="container-fluid">
-						<?php if (strcmp($tabName, "Home") == 0) include('welcome.php');?>
-					</div>
-				</div>
-
-				<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Subscription") == 0) echo "active"?>" id="subscription">
-					<div class="container-fluid">
-						<?php if ( strcmp($tabName, "Subscription") == 0) include('subscriptions.php'); ?>
-					</div>
-				</div>
-				
-				<div class="tab-pane <?php if (strcmp($tabName, "Settings") == 0) echo "active"?>" id="settings">
-
-					<div class="container-fluid">
-						<?php if (strcmp($tabName, "Settings") == 0) include('settings.php'); ?>
-					</div>
-				</div>
-
-				<div class="tab-pane <?php if (strcmp($tabName, "About") == 0) echo "active"?>" id="about">
-					<div class="container-fluid">
-						<?php if (strcmp($tabName, "About") == 0) include('about.php'); ?>
-					</div>
-				</div>
-
-				<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Workspace") == 0) echo "active"?>" id="workspace">
-					<div class="container-fluid">
-						<?php if (strcmp($tabName, "Workspace") == 0) include('workspace.php');?>
-					</div>
-				</div>
-				<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "AddQuery") == 0) echo "active"?>" id="addquery">
-					<div class="container-fluid">
-						<?php if (strcmp($tabName, "AddQuery") == 0) include('newquery.php');?>
-					</div>
-				</div>
-
-				<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Running") == 0) echo "active"?>" id="running">
-					<div class="container-fluid">
-						<?php if (strcmp($tabName, "Running") == 0)include('running.php');?>
-					</div>
-				</div>
-
-				<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Verification") == 0) echo "active"?>" id="verification">
-					<div class="container-fluid">
-						<?php if (strcmp($tabName, "Verification") == 0)include('verification.php');?>
-					</div>
-
-				</div>
-				<div class="tab-pane <?php if ($register==3 and strcmp($tabName, "Report") == 0) echo "active"?>" id="verification">
-					<div class="container-fluid">
-						<?php if (strcmp($tabName, "Report") == 0)include('report.php');?>
-					</div>
-				</div>
 			</div>
 	
 		</div>
