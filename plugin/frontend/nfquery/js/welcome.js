@@ -6,7 +6,7 @@ function getQueryStatus(){
 }
 
 function getMyAlerts(){
-	$.post("plugins/nfquery/ajaxhandler.php",{ geAtlerat: "getAlerts"},function(data){
+	$.post("plugins/nfquery/ajaxhandler.php",{ getAlerts: "getAlerts"},function(data){
 		alert(data[0]);
 		var alertDiv = document.getElementById("alertDiv");
 		alertDiv.setAttribute("class","alert alert-block alert-error fade in");
