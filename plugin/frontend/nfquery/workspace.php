@@ -30,7 +30,7 @@
 						echo '<div id="'.$s.'" style="padding-left:30px;" class="accordion-body collapse in subscriptionBody">';
                         echo '<div class="accordion-inner filters">';
                     $print_no_queries = true;
-                    if ($squeries[$s]){
+                    if (isset($squeries[$s])){
                         foreach($squeries[$s] as $k1=>$package){
                             $has_query = false;
 							foreach($package as $index=>$query){
@@ -50,7 +50,7 @@
                                 echo '</div>';
 						}
                     }
-                    if(!$squeries[$s] || $print_no_queries){
+                    if(!isset($squeries[$s]) || $print_no_queries){
 						echo 'No queries found...';
 					}
 						echo '</div>';

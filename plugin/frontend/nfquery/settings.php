@@ -1,5 +1,6 @@
 <?php
-	switch ($a=isRegistered()) {
+	global $register;
+	switch ($register) {
 	case 1: 
 		$html = "<div class='alert alert-error'><img src='plugins/nfquery/img/check_block.png'>&nbsp; &nbsp; &nbsp;    Your registration request was rejected.</div>";	
 		break;

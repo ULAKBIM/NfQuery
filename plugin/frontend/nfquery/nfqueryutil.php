@@ -246,11 +246,11 @@
 #SILINEBILIR-ugur ?!?#			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
 			if (isset($out_list[$subs."-mandatory-status"])) {
 				$counter = array_count_values($out_list[$subs."-mandatory-status"]);
-				$running_count = $running_count+$counter['0'];
+				$running_count = $running_count+((isset($counter['0'])) ? $counter['0'] : 0);
 			}
 			if (isset($out_list[$subs."-optional-status"])) {
 				$counter = array_count_values($out_list[$subs."-optional-status"]);
-				$running_count = $running_count+$counter['0'];
+				$running_count = $running_count+((isset($counter['0'])) ? $counter['0'] : 0);
 			}
 			$totalQuery = ((isset($out_list[$subs."-optional"])) ? sizeof($out_list[$subs."-optional"]) : 0) + ((isset($out_list[$subs."-mandatory"])) ? sizeof($out_list[$subs."-mandatory"]) : 0);
 			$p = $running_count*100/$totalQuery;
@@ -263,7 +263,7 @@
 		$command = 'nfquery::checkQueries';
 		$opts = array();
 		$out_list = nfsend_query($command, $opts);
-		if (!$out_list['subscriptions']){ #if no query is active return alert.
+		if (!isset($out_list['subscriptions'])){ #if no query is active return alert.
 			$result = '<div class="alert">No query is running.</div>';
 			return $result;
 		}
@@ -278,11 +278,11 @@
 #SILINEBILIR-ugur ?!?#			${"{$subs}mandatory"} = $out_list[$subs."-mandatory"];
 			if (isset($out_list[$subs."-mandatory-status"])) {
 				$counter = array_count_values($out_list[$subs."-mandatory-status"]);
-				$running_count = $running_count+$counter['0'];
+				$running_count = $running_count+((isset($counter['0'])) ? $counter['0'] : 0);
 			}
 			if (isset($out_list[$subs."-optional-status"])) {
 				$counter = array_count_values($out_list[$subs."-optional-status"]);
-				$running_count = $running_count+$counter['0'];
+				$running_count = $running_count+((isset($counter['0'])) ? $counter['0'] : 0);
 			}
 			$totalQuery = ((isset($out_list[$subs."-optional"])) ? sizeof($out_list[$subs."-optional"]) : 0) + ((isset($out_list[$subs."-mandatory"])) ? sizeof($out_list[$subs."-mandatory"]) : 0);
 			$p = $running_count*100/$totalQuery;
