@@ -5,6 +5,7 @@ use File::Basename;
 use Cwd;
 use Getopt::Std;
 
+
 my @nfsen_search_paths = ("/usr/local/bin/nfsen", "/data/nfsen/bin/nfsen", "/usr/bin/nfsen");
 my $nfsen_path;
 my $module_dir;
@@ -12,6 +13,19 @@ my $plugin_path;
 our $opt_h;
 my $backup_suffix = "-uninstalled.at-".`date +"%Y.%m.%d-%H.%M.%S"`;
 chop $backup_suffix;
+
+my @module_dependency = (
+	"Digest::MD5",
+	"JSON",
+	"JSON::RPC::LWP",
+	"NetAddr::IP",
+	"Net::SSL",
+	"Parallel::ForkManager",
+	"DBM::Deep",
+	"LWP::UserAgent",
+);
+
+my @missing_modules = ();
 
 ################################################################################
 sub usage {
@@ -62,6 +76,17 @@ getopts('h');
 if ($opt_h) {
 	usage();
 	exit;
+}
+
+foreach my $m (@module_dependency) {
+	eval "require $m" or push @missing_modules, $m
+}
+
+if (@missing_modules) {
+	print "The following Perl Modules are missing:\n\t";
+	print join("\n\t", @missing_modules) . "\n";
+	print "Please install the missing Perl Modules either via your Unix distro's package manager or via perl cpan shell. And then install NfQuery plugin.\n";
+	exit 4;
 }
 
 if (@ARGV) {
