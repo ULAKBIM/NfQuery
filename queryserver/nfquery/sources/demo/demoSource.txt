@@ -1,3 +1,0 @@
-# Demo Source
-# srcip:srcport-dstip:dstport
-193.140.94.160:41315-193.140.83.122:4101
