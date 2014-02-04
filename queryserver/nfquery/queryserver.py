@@ -141,9 +141,10 @@ class QueryServer:
         self.qslogger.info('Starting QueryServer')
         self.qslogger.info('Listening for plugin connections on port : %s' % self.config.nfquery.port)
 
-    def executeParsers(self, parser):
+    def executeParsers(self, source_name):
+        self.qslogger.info('In QueryServer executeParsers. source_name: %s' % source_name)
         qm = QueryManager(store=self.createStore(), sources=self.config.sources, plugins=self.config.plugins)
-        qm.executeParsers(parser)
+        qm.executeParsers(source_name)
         # cleanup
         qm.store.close()
         qm = None
@@ -155,7 +156,7 @@ class QueryServer:
 
         for index in range(len(self.config.sources)):
             # routine = task.LoopingCall(self.queryManager.executeParsers, self.config.sources[index].parser)  # call the parser
-            routine = task.LoopingCall(self.executeParsers, self.config.sources[index].parser)  # call the parser
+            routine = task.LoopingCall(self.executeParsers, self.config.sources[index].source_name)  # call the parser for source_name
             routine.start(int(self.config.sources[index].time_interval) * 60, now=False)  # call according to time interval in seconds
         self.qslogger.info('Starting the Scheduler')
 
@@ -314,6 +315,7 @@ class QueryServer:
                       + 'creation_time_id int(10) unsigned NOT NULL,'
                       + 'type_id int(10) unsigned NOT NULL,'
                       + 'category_id int(10) unsigned NOT NULL,'
+                      + 'filter_cache TEXT DEFAULT NULL,'
                       + 'PRIMARY KEY (id),'
                       + 'FOREIGN KEY (source_id) REFERENCES source(id) ON DELETE CASCADE'
     

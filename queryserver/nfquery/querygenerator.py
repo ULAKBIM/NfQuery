@@ -66,10 +66,10 @@ class QueryGenerator:
     def setStore(self, store):
         self.store = store
 
-    def createQuery(self, parser):
+    def createQuery(self, source_name):
         try:
             # Load Parser Output
-            output_file = self.loadParserOutput(parser)
+            output_file = self.loadParserOutput(source_name)
             if not output_file:
                 return
             # Validate Parser Output
@@ -81,10 +81,10 @@ class QueryGenerator:
             return
 
 
-    def loadParserOutput(self, parser):
+    def loadParserOutput(self, source_name):
         self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
         for index in range(len(self.sources)):
-            if parser == self.sources[index].parser:
+            if source_name == self.sources[index].source_name:
                 try:
                     parser_output = open(self.sources[index].output_file, 'r')
                 except Exception, e:
@@ -95,9 +95,6 @@ class QueryGenerator:
                 md5hash = hashlib.md5()
                 md5hash.update(str(parser_output.readlines()))
                 parser_output.close()
-                file_checksum = md5hash.hexdigest()
-                parser_ = self.store.find(Parser, 
-                                          Parser.name == unicode(parser) ).one()
                 # Decide if output is changed or not to create query
                 #if parser_.checksum == unicode(file_checksum):
                 #    self.qglogger.info('No need to generate query, '
@@ -177,7 +174,7 @@ class QueryGenerator:
        #     length -= 1
         return comb_list
  
-
+################################################################################
     def generateQuery(self, data):
         q_id = 0
         inserted_query_list = []
@@ -316,11 +313,20 @@ class QueryGenerator:
             self.query_type = ''
              
             plugins = self.store.find(Plugin)
+
+            _r_net = dict();
+            for plugin in list(plugins):
+                _r_net[plugin.prefix.prefix] = IPSet([]);
+                for __p in plugin.prefix.prefix.replace(" ","").split(','):
+                    _r_net[plugin.prefix.prefix].add(__p)
+                
             if 'src_ip' and 'dst_ip' in expr.keys():
                 src_ip = expr['src_ip']
                 dst_ip = expr['dst_ip']
+                _r_ip = IPSet([src_ip, dst_ip])
                 for plugin in list(plugins):
-                    if IPAddress(src_ip) and IPAddress(dst_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                    #if IPAddress(src_ip) and IPAddress(dst_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                    if _r_ip.issubset(_r_net[plugin.prefix.prefix]):
                         md5hash = hashlib.md5()
                         md5hash.update(str(src_ip) + str(dst_ip))
                         checksum = md5hash.hexdigest()       
@@ -337,8 +343,10 @@ class QueryGenerator:
 
             if 'src_ip' in expr.keys():
                 src_ip = expr['src_ip']
+                _r_ip = IPSet([src_ip])
                 for plugin in list(plugins):
-                    if IPAddress(src_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                    #if IPAddress(src_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                    if _r_ip.issubset(_r_net[plugin.prefix.prefix]):
                         md5hash = hashlib.md5()
                         md5hash.update(str(src_ip))
                         checksum = md5hash.hexdigest()       
@@ -355,8 +363,10 @@ class QueryGenerator:
 
             if 'dst_ip' in expr.keys():
                 dst_ip = expr['dst_ip']
+                _r_ip = IPSet([dst_ip])
                 for plugin in list(plugins):
-                    if IPAddress(dst_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                    #if IPAddress(dst_ip) in list( IPNetwork(plugin.prefix.prefix)):
+                    if _r_ip.issubset(_r_net[plugin.prefix.prefix]):
                         md5hash = hashlib.md5()
                         md5hash.update(str(dst_ip))
                         checksum = md5hash.hexdigest()       
@@ -451,7 +461,7 @@ class QueryGenerator:
             '''
                 Update update_time of the query.
             '''
-            self.qglogger.debug(colored('Query exists in the database.', 'green', attrs=['bold']))
+#SILINECEK#            self.qglogger.debug(colored('Query exists in the database.', 'green', attrs=['bold']))
             try:
                 update_time_id = self.store.find( models.Time.id, 
                                                   models.Time.time == date
@@ -465,7 +475,7 @@ class QueryGenerator:
                     self.store.flush()
                     query.update_time_id = time.id
                 self.store.commit()
-                self.qglogger.debug('Query time is updated')
+#SILINECEK#                self.qglogger.debug('Query time is updated')
                 #self.qglogger.info('query_id : %d' % query.id)
             except Exception, e:
                 self.qglogger.warning(e)
@@ -781,9 +791,15 @@ class QueryGenerator:
            6) Put this information to db appropriately.
         '''
 
-        self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
-        filter_packet = {}
+        # self.qglogger.debug('In %s' % sys._getframe().f_code.co_name)
+        # filter_packet = {}
+        ## should there be a for loop here. -ugur
         for query in query_list:
+            if query.filter_cache is not None:
+                ##self.qglogger.info('------------ HIT -------------- %d: %s' % (query.id, query.filter_cache))
+                return query.filter_cache
+
+            ## self.qglogger.info('******************************** %d: %s' % (query.id, query.filter_cache))
             query_type = self.store.find( Type.type,
                                           Type.id == query.type_id ).one()
             filter = []
@@ -906,12 +922,20 @@ class QueryGenerator:
                     filter_ += filter[index] + ' and '
                 filter_ += filter[index+1]
                 #filter_packet[query.id] = filter_
-                return filter_
+                self.qglogger.debug('>>CreateQueryFilter-filter-MULTIPLE: query_id: %d, filter: %s' % (query.id, filter_) )
+                the_result = filter_
             else:
                 #print 'query id : %d' % query.id
                 #print 'validation_query:', filter
                 #filter_packet[query.id] = str(filter)
-                return str(filter[0])
+                self.qglogger.debug('>>CreateQueryFilter-filter-SINGLE: query_id: %d, filter: %s' % (query.id, filter[0]) )
+                #the_result = str(filter[0])
+                the_result = filter[0]
+            self.store.find(Query, Query.id == query.id).set(filter_cache = unicode(the_result))
+#            query.set(filter_cache = the_result)
+            self.store.commit()
+            self.store.flush()
+            return the_result
 
         #return filter_packet
 
