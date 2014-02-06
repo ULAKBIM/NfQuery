@@ -1,12 +1,13 @@
 <?php
 
     #topN query (by number of generated queries) will be displayed.
-    $n;
+    $n = 10;
     
-    if (array_key_exists('n', $_POST)){
+    if (isset($_POST['n'])){
         $n = $_POST['n'];
-    }else{
-        $n = 10; #If n is not specified its default value will be 10.
+	if ($n > 100) {
+		$n = 100;  ## max number of n
+	}
     }
 
     $topN = getTopNQuery($n);

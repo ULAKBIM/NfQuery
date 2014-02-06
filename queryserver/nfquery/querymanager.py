@@ -22,28 +22,28 @@ import os.path
 import hashlib
 import subprocess
 import time
-import pprint
 from datetime import datetime
+
 # nfquery imports
-import db
 import logger
 from models import *
 from storm.locals import In
 from utils import *
 from querygenerator import QueryGenerator
+from storm.info import ClassAlias
 
 __all__ = ['QueryManager']
 
 class QueryManager:
 
-    def __init__(self, sources=None, plugins=None):
+    def __init__(self, store = None, sources=None, plugins=None):
         self.qmlogger = logger.createLogger('querymanager')
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         self.qmlogger.info('Starting QueryManager')
-        self.store = db.get_store()
+        self.store = store
         self.sources = sources
         self.plugins = plugins
-        self.QGenerator = QueryGenerator(sources)
+        self.QGenerator = QueryGenerator(self.store, sources)
         
 
     def start(self):
@@ -51,6 +51,100 @@ class QueryManager:
         self.checkParsers()
         self.executeParsers()
         self.createSubscriptionPackets()
+
+    def setStore(self, store):
+        self.store = store
+        self.QGenerator.setStore(store)
+    
+################################################################################
+    def getAllThreatByTypeAndId(self):
+        result = dict()
+        result['type'] = dict()
+        result['id'] = dict()
+        data = self.store.find(Threat)
+        for d in data:
+            result['type'][d.type] = {"id": d.id, "type": d.type }
+            result['id'][d.id]     = {"id": d.id, "type": d.type }
+
+        return (result);
+
+################################################################################
+    def getAllTypesByTypeAndId(self):
+        result = dict()
+        result['type'] = dict()
+        result['id'] = dict()
+        data = self.store.find(Type)
+        for d in data:
+            result['type'][d.type] = {"id": d.id, "type": d.type }
+            result['id'][d.id]     = {"id": d.id, "type": d.type }
+
+        return (result);
+
+################################################################################
+    def getAllSourcesByNameAndId(self):
+        result = dict()
+        result['name'] = dict()
+        result['id'] = dict()
+
+        data = self.store.find(Source, Source.is_active == 1)
+        for d in data:
+            result['name'][d.name] = {"id": d.id, "name": d.name, "threat_id": d.threat_id, "is_active": d.is_active, "parser_id": d.parser_id, "checksum": d.checksum, "link":d.link}
+            result['id'][d.id]     = {"id": d.id, "name": d.name, "threat_id": d.threat_id, "is_active": d.is_active, "parser_id": d.parser_id, "checksum": d.checksum, "link":d.link}
+
+        return (result);
+
+################################################################################
+    def getAllSubscriptionsByNameAndId(self):
+        result = dict()
+        result['name'] = dict()
+        result['id'] = dict()
+
+        data = self.store.find(Subscription)
+        for d in data:
+            result['name'][d.name] = {"id": d.id, "name": d.name, "type": d.type }
+            result['id'][d.id]     = {"id": d.id, "name": d.name, "type": d.type }
+
+        return (result);
+
+################################################################################
+    def getAllPluginsByOrganizationAndId(self):
+        result = dict()
+        result['organization'] = dict()
+        result['id'] = dict()
+
+        data = self.store.find(Plugin)
+        for d in data:
+            result['organization'][d.organization] = {"id": d.id, "organization": d.organization, "adm_name": d.adm_name, "adm_mail": d.adm_mail, "adm_tel": d.adm_tel, "adm_publickey_file": d.adm_publickey_file, "prefix_id": d.prefix_id, "plugin_ip": d.plugin_ip, "checksum": d.checksum, "registered": d.registered}
+            result['id'][d.id]                     = {"id": d.id, "organization": d.organization, "adm_name": d.adm_name, "adm_mail": d.adm_mail, "adm_tel": d.adm_tel, "adm_publickey_file": d.adm_publickey_file, "prefix_id": d.prefix_id, "plugin_ip": d.plugin_ip, "checksum": d.checksum, "registered": d.registered}
+
+        return (result);
+
+################################################################################
+    def getAllPrefixesByPrefixAndId(self):
+        result = dict()
+        result['prefix'] = dict()
+        result['id'] = dict()
+
+        data = self.store.find(Prefix)
+        for d in data:
+            result['prefix'][d.prefix] = {"id": d.id, "prefix": d.prefix }
+            result['id'][d.id]         = {"id": d.id, "prefix": d.prefix }
+
+        return (result);
+
+################################################################################
+    def getAllCategoriesByCategoryAndId(self):
+        result = dict()
+        result['category'] = dict()
+        result['id'] = dict()
+
+        data = self.store.find(Category)
+        for d in data:
+            result['category'][d.category] = {"id": d.id, "category": d.category }
+            result['id'][d.id]             = {"id": d.id, "category": d.category }
+
+        return (result);
+
 
     ###########################################################
     ### Plugin Management                                   ###
@@ -124,6 +218,7 @@ class QueryManager:
                 plugin.plugin_ip = unicode(self.plugins[index].plugin_ip)
                 plugin.prefix_id = prefix_list.id
                 plugin.checksum = unicode(conf_checksum.hexdigest())
+                plugin.registered = 2; # registration is pending by default
                 self.store.add(plugin)
                 self.store.commit()
                 self.qmlogger.debug(plugin.id)
@@ -224,7 +319,6 @@ class QueryManager:
             subscription_list = []
             for subs in dbsubscriptions:
                 subscription_list.append(subs)
-            print subscription_list
             for subscription_name in dbsubscriptions:
                 if not subscription_name in(sources_list):
                     self.qmlogger.info('Do you want delete subscription %s from QS' %subscription_name)
@@ -345,33 +439,30 @@ class QueryManager:
                 # find a parser and crash!!!
 
     
-    def executeParsers(self, parser=None):
+    def executeParsers(self, source_name=None):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        if parser is None:
+        if source_name is None:
             self.qmlogger.debug('running all parsers')
             for index in range(len(self.sources)):
                 try:
-                    self.qmlogger.info('Running parser : %s' % self.sources[index].parser)
-                    returncode = subprocess.call([ 'python', 
-                                                   self.sources[index].parser] )
+                    self.qmlogger.info('Running parser : %s %s %s %s' % (self.sources[index].parser, self.sources[index].source_name, self.sources[index].source_link,  self.sources[index].output_file))
+                    returncode = subprocess.call([self.sources[index].parser, self.sources[index].source_name, self.sources[index].source_link,  self.sources[index].output_file])
                     if returncode == 0:
-                        self.QGenerator.createQuery(self.sources[index].parser)
+                        self.QGenerator.createQuery(self.sources[index].source_name)
                     else:
                         self.qmlogger.warning('Parser returned with error')
-                    #self.QGenerator.createQuery(self.sources[index].parser)
                 except Exception, e:
                     self.qmlogger.error('got exception: %r, exiting' % (e))
                     continue
         else:
-            self.qmlogger.debug('running parser %s' % parser)
+            self.qmlogger.debug('running parser for source %s' % source_name)
             for index in range(len(self.sources)):
-                if self.sources[index].parser == parser:
+                if self.sources[index].source_name == source_name:
                     try:
-                        self.qmlogger.info('Running parser : %s' % self.sources[index].parser)
-                        returncode = subprocess.call([ 'python', 
-                                                       self.sources[index].parser])
+                        self.qmlogger.info('Running parser %s for source : %s' % (self.sources[index].parser, self.sources[index].source_name))
+                        returncode = subprocess.call([self.sources[index].parser, self.sources[index].source_name, self.sources[index].source_link,  self.sources[index].output_file])
                         if returncode == 0:
-                            self.QGenerator.createQuery(self.sources[index].parser)
+                            self.QGenerator.createQuery(self.sources[index].source_name)
                         else:
                             self.qmlogger.warning('Parser returned with error')
                     except Exception, e:
@@ -415,26 +506,42 @@ class QueryManager:
                 self.qmlogger.debug( 'Subscription type %s added to db' % 
                                      source_name )
     
-        # 2) Threat Type
-        subscription_type=2
-        threat_type_list = self.store.find(Threat.type)
-        threat_type_list.group_by(Threat.type)
-        for threat_type in threat_type_list:
-            subscription = self.store.find( Subscription.id, 
-                                            Subscription.name == '%s' % 
-                                            (threat_type)
-                                          )
-            if subscription.is_empty():
-                subscription = Subscription()
-                subscription.type = subscription_type
-                subscription.name = threat_type
-                self.store.add(subscription)
-                self.qmlogger.debug( 'Subscription type %s added to db' % 
-                                     threat_type )
+#SILINECEK        # 2) Threat Type
+#SILINECEK        subscription_type=2
+#SILINECEK        threat_type_list = self.store.find(Threat.type)
+#SILINECEK        threat_type_list.group_by(Threat.type)
+#SILINECEK        for threat_type in threat_type_list:
+#SILINECEK            subscription = self.store.find( Subscription.id, 
+#SILINECEK                                            Subscription.name == '%s' % 
+#SILINECEK                                            (threat_type)
+#SILINECEK                                          )
+#SILINECEK            if subscription.is_empty():
+#SILINECEK                subscription = Subscription()
+#SILINECEK                subscription.type = subscription_type
+#SILINECEK                subscription.name = threat_type
+#SILINECEK                self.store.add(subscription)
+#SILINECEK                self.qmlogger.debug( 'Subscription type %s added to db' % 
+#SILINECEK                                     threat_type )
+#
+#SILINECEK        # 3) Plugins
+#SILINECEK        subscription_type=3
+#SILINECEK        org_list = self.store.find(Plugin.organization)
+#SILINECEK        org_list.group_by(Plugin.organization)
+#SILINECEK        for org in org_list:
+#SILINECEK            subscription = self.store.find( Subscription.id, 
+#SILINECEK                                            Subscription.name == '%s' % 
+#SILINECEK                                            (org)
+#SILINECEK                                          )
+#SILINECEK            if subscription.is_empty():
+#SILINECEK                subscription = Subscription()
+#SILINECEK                subscription.type = subscription_type
+#SILINECEK                subscription.name = org
+#SILINECEK                self.store.add(subscription)
+#SILINECEK                self.qmlogger.debug( 'Subscription type %s added to db' % 
+#SILINECEK                                     org )
 
         self.store.commit()
         self.qmlogger.debug('Subscription types are created')
-
     
     ###########################################################
     ### Subscription Packets Creation                       ###
@@ -523,7 +630,6 @@ class QueryManager:
     def getFilter(self, query_id):
 	query_id = int(query_id)
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        pp = pprint.PrettyPrinter(indent=4)
         self.qmlogger.debug('Getting filter, query_id %d' % query_id)
         query = self.store.find(Query, Query.id == query_id).one()
         query_filter = self.QGenerator.createQueryFilter([query])
@@ -545,7 +651,21 @@ class QueryManager:
     ### Subscription Releasing and Plugin Request Handling  ###
     ###########################################################
     def getSubscription(self, name, method_call):
+        self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
+        self.qmlogger.debug('subscription_name = %s' % name)
+
+        all_types = self.getAllTypesByTypeAndId()
+        all_categories = self.getAllCategoriesByCategoryAndId()
+        all_sources = self.getAllSourcesByNameAndId()
+
+
+        QueryPacket2 = ClassAlias(QueryPacket)
+
+        indices={}
+        result = {}
+        all_queries = dict() 
         if method_call == "new":
+            source_list = list()
             subscription_type, subscription_id = self.store.find((Subscription.type, Subscription.id), Subscription.name == unicode(name)).one()
             if subscription_type == 2:
                 threat_id =  self.store.find(Threat.id, Threat.type == name).one()
@@ -555,164 +675,66 @@ class QueryManager:
                 source = self.store.find(Source, Source.name == name).one()
                 source_list = [source]
 
-            result = {}
             result[subscription_type] = {}
 
             for source in source_list:
                 result[subscription_type][source.name] = {}
-                mandatory_id = self.store.find(Category.id,Category.category == u'mandatory').one()
-                optional_id = self.store.find(Category.id,Category.category == u'optional').one()
-                mandatory_queires_list = self.store.find(Query, (Query.source_id == source.id, Query.category_id == mandatory_id))
-                mandatory_queires_list = list(mandatory_queires_list)
-                optional_queires_list = self.store.find(Query, (Query.source_id == source.id, Query.category_id == optional_id))
-                optional_queires_list = list(optional_queires_list)
-                subs_id_of_current_source = self.store.find(Subscription.id, Subscription.name == source.name).one()
-                qpacket_list = self.store.find(SubscriptionPacket.query_packet_id, SubscriptionPacket.subscription_id == subs_id_of_current_source)
                 result[subscription_type][source.name]['queries'] = {}
                 result[subscription_type][source.name]['source_name'] = str(source.name)
                 result[subscription_type][source.name]['source_link'] = str(source.link)
-                if not qpacket_list.is_empty():
-                    self.qmlogger.debug('y2')
-                    qp_query_id_list = self.store.find(QueryPacket.query_id, In(QueryPacket.id, list(qpacket_list)))
-                    query_packet = {}
-                    for qp_query_id in qp_query_id_list:
-                        # I've validation id, now let's get other ids and try to create the whole query_packet
-                        query_packet_ids = self.store.find(QueryPacket.query_id, QueryPacket.validation_id == qp_query_id)
-                        packet = {}
-                        index = 0
-                        for query_id in query_packet_ids:
-                            query = self.store.find(Query, Query.id == query_id).one()
-                            query_filter = self.QGenerator.createQueryFilter([query])
-                            if query.category_id == 1:
-                                query_packet_id = query.id
-                            query_type = self.store.find(Type.type, query.type_id == Type.id).one()
-                            source = self.store.find(Source, Source.id == query.source_id).one()
-                            category = self.store.find(Category,Category.id == query.category_id).one()
-                             #print query_type
-                            packet[index] = {
-                                              'query_id' : query.id,
-                                              'query_type' : query_type,
-                                              'category_id' : query.category_id,
-                                              'filter' : query_filter,
-                                              'category_name' : category.category,
-                                            #  'source_name' : source.name,
-                                              #'link' : source.link,
-                                             # 'subscription_type' : subscription_type
+                for query, qp_query_id in self.store.find((Query, QueryPacket.query_id), (SubscriptionPacket.subscription_id == Subscription.id, QueryPacket.id == SubscriptionPacket.query_packet_id, QueryPacket2.validation_id == QueryPacket.query_id, Query.id == QueryPacket2.query_id), Subscription.name == source.name):
+                    if (not qp_query_id in indices.keys()):
+                        indices[qp_query_id] = 0;
+                        result[subscription_type][source.name]['queries'][qp_query_id] = {}
+                    
+                    if (query.filter_cache is None):
+                        query_filter = self.QGenerator.createQueryFilter([query])
+                    else:
+                        query_filter = query.filter_cache
 
-                                             }
-                            index += 1
-                            query_packet[qp_query_id] = packet
-                        result[subscription_type][source.name]['queries'] = query_packet
-                        self.qmlogger.debug('Returning details for subscription %s ' % name)
+                    query_type = all_types['id'][query.type_id]["type"]
+                    category_name = all_categories['id'][query.category_id]["category"]
+
+                    result[subscription_type][source.name]['queries'][qp_query_id][indices[qp_query_id]] = {
+                                                                                                        'query_id' : query.id,
+                                                                                                        'query_type' : query_type,
+                                                                                                        'category_id' : query.category_id,
+                                                                                                        'filter' : query_filter,
+                                                                                                        'category_name' : category_name,
+                                                                                                            }
+                    indices[qp_query_id] += 1
             return result
 
         else:
-            self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-            self.qmlogger.debug('subscription_name = %s' % name)
-            pp = pprint.PrettyPrinter(indent=4)
-            self.qmlogger.debug('Getting subscription %s' % name)
-            subscription_type, subscription_id = self.store.find((Subscription.type, Subscription.id), Subscription.name == unicode(name)).one()
-            self.qmlogger.debug('subscription_id = %d' % subscription_id)
-            if subscription_id:
-                self.qmlogger.debug('y1')
-                qpacket_list = self.store.find(SubscriptionPacket.query_packet_id, SubscriptionPacket.subscription_id == subscription_id)
-                if not qpacket_list.is_empty():
-                    result = {}
-                    self.qmlogger.debug('y2')
-                    qp_query_id_list = self.store.find(QueryPacket.query_id, In(QueryPacket.id, list(qpacket_list)))
-                    query_packet = {}
-                    for qp_query_id in qp_query_id_list:
-                        # I've validation id, now let's get other ids and try to create the whole query_packet
-                        query_packet_ids = self.store.find(QueryPacket.query_id, QueryPacket.validation_id == qp_query_id)
-                        packet = {}
-                        index = 0
-                        for query_id in query_packet_ids:
-                            query = self.store.find(Query, Query.id == query_id).one()
-                            query_filter = self.QGenerator.createQueryFilter([query])
-                            if query.category_id == 1:
-                                query_packet_id = query.id
-                            query_type = self.store.find(Type.type, query.type_id == Type.id).one()
-                            source = self.store.find(Source, Source.id == query.source_id).one()
-                            category = self.store.find(Category,Category.id == query.category_id).one()
-                            #print query_type
-                            packet[index] = {
-                                             'query_id' : query.id,
-                                             'query_type' : query_type,
-                                             'category_id' : query.category_id,
-                                             'filter' : query_filter,
-                                             'category_name' : category.category,
-                                             'source_name' : source.name,
-                                             'link' : source.link,
-                                             'subscription_type' : subscription_type
+            for subscription_type, subscription_id, query, qp_query_id in self.store.find((Subscription.type, Subscription.id, Query, QueryPacket.query_id), (SubscriptionPacket.subscription_id == Subscription.id, QueryPacket.id == SubscriptionPacket.query_packet_id, QueryPacket2.validation_id == QueryPacket.query_id, Query.id == QueryPacket2.query_id), Subscription.name == unicode(name)):
+                if (not subscription_id in result.keys()):
+                    result[subscription_id] = {}
 
-                                            }
-                            index += 1
-                        query_packet[qp_query_id] = packet
-                    result[subscription_id] = query_packet
-                    self.qmlogger.debug('Returning details for subscription %s ' % name)
-                    return result
-            self.qmlogger.warning('Couldn\'t get details for subscription %s ' % name)
-            return
+                if (not qp_query_id in indices.keys()):
+                    indices[qp_query_id] = 0;
+                    result[subscription_id][qp_query_id] = {}
+                
+                if (query.filter_cache is None):
+                    query_filter = self.QGenerator.createQueryFilter([query])
+                else:
+                    query_filter = query.filter_cache
 
+                query_type = all_types['id'][query.type_id]["type"]
+                category_name = all_categories['id'][query.category_id]["category"]
+                source = all_sources['id'][query.source_id]
 
-
-
-
-
-
-
-
-
-
-
-
-
-        self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
-        self.qmlogger.debug('subscription_name = %s' % name)
-        pp = pprint.PrettyPrinter(indent=4)
-        self.qmlogger.debug('Getting subscription %s' % name)
-        subscription_type, subscription_id = self.store.find((Subscription.type, Subscription.id), Subscription.name == unicode(name)).one()
-        self.qmlogger.debug('subscription_id = %d' % subscription_id)
-        if subscription_id:
-            self.qmlogger.debug('y1')
-            qpacket_list = self.store.find(SubscriptionPacket.query_packet_id, SubscriptionPacket.subscription_id == subscription_id)
-            if not qpacket_list.is_empty():
-                result = {}
-                self.qmlogger.debug('y2')
-                qp_query_id_list = self.store.find(QueryPacket.query_id, In(QueryPacket.id, list(qpacket_list)))
-                query_packet = {}
-                for qp_query_id in qp_query_id_list:
-                    # I've validation id, now let's get other ids and try to create the whole query_packet
-                    query_packet_ids = self.store.find(QueryPacket.query_id, QueryPacket.validation_id == qp_query_id)
-                    packet = {}
-                    index = 0
-                    for query_id in query_packet_ids:
-                        query = self.store.find(Query, Query.id == query_id).one()
-                        query_filter = self.QGenerator.createQueryFilter([query])
-                        if query.category_id == 1:
-                            query_packet_id = query.id
-                        query_type = self.store.find(Type.type, query.type_id == Type.id).one()
-                        source = self.store.find(Source, Source.id == query.source_id).one()
-		        category = self.store.find(Category,Category.id == query.category_id).one()	
-                        #print query_type
-                        packet[index] = {   
-                                         'query_id' : query.id, 
-                                         'query_type' : query_type,
-                                         'category_id' : query.category_id,
-                                         'filter' : query_filter,
-                                         'category_name' : category.category,
-                                         'source_name' : source.name,
-                                         'link' : source.link,
-                                         'subscription_type' : subscription_type
-                                        }
-                        index += 1
-                    query_packet[qp_query_id] = packet
-                result[subscription_id] = query_packet
-                self.qmlogger.debug('Returning details for subscription %s ' % name)
-                return result
-        self.qmlogger.warning('Couldn\'t get details for subscription %s ' % name)
-        return
-
+                result[subscription_id][qp_query_id][indices[qp_query_id]] = {
+                                                                                                    'query_id' : query.id,
+                                                                                                    'query_type' : query_type,
+                                                                                                    'category_id' : query.category_id,
+                                                                                                    'filter' : query_filter,
+                                                                                                    'category_name' : category_name,
+                                                                                                    'source_name' : source["name"],
+                                                                                                    'link' : source["link"],
+                                                                                                    'subscription_type' : subscription_type,
+                                                                                                        }
+                indices[qp_query_id] += 1
+            return result
 
     def getAllSubscriptions(self):
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
@@ -749,7 +771,7 @@ class QueryManager:
 
     def getMyAlerts(self, plugin_ip):
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
-        print plugin_id
+        #print plugin_id
 
         alerts = {}
         alert_list = ''
@@ -763,6 +785,9 @@ class QueryManager:
             critic_alert['query_filter'] = self.getFilter(alert.query_id)
             critic_alert['query_category'] = alert.query.category.category
             critic_alert['checksum'] = alert.checksum
+            critic_alert['start_time'] = alert.start_time
+            critic_alert['end_time'] = alert.end_time
+            critic_alert['identifier_plugin_id'] = alert.identifier_plugin_id 
             critic_alert['source_name'] = alert.query.source.name
             critic_alert['identified_plugin_name'] = alert.identified_plugin.organization 
             alerts['critical_alerts'].append(critic_alert)
@@ -889,7 +914,6 @@ class QueryManager:
 #            reported_alert['identifier_plugin_name'] = alert.identifier_plugin.organization 
 #            reported_alert["statistic"] = self.getStatistics(alert.id)
 #            alerts['reported_alerts'].append(reported_alert)
-        print alerts
         return alerts
 
 
@@ -917,7 +941,6 @@ class QueryManager:
        self.store.commit()
 
     def pushAlerts(self, plugin_ip, query_id_list, start_time, end_time):
-        print query_id_list
         plugin_id = self.store.find( Plugin.id,Plugin.plugin_ip == unicode(plugin_ip)).one()
         for query_id, query_list in query_id_list.items():
             if query_list.has_key("alerts"):
@@ -936,7 +959,6 @@ class QueryManager:
                                               'timestamp' : row_data["timestamp"], 'checksum' : hash_key,
                                               'query_id' : int(query_id), 'flows' : int(row_data["flows"]), 'bytes': int(row_data["bytes"]),
                                               'packets' : int(row_data["packets"]), 'plugin_id': int(plugin_id), 'alert_type': row_data['alert_type']}
-                                print alert_info
                                 self.insertAlert(alert_info)        
                     
                     elif row_data['alert_type'] == 1:
@@ -959,8 +981,6 @@ class QueryManager:
                 
 
     def registerAlert(self, alert):
-        pp = pprint.PrettyPrinter(indent=4)
-        print '\n'
         self.qmlogger.debug('In %s' % sys._getframe().f_code.co_name)
         #print '============= ALERT PACKET ==============='
         #pp.pprint(alert)
@@ -984,7 +1004,7 @@ class QueryManager:
             alert_query_list = self.QGenerator.generateQuery(alert)
             #print alert_query_list
         except Exception, e:
-            print e
+            self.qmlogger.error(e)
             return
         
         # ayni query insert edilmeyeceginden, generateQuery ' den q_id donmez
@@ -993,7 +1013,6 @@ class QueryManager:
             self.qmlogger.info('Alert is already created')
             #alerts = self.store.find( Alert.id,
             #                          Alert.query_id == q_id )
-            print '\n'
             return 'Alert is already created.'
         else:
             alert_id_list = []
@@ -1016,13 +1035,12 @@ class QueryManager:
                     alert_id_list.append(alert_id)
                     self.store.commit()
                 except Exception, e:
-                    print e
+                    self.qmlogger.error(e)
                     return
             message = 'Created new alert, alert id : %d' %  alert_id
             self.qmlogger.warning(message)
             #print alert_id_list
             #self.qmlogger.warning('Returning alert list ')
-            print '\n'
             return message
        
 

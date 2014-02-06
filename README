@@ -2,7 +2,6 @@
 NfQuery : NfQuery: A Privacy Friendly Framework for Multi-Domain Threat Analysis  
 =====================================================================================
 
-
 .. contents::
 ..
     1  What is NfQuery Framework
@@ -16,32 +15,19 @@ NfQuery : NfQuery: A Privacy Friendly Framework for Multi-Domain Threat Analysis
 
 What is it?
 ===============
-The main function of NfQuery is creating useful queries to be used in the NfSen Plug-ins of each organization or 
-domain registered to the Query Server (QS). Queries are fetched from QS and executed by Plug-ins on the aggregated
-NetFlow data of organizations. As a result of these executions, NfSen Plug-in find the flow data which includes 
-the related threat or attack information. After the detection, Plug-in alerts the QS automatically regarding the 
-findings of the applied query.
-
-By collecting and interpreting attack statistics from each Plug-in, NfQuery creates a general overview of the threat
-trends seen in the multi-domain network. Finally, by utilizing the alerting system of NfSen, NfQuery becomes a threat
-detection and security alerting system for multi-domain networks.
+The main function of NfQuery is creating useful queries to be used in the NfSen Plug-ins of each organization or domain registered to the Query Server (QS). Queries are fetched from QS and executed by Plug-ins on the aggregated NetFlow data of organizations. As a result of these executions, NfSen Plug-in find the flow data which includes the related threat or attack information. After the detection, Plug-in alerts the QS automatically regarding the findings of the applied query.
+By collecting and interpreting attack statistics from each Plug-in, NfQuery creates a general overview of the threat trends seen in the multi-domain network. Finally, by utilizing the alerting system of NfSen, NfQuery becomes a threat detection and security alerting system for multi-domain networks.
 
 Components
 ---------------
 a. Query Server (QS)
-Query Server (QS) is placed in the center of the system and establishes the connection between all components. QS 
-is composed of three sub-elements; Query Manager (QM), Query Generator (QG) and Query Repository (QR). 
+Query Server (QS) is placed in the center of the system and establishes the connection between all components. QS is composed of three sub-elements; Query Manager (QM), Query Generator (QG) and Query Repository (QR). 
 
 b. NfQuery Plug-in
-The NfQuery Plug-in is installed at each domain side over the NfSen instance at the domain and communicates with QS
-to perform the administrator’s requests such as fetching new queries, updating query list, getting/sending statistical
-reports and executing the queries over the flow data. 
+The NfQuery Plug-in is installed at each domain side over the NfSen instance at the domain and communicates with QS to perform the administrator’s requests such as fetching new queries, updating query list, getting/sending statistical reports and executing the queries over the flow data. 
 
 c. Sources
-NfQuery sources are the main components that provide threat information. This includes publicly available resources
-such as Botnet C&C server lists (Amada SpyEye), DNS blacklists (DShield), malicious domains and phishing sites lists
-or output of security analysis applications such as Honeypots, Intrusion Detection Systems (IDS), Intrusion Prevention
-Systems (IPS) or Firewalls which may provide data in means of log files for private use in NfQuery framework.
+NfQuery sources are the main components that provide threat information. This includes publicly available resources such as Botnet C&C server lists (Amada SpyEye), DNS blacklists (DShield), malicious domains and phishing sites lists or output of security analysis applications such as Honeypots, Intrusion Detection Systems (IDS), Intrusion Prevention Systems (IPS) or Firewalls which may provide data in means of log files for private use in NfQuery framework.
 
 
 Dependencies

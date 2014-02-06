@@ -1,0 +1,6 @@
+cfg/nfquery.conf
+build/
+dist/
+nfquery.egg-info/
+*.pyc
+*.txt

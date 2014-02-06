@@ -36,7 +36,7 @@
                     echo "<td>".$alert['query_id']."</td>";
                     echo "<td>".$alert['query_filter']."</td>";
                     echo "<td><span class='label label-warning'>".$alert['source_name']."</span></td>";
-                    echo "<td>"."<button class='btn btn-small btn-primary run' queryid='".$alert['query_id']."' query='".$alert['query_filter']."' starttime='".$alert['start_time']."' endtime='".$alert['end_time']."' identifier='".$alert['identifier_plugin_id']."' src='/nfsen/plugins/nfquery/img/run.png'>Run Now</button>"."</td>";
+                    echo "<td>"."<button class='btn btn-small btn-primary run' queryid='".$alert['query_id']."' query='".$alert['query_filter']."' starttime='".$alert['start_time']."' endtime='".$alert['end_time']."' identifier='".$alert['identifier_plugin_id']."' src='plugins/nfquery/img/run.png'>Run Now</button>"."</td>";
                     echo "</tr>";
                 }
             }

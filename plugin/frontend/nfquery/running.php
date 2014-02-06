@@ -1,6 +1,6 @@
-<script src="/nfsen/plugins/nfquery/js/running.js"></script>
-<script src="/nfsen/plugins/nfquery/js/jquery.tablesorter.js"></script>
-<link type="text/css" href="/nfsen/plugins/nfquery/css/tablesorter.css" rel="stylesheet">
+<script src="plugins/nfquery/js/running.js"></script>
+<script src="plugins/nfquery/js/jquery.tablesorter.js"></script>
+<link type="text/css" href="plugins/nfquery/css/tablesorter.css" rel="stylesheet">
 
 <div class="modal hide fade" id="outputModal" style="display: none;width:100%;">
 	<div class="modal-header">

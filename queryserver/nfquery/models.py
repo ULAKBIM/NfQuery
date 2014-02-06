@@ -110,6 +110,7 @@ class Query(object):
     creation_time_id = Int()
     update_time_id = Int()
     category_id = Int()
+    filter_cache = Unicode()
 
     source =  Reference(source_id, Source.id)
     type =  Reference(type_id, Type.id)
@@ -137,7 +138,6 @@ class Subscription(object):
     id = Int(primary=True)
     type = Int()
     name = Unicode()
-    timeout = DateTime()
 
 
 class SubscriptionPacket(object):

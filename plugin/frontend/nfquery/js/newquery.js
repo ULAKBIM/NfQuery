@@ -1,5 +1,5 @@
 function generateNewQuery(){
-    alert("merhaba");
+    var selected = new Array();
     var array = new Object();
     var query_info = new Object();
     array['src_ip'] = $("#src_ip").val();
@@ -20,17 +20,17 @@ function generateNewQuery(){
     for (var key in array) {
         if(array[key] != ''){
             query_info[key] = array[key];    
+            selected.push(key);
         } 
     }
     alert(JSON.stringify(query_info));
-    alert(JSON.stringify($("input:checked")));
-    var selected = new Array();
-    $('#query_info_table input:checked').each(function() {
-        selected.push($(this).attr('name'));
-    });
+   // alert(JSON.stringify($("input:checked")));
+//ugur    var selected = new Array();
+//ugur    $('#query_info_table input:checked').each(function() {
+//ugur        selected.push($(this).attr('name'));
+//ugur    });
     alert(JSON.stringify(selected));
-    $.post("/nfsen/plugins/nfquery/ajaxhandler.php", {query_info_list:JSON.stringify(query_info),mandatory:JSON.stringify(selected)}, function(data){});
-   
+    $.post("plugins/nfquery/ajaxhandler.php", {query_info_list:JSON.stringify(query_info),mandatory:JSON.stringify(selected)}, function(data){});
  
 }
 $(document).ready(function() {

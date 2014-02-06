@@ -1,8 +1,9 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 
 import argparse
 import os, sys
 import logging 
+import signal
 
 # We may create a directory lib under nfquery and 
 # this kind of utils could be moved to nfquery/lib 
@@ -10,6 +11,9 @@ import logging
 from nfquery.daemon import Daemon
 from nfquery.queryserver import QueryServer
 
+def handler(signum, frame):
+    print 'Signal handler called with signal', signum
+    sys.exit(0);
 
 # 1) Check if paths are correct
 # 2) Test for database connection
@@ -30,6 +34,10 @@ if not os.path.isfile(args.conf):
     print ('Configuration file not fund: {}'.format( args.conf))
     parser.print_help()
     sys.exit(1)
+
+#signal.signal(signal.SIGINT, handler)
+#signal.signal(signal.SIGTERM, handler)
+#signal.signal(signal.SIGQUIT, handler)
 
 # Set logging Flag
 log_level=logging.INFO
