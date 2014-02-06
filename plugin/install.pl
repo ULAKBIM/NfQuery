@@ -141,6 +141,11 @@ print "WWWUSER: $NfConf::WWWUSER\n";
 print "WWWGROUP: $NfConf::WWWGROUP\n";
 print "plugin_path: $plugin_path\n";
 
+# make remember.conf file writable for all
+if (! chmod(0666, "$plugin_path/frontend/nfquery/remember.conf")) {
+	print "Couldn't change mode of file $plugin_path/frontend/nfquery/remember.conf to 0666. Please change it manually with chmod command.\n"
+}
+
 # install backend files;
 installFile("$plugin_path/backend/nfquery.pm", "$NfConf::BACKEND_PLUGINDIR/nfquery.pm") or die;
 
@@ -149,4 +154,4 @@ installFile("$plugin_path/frontend/nfquery.php", "$NfConf::FRONTEND_PLUGINDIR/nf
 installFile("$plugin_path/frontend/nfquery", "$NfConf::FRONTEND_PLUGINDIR/nfquery") or die;
 
 print "NfQuery is successfully installed.\n";
-print "Baalsasasa conf dosyasi\n";
+print "Please configure nfquery plugin in nfsen.conf file and restart nfsen.\n";
