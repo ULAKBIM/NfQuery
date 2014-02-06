@@ -40,7 +40,7 @@ my $plugin_ip;
 my $uri;
 
 #output directory
-my $output_dir;
+#SILINECEK-ugur my $output_dir;
 my %outputTable;
 my %prefixes;
 
@@ -141,7 +141,7 @@ sub get_connection {
 
 	# CA cert peer verification
 	$ENV{HTTPS_CA_FILE}   = $$cfg{'https_ca_file'};
-	$ENV{HTTPS_CA_DIR}	= $$cfg{'https_ca_dir'};
+#SILINECEK-UGUR	$ENV{HTTPS_CA_DIR}	= $$cfg{'https_ca_dir'};
 
 	# Client PKCS12 cert support
 	$ENV{HTTPS_PKCS12_FILE}  = $$cfg{'https_pkcs12_file'};
@@ -185,7 +185,7 @@ sub isRegistered{
 ################################################################################
 sub checkPIDState {
 	my $nfdumpPid = shift;
-    return 1 if ($nfdumpPid == -1); ## process hasn't been run yet, but we return it as running. -ugur
+	return 1 if ($nfdumpPid == -1); ## process hasn't been run yet, but we return it as running. -ugur
 
 	my $state = kill 0, $nfdumpPid;
 	return $state;
@@ -822,7 +822,7 @@ sub runQueries {
 	my $profile = $$opts{'profile'};
 	my @source = @{$$opts{'source'}};
 
-    my @nfdumps_to_be_executed = ();
+	my @nfdumps_to_be_executed = ();
 
 	#Timestamps
 	my $start_time = $$opts{'start_time'};
