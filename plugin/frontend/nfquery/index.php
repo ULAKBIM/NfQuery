@@ -58,7 +58,7 @@
 				"Workspace" => array("id" => "workspace", "extra_check" => ($register==3), "include" => "workspace.php", "icon" => "icon-pencil"),
 				"Running" => array("id" => "running", "extra_check" => ($register==3), "include" => "running.php", "icon" => "icon-info-sign"),
 				"Report" => array("id" => "report", "extra_check" => ($register==3), "include" => "report.php", "icon" => "icon-bullhorn"),
-				"AddQuery" => array("id" => "addquery", "extra_check" => ($register==3), "include" => "newquery.php", "icon" => "icon-certificate"),
+				#"AddQuery" => array("id" => "addquery", "extra_check" => ($register==3), "include" => "newquery.php", "icon" => "icon-certificate"),
 				"Settings" => array("id" => "settings", "extra_check" => true, "include" => "settings.php", "icon" => "icon-wrench"),
 				"About" => array("id" => "about", "extra_check" => true, "include" => "about.php", "icon" => "icon-align-justify"),
 				# "Verification" => array("id" => "verification", "extra_check" => true, "include" => "verification.php", "icon" => "icon-check"),
