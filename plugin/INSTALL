@@ -1,3 +1,21 @@
+================================
+== Downloading NfQuery Plugin ==
+================================
+    NfQuery plugin can be downloaded from:
+        http://nfquery.ulakbim.gov.tr/download/
+
+    Archive can be extracted as:
+    	tar xzvf NfQuery-Plugin-vx.y.z.tar.gz
+
+    the plugin installation script is under directory:
+    	NfQuery-Plugin-vx.y.z
+
+    Alternatively, sources can be downloaded with git as:
+        git clone https://github.com/ULAKBIM/NfQuery.git NfQuery-current
+
+    the plugin installation script is under directory:
+    	NfQuery-current/plugin
+
 =======================================
 == Required Perl Modules For Backend ==
 =======================================
@@ -36,7 +54,8 @@
     install script.
 
     This script links (symbolic) backend and frontend files to their
-    locations (according to NfSen directory layout).
+    locations (according to NfSen directory layout), so the files
+    should not be deleted or moved.
     
     After installation, NfQuery plugin should ve enabled and
     configured in Nfsen configuration file:
@@ -50,6 +69,9 @@
     );
 
     %PluginConf = (
+        .
+        .
+        .
         nfquery => {
             # Certificates
             https_ca_file => 'root certificate file'
