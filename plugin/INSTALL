@@ -1,20 +1,21 @@
 =======================================
 == Required Perl Modules For Backend ==
 =======================================
+    Following perl modules are required for backend part
+    of NfQuery:
 
     -LWP::UserAgent
     -JSON::RPC::LWP
-    -Term::ANSIColor
     -JSON
-    -JSON::Parse 'json_to_perl'
     -NetAddr::IP
     -Net::SSL ()
     -Parallel::ForkManager
-    -NfConf
     -DBM::Deep
+    -Digest::MD5
     
-    You can run the Perl CPAN module via command line perl 
-    and get it installed in a single line:
+    Depending on the Unix distro used, these modules can
+    either be installed with distro's package manager or
+    with Perl CPAN module like:
 
     perl -MCPAN -e 'install Module::Name'  
 
@@ -22,35 +23,47 @@
 == Install Plugin ==
 ====================
     NfQuery Plug-in is an NfSen plugin. You need a working 
-    NfSen instance. NfQuery plug-in has been tested on 
-    Nfsen 1.3.6p1, Perl v5.14.2 and Php 5.3.10.
+    NfSen instance. 
 
-    After required perl modules are installed run:
+    After required perl modules are installed, NfQuery plugin
+    is installed as:
 
-    ./install.sh 
+    ./install.pl [path to nfsen]
     
-    This script copy backend and frontend files to their
-    locations(according to your nfsen directory layout).
+    "path to nfsen" is an optional parameter; installation script
+    searches some known paths to find nfsen program. If it fails to
+    find "nfsen" then the full path of "nfsen" should be passed to
+    install script.
+
+    This script links (symbolic) backend and frontend files to their
+    locations (according to NfSen directory layout).
     
-    After files installed, you need to enable and set backend 
-    configuration parameters in Nfsen configuration file.
+    After installation, NfQuery plugin should ve enabled and
+    configured in Nfsen configuration file:
 
-    Configuration parameters are:
+    ####################################################################
+    @plugins = (
+        .
+        .
+        .
+        [ '*', 'nfquery' ],
+    );
 
-    nfquery => {
-        #Make sure nfsen have write permission to this directory.
-        output_dir => '/tmp', 
+    %PluginConf = (
+        nfquery => {
+            # Certificates
+            https_ca_file => 'root certificate file'
+            https_pkcs12_file => 'plugin\'s pkcs12 file'
+            https_pkcs12_password => 'password',
+    
+            # Ip Address Of This Plugin             
+            plugin_ip => 'IP address of this plugin',
+    
+            # Query Server Information
+            queryserver_ip => 'IP address of the QueryServer',
+            queryserver_port => 'Port number of the QueryServer',
+        }
+    );
+    ####################################################################
 
-        # Certificates
-        https_ca_file => 'root certificate file'
-        https_ca_dir => 'root certificate directory'
-        https_pkcs12_file => 'plugins pkcs12 file'
-        https_pkcs12_password => 'password',
-
-        # Ip Address Of This Plugin             
-        plugin_ip => 'a.b.c.d',
-
-        # Query Server Information
-        queryserver_ip => 'a.b.c.d/e',
-        queryserver_port => 'a',
-    }
+    NfSen should be restarted in order the plugin to be active.
