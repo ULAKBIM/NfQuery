@@ -253,7 +253,7 @@
 				$running_count = $running_count+((isset($counter['0'])) ? $counter['0'] : 0);
 			}
 			$totalQuery = ((isset($out_list[$subs."-optional"])) ? sizeof($out_list[$subs."-optional"]) : 0) + ((isset($out_list[$subs."-mandatory"])) ? sizeof($out_list[$subs."-mandatory"]) : 0);
-			$p = $running_count*100/$totalQuery;
+			$p = round($running_count*100/$totalQuery);
 			$output[$subs] = $p;
 		}
 		echo json_encode($output);
