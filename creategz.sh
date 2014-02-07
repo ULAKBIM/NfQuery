@@ -13,7 +13,7 @@ else
 
     echo "Cleaning backup files."
     find . -name "*~" | xargs rm
-    cp -r ./plugin ${FULLNAME}
+    cp -r ./${TYPE} ${FULLNAME}
     tar czf ${FULLNAME}.tar.gz ${FULLNAME}
 fi 
 
